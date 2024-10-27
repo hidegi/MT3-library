@@ -59,11 +59,15 @@ struct MOT_node
 		MOT_buffer buffer;
 		//struct MOT_node* tree;
 	} payload;
-	
-	int data;
 	struct MOT_node* major;
 	struct MOT_node* minor;
 };
+
+typedef struct
+{
+	SPsize length;
+	SPbyte* data;
+} MOT_byte_array;
 
 typedef struct MOT_node MOT_tree;
 
@@ -80,7 +84,15 @@ SP_API MOT_tree* motAllocTree(const SPchar* name);
 /*<==========================================================>*
  *  data feed
  *<==========================================================>*/
-SP_API void motAddInteger(MOT_tree* tree, const SPchar* name, SPint value);
+SP_API void motAddByte(MOT_tree* tree, const SPchar* name, SPbyte value);
+SP_API void motAddShort(MOT_tree* tree, const SPchar* name, SPshort value);
+SP_API void motAddInt(MOT_tree* tree, const SPchar* name, SPint value);
+SP_API void motAddLong(MOT_tree* tree, const SPchar* name, SPlong value);
+SP_API void motAddFloat(MOT_tree* tree, const SPchar* name, SPfloat value);
+SP_API void motAddDouble(MOT_tree* tree, const SPchar* name, SPdouble value);
+SP_API void motAddString(MOT_tree* tree, const SPchar* name, const SPchar* value);
+SP_API void motAddByteArray(MOT_tree* tree, const SPchar* name, MOT_byte_array value);
+
 
 /*<==========================================================>*
  *  freeing
