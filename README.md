@@ -10,8 +10,11 @@ tree, when merely just the representation is binary..
 
 ## Specification
 The MOT-format only knows two fundamental types of data: binary-trees and byte-sequences..\
+To distinguish between the type of a byte-sequence, each byte-sequence comes with attributes, namely\
+a length, a stride and the byte-information itself..\
+\
 Like NBT, each member is stored as a node with a tag; however, the huge difference between the two is\
-that MOT uses an 8-Byte number to store a name (unlike a string), using an SDBM-hash..\
+that MOT uses an 8-Byte number to store the name (unlike a string), using an SDBM-hash..\
 The default compression strategy is the Fast-ZLIB-Compression, although, GZIP is also possible..
 
 ## How to build
