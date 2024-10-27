@@ -2,7 +2,7 @@
   <img src="assets/motex.png" width="128" height="128">
 </p>
 
-# the MOT-library (SP 1994)
+# The MOT-library (SP 1994)
 This is a framework to serialize a JSON-file to a MOT-file.. MOT is an open\
 format that encodes an arbitrary structure to binary (similar to Mojang's NBT format)..\
 However, the MOT-format uses an actual "binary tree", unlike NBT, alluding to use a binary\
