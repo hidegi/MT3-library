@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
-project(playground VERSION 1.1.1 LANGUAGES C CXX)
+project(mot VERSION 1.1.1 LANGUAGES C CXX)
 
 macro(sp_set_option var default type docstring)
     if(NOT DEFINED ${var})
@@ -39,7 +39,7 @@ set(SP_VERSION_PATCH ${playground_VERSION_PATCH})
 set(SP_VERSION_FULL "${SP_VERSION_MAJOR}.${SP_VERSION_MINOR}.${SP_VERSION_PATCH}")
 set(SP_VERSION ${playground_VERSION})
 set(SP_PARENT_DIRECTORY PARENT_DIRECTORY)
-set(SP_LIB_NAME playground)
+set(SP_LIB_NAME mot)
 
 add_definitions(-DGLEW_STATIC)
 
@@ -64,7 +64,7 @@ configure_file(
 	"${CMAKE_SOURCE_DIR}/include/SP/config.h" ESCAPE_QUOTES)
 
 sp_set_option(BUILD_SHARED_LIBS OFF BOOL "Build shared libraries")
-sp_set_option(SP_BUILD_EXAMPLES ON BOOL "Build the Playground example programs")
+sp_set_option(SP_BUILD_EXAMPLES ON BOOL "Build the MOT example programs")
 sp_set_option(SP_BUILD_TESTS ON BOOL "Build tests")
 
 

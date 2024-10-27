@@ -25,9 +25,11 @@ Once you have CMake installed, use the Command-Prompt or Shell to switch to\
 the directory, where this repository is located on your local machine..\
 (You will need to use ```cd```)..
 
-On the Pac-Man folder, run following command:\
-```$ cmake -Bbuild -G"Unix Makefiles" -D SP_LOCATION=[wherever you have the SP-library located]```
+On the MOT-library folder, run following command:\
+```$ cmake -Bbuild -G"Unix Makefiles"```
 
 You can of course use any CMake-Generator of choice, as well as have any other name for your build-directory..\
-When the project has been built, you should be able to run the game, located under\
-```PlaygroundPM/[your-build-directory]/src/pacman.exe```
+When the project has been built, you should be able to run the tests, located under\
+```PlaygroundPM/[your-build-directory]/tests```\
+\
+Be advised that under Windows, you need to copy the ```libmot.dll``` to your tests-folder, when specifying ```-D BUILD_SHARED_LIBS=ON```..
