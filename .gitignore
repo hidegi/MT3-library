@@ -1,0 +1,11 @@
+*.cbp
+*.layout
+*.log
+*.depend
+*.DS_Store
+include/SP/config.h
+metaphor/
+build/
+obj/
+bin/
+libs/

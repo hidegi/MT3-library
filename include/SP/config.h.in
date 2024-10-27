@@ -1,0 +1,46 @@
+#ifndef SP_SETUP_H_INCLUDED
+#define SP_SETUP_H_INCLUDED
+
+#if defined(__cplusplus) && (__cplusplus < 201103L)
+#error C++11 or later required to compile API..
+#endif // __cplusplus
+
+#define SP_VERSION_MAJOR @playground_VERSION_MAJOR@
+#define SP_VERSION_MINOR @playground_VERSION_MINOR@
+#define SP_VERSION_PATCH @playground_VERSION_PATCH@
+#cmakedefine SP_STATIC_BUILD
+#cmakedefine SP_PLATFORM_WINDOWS
+#cmakedefine SP_PLATFORM_MACOS
+#cmakedefine SP_PLATFORM_LINUX
+
+#include "SP/config/debug.h"
+#include "SP/config/cplusplus.h"
+#include "SP/config/compiler.h"
+
+#ifndef SP_STATIC_BUILD
+    #if defined(SP_PLATFORM_WINDOWS)
+        #define SP_API __declspec(dllexport)
+    #else
+        #define SP_API __attribute__((visibility("default")))
+    #endif
+#else
+    #define SP_API
+#endif
+
+#ifdef SP_PLATFORM_WINDOWS
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef VC_EXTRALEAN
+#define VC_EXTRALEAN
+#endif
+#ifndef UNICODE
+#define UNICODE 1
+#endif
+#include <windows.h>
+#endif
+#include "SP/types.h"
+#endif // SETUP_H_INCLUDED
