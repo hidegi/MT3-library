@@ -4,13 +4,20 @@
 
 void test_serialization_trivial()
 {
-	/*
-	long long h1 = sdbmHashGPT("motex");
-	long long h2 = sdbmHashGithub("motex");
+	MOT_tree* tree = motAllocTree("head");
+	SP_ASSERT_NOT_NULL(tree);
 	
-	SP_ASSERT_INTEGER_EQUAL(h1, h2);
-	SP_DEBUG("hash: %lld", h1);
+	motAddInteger(tree, "x", 1);
+	motAddInteger(tree, "y", 2);
+	motAddInteger(tree, "fjiaw", 300);
+	motAddInteger(tree, "motex", 220);
+	motAddInteger(tree, "value", 30);
+	motAddInteger(tree, "nmg", 99);
+	/*
+	motAddInteger(tree, "z", 3);
 	*/
+	motPrintTree(tree);
+	motFreeTree(tree);
 }
 int main(int argc, char** argv)
 {

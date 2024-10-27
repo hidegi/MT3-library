@@ -8,27 +8,29 @@ extern "C" {
 
 /*
  *	NBT				MOT
- *	byte			number (stride 1) length 1
- *	short			number (stride 2) length 1
- *	int				number (stride 4) length 1
- *	long			number (stride 8) length 1
- *	string			number (stride 1) length 1
- *	float			number (stride 4) length 1
- *	double			number (stride 8) length 1
- *	byte array		number (stride 1) length n
- *	int array		number (stride 4) length n
- *	long array		number (stride 8) length n
+ *	byte			byte-sequence (stride 1) length 1
+ *	short			byte-sequence (stride 2) length 1
+ *	int				byte-sequence (stride 4) length 1
+ *	long			byte-sequence (stride 8) length 1
+ *	string			byte-sequence (stride 1) length 1
+ *	float			byte-sequence (stride 4) length 1
+ *	double			byte-sequence (stride 8) length 1
+ *	byte array		byte-sequence (stride 1) length n
+ *	int array		byte-sequence (stride 4) length n
+ *	long array		byte-sequence (stride 8) length n
+ *	string array	byte-sequence (stride n) length n
  *	list			tree (order by id)
  *	compound		tree (order by id)
  */
  
 typedef enum
 {
-	MOT_TAG_NONE 	= 0x0000,
-	MOT_TAG_INTEGER = 0x0001,
-	MOT_TAG_STRING 	= 0x0002,
-	MOT_TAG_FLOAT 	= 0x0004,
-	MOT_TAG_TREE 	= 0x0008
+	MOT_TAG_NONE 	= 0x00,
+	MOT_TAG_INTEGER = 0x01,
+	MOT_TAG_FLOAT 	= 0x02,
+	MOT_TAG_STRING 	= 0x04,
+	MOT_TAG_TREE 	= 0x08,
+	MOT_TAG_ARRAY	= 0x10
 } MOT_tag;
 
 typedef enum
@@ -51,15 +53,16 @@ struct MOT_node
 {
 	SPlong id;
 	MOT_tag tag;
+	
 	union
 	{
 		MOT_buffer buffer;
-		struct
-		{
-			struct MOT_node* left;
-			struct MOT_node* right;
-		} tree;
+		//struct MOT_node* tree;
 	} payload;
+	
+	int data;
+	struct MOT_node* major;
+	struct MOT_node* minor;
 };
 
 typedef struct MOT_node MOT_tree;
@@ -72,12 +75,12 @@ SP_API void motPrintTree(const MOT_tree* tree);
 /*<==========================================================>*
  *  allocation
  *<==========================================================>*/
-SP_API MOT_tree* motAllocTree();
+SP_API MOT_tree* motAllocTree(const SPchar* name);
 
 /*<==========================================================>*
  *  data feed
  *<==========================================================>*/
-SP_API void motAddInteger(const SPchar* name, SPint value);
+SP_API void motAddInteger(MOT_tree* tree, const SPchar* name, SPint value);
 
 /*<==========================================================>*
  *  freeing
