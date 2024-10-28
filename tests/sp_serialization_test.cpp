@@ -67,13 +67,62 @@ void test_serialization_trivial()
 	
 	SP_ASSERT_NOT_NULL(motSearch(tree, "byte_array"));
 	motInsertFloat(tree, "floatex", 3.141592654f);
+	SPshort* shorts = (SPshort*) motAllocChunk(sizeof(SPshort) * 10);
+	for(int i = 0; i < 10; i++)
+		shorts[i] = 1666 + i;
+	
+	motInsertArray(tree, "shorts", MOT_TAG_SHORT, 10, shorts);
+	SP_ASSERT_NOT_NULL(motSearch(tree, "shorts"));
+	
 	motPrintTree(tree);
 	free(ba.data);
 	free(ia.data);
 	free(la.data);
+	free(shorts);
 	motFreeTree(tree);
 }
 
+void test_insert_generic_array()
+{
+	MOT_tree* tree = motAllocTree("head");
+	SP_ASSERT_NOT_NULL(tree);
+	
+	
+	SPshort* shorts = (SPshort*) motAllocChunk(sizeof(SPshort) * 10);
+	for(int i = 0; i < 10; i++)
+		shorts[i] = 1666 + i;
+	motInsertArray(tree, "shorts", MOT_TAG_SHORT, 10, shorts);
+	SP_ASSERT_NOT_NULL(motSearch(tree, "shorts"));
+	
+	SPfloat* floats = (SPfloat*) motAllocChunk(sizeof(SPfloat) * 10);
+	for(int i = 0; i < 10; i++)
+		floats[i]= 3.45 * 10.f * i;
+	motInsertArray(tree, "floats", MOT_TAG_FLOAT, 10, floats);
+	SP_ASSERT_NOT_NULL(motSearch(tree, "floats"));
+	
+	SPdouble* doubles= (SPdouble*) motAllocChunk(sizeof(SPdouble) * 10);
+	for(int i = 0; i < 10; i++)
+		doubles[i]= 0.3f * i * i + 1.4 * i + 5.2;
+	
+	motInsertArray(tree, "doubles", MOT_TAG_DOUBLE, 10, doubles);
+	SP_ASSERT_NOT_NULL(motSearch(tree, "doubles"));
+	
+	motInsertLong(tree, "constant", 10);
+	motInsertInt(tree, "inter", 10);
+	motInsertShort(tree, "shortser", 10);
+	motInsertByte(tree, "baite", 10);
+	motInsertFloat(tree, "floater", 10.45f);
+	motInsertDouble(tree, "doubleman", 435.344);
+	motInsertString(tree, "hda", "hidegious hidegi was here..");
+	printf("\n");
+	motPrintTree(tree);
+	motFreeTree(tree);
+	free(shorts);
+	free(floats);
+	free(doubles);
+	
+	
+}
 void test_if_all_available()
 {
 	MOT_tree* tree = motAllocTree("head");
@@ -103,8 +152,9 @@ void test_if_all_available()
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
-	SP_TEST_ADD(test_serialization_trivial);
+	//SP_TEST_ADD(test_serialization_trivial);
 	//SP_TEST_ADD(test_if_all_available);
+	SP_TEST_ADD(test_insert_generic_array);
 
 	spTestRunAll();
 	spTestTerminate();

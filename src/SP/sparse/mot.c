@@ -66,7 +66,10 @@
  *
  *  reading stops when a tag of 0 is found..
 */
-#define MOT_SCALAR_MASK 0x1FF
+#define MOT_SCALAR_MASK 0x01FF
+#define MOT_INTEGER_MASK 0x003C
+#define MOT_FLOAT_MASK 0x00C0
+
 #define MOT_CHECKED_CALLOC(ptr, n, size, on_error)	\
 	do												\
 	{												\
@@ -103,6 +106,20 @@
 			node->length * sizeof(SPbyte));					                \
 		(ptr) = node;														\
 	} while(0)
+
+SPsize _motLengthOf(MOT_tag tag)
+{
+    switch(tag)
+    {
+        case MOT_TAG_BYTE: return sizeof(SPbyte);
+        case MOT_TAG_SHORT: return sizeof(SPshort);
+        case MOT_TAG_INT: return sizeof(SPint);
+        case MOT_TAG_LONG: return sizeof(SPlong);
+        case MOT_TAG_FLOAT: return sizeof(SPfloat);
+        case MOT_TAG_DOUBLE: return sizeof(SPdouble);
+    }
+    return 0;
+}
 
 long long _motHashSDBMImpl(const char *str) {
     long long hash = 0;
@@ -149,50 +166,35 @@ void motFreeTree(MOT_tree* tree)
 		free(tree);
 	}
 }
-
-#define MOT_INIT_RECURSIVE(fn, v){\
-	if(name > tree->id)\
-		if(!tree->major)\
-		{\
-			MOT_ALLOC_TYPE(tag, length, tree->major, (v));\
-		}\
-		else\
-		{\
-		    if(tree->tag != MOT_TAG_BRANCH)\
-			    fn(tree->major, name, tag, length, value);\
-            else\
-            {\
-                struct MOT_node* node;\
-                MOT_ALLOC_TYPE(tag, length, node, (v));\
-                if(tree->major->id < name)\
-                    node->minor = tree->major;\
-                else\
-                    node->major = tree->major;\
-                node->minor = NULL;\
-                tree->major = node;\
-            }\
-		}\
-	else\
-		if(!tree->minor)\
-			MOT_ALLOC_TYPE(tag, length, tree->minor, (v));\
-		else\
-		{\
-		    if(tree->tag != MOT_TAG_BRANCH)\
-		        fn(tree->minor, name, tag, length, value);\
-            else\
-            {\
-                struct MOT_node* node;\
-                MOT_ALLOC_TYPE(tag, length, node, (v));\
-                if(tree->minor->id < name)\
-                    node->minor = tree->minor;\
-                else\
-                    node->major = tree->minor;\
-                node->major = NULL;\
-                tree->minor = node;\
-            }\
-        }\
-	}
-
+#define MOT_INIT_RECURSIVE(fn, v)                                             	\
+    do                                                                        	\
+    {                                                                         	\
+        SP_ASSERT(tree, "Cannot Insert integer to empty tree");               	\
+        SP_ASSERT(name != tree->id, "Name has already been given to a node"); 	\
+		SPbool isMajor = (name > tree->id);										\
+		MOT_tree* primary  = isMajor ? tree->major : tree->minor;				\
+        if(!(primary))                                                        	\
+        {                                                                     	\
+            MOT_ALLOC_TYPE(tag, length, primary, (v)); 							\
+			isMajor ? (tree->major = primary) : (tree->minor = primary);		\
+        }                                                                     	\
+        else                                                                  	\
+        {                                                                     	\
+            if(tree->tag != MOT_TAG_BRANCH)                                   	\
+                fn(primary, name, tag, length, value);                        	\
+            else                                                              	\
+            {                                                                 	\
+				SP_ASSERT(!tree->data, "Branch nodes cannot hold memory");		\
+				struct MOT_node* node;                                     		\
+                MOT_ALLOC_TYPE(tag, length, node, (v));                   		\
+				tree->data = node->data;										\
+				node->data = NULL;												\
+				tree->tag = node->tag;											\
+				node->tag = MOT_TAG_BRANCH;										\
+                isMajor ? (tree->major = node) : (tree->minor = node);			\
+            }                                                                 	\
+        }																		\
+	} while(0)
 
 MOT_tree* _motSearch(MOT_tree* tree, SPlong hash)
 {
@@ -215,61 +217,60 @@ MOT_tree* motSearch(MOT_tree* tree, const char* name)
 	long long hash = _motHashSDBM(name);
 	return _motSearch(tree, hash);
 }
-void _motInsertInteger(MOT_tree* tree, SPlong name, MOT_tag tag, SPsize length, SPlong value)
+
+void _motInsertBytes(MOT_tree* tree, SPlong name, MOT_tag tag, SPsize length, const SPchar* value)
 {
-    MOT_INIT_RECURSIVE(_motInsertInteger, &value);
+    MOT_INIT_RECURSIVE(_motInsertBytes, value);
 }
 
-void _motInsertFloat(MOT_tree* tree, SPlong name, MOT_tag tag, SPsize length, SPfloat value)
+void _motInsertTree(MOT_tree* tree, MOT_tree* value)
 {
-    MOT_INIT_RECURSIVE(_motInsertFloat, &value);
+	if(tree->id > value->id)
+	{
+	}
 }
-
-void _motInsertDouble(MOT_tree* tree, SPlong name, MOT_tag tag, SPsize length, SPdouble value)
+void motInsertTree(MOT_tree* tree, MOT_tree* value)
 {
-    MOT_INIT_RECURSIVE(_motInsertDouble, &value);
+	SP_ASSERT(value, "Cannot insert empty tree");
+	SP_ASSERT(value->tag == MOT_TAG_ROOT, "Invalid tag for root-node");
+	value->tag = MOT_TAG_BRANCH;
+	_motInsertTree(tree, value);
 }
 
 void motInsertByte(MOT_tree* tree, const SPchar* name, SPbyte value)
 {
 	long long hash = _motHashSDBM(name);
-	_motInsertInteger(tree, hash, MOT_TAG_BYTE, sizeof(SPbyte), (SPlong) value);
+	_motInsertBytes(tree, hash, MOT_TAG_BYTE, sizeof(SPint), (const SPbyte*) &value);
 }
 
 void motInsertShort(MOT_tree* tree, const SPchar* name, SPshort value)
 {
 	long long hash = _motHashSDBM(name);
-	_motInsertInteger(tree, hash, MOT_TAG_SHORT, sizeof(SPshort), (SPlong) value);
+	_motInsertBytes(tree, hash, MOT_TAG_SHORT, sizeof(SPshort), (const SPbyte*) &value);
 }
 
 void motInsertInt(MOT_tree* tree, const SPchar* name, SPint value)
 {
 	long long hash = _motHashSDBM(name);
-	_motInsertInteger(tree, hash, MOT_TAG_INT, sizeof(SPint), (SPlong) value);
+	_motInsertBytes(tree, hash, MOT_TAG_INT, sizeof(SPint), (const SPbyte*) &value);
 }
 
 void motInsertLong(MOT_tree* tree, const SPchar* name, SPlong value)
 {
 	long long hash = _motHashSDBM(name);
-	_motInsertInteger(tree, hash, MOT_TAG_LONG, sizeof(SPlong), value);
+	_motInsertBytes(tree, hash, MOT_TAG_LONG, sizeof(SPlong), (const SPbyte*) &value);
 }
 
 void motInsertFloat(MOT_tree* tree, const SPchar* name, SPfloat value)
 {
 	long long hash = _motHashSDBM(name);
-	_motInsertFloat(tree, hash, MOT_TAG_FLOAT, sizeof(SPfloat), value);
+	_motInsertBytes(tree, hash, MOT_TAG_FLOAT, sizeof(SPfloat), (const SPbyte*) &value);
 }
 
 void motInsertDouble(MOT_tree* tree, const SPchar* name, SPdouble value)
 {
 	long long hash = _motHashSDBM(name);
-	_motInsertDouble(tree, hash, MOT_TAG_DOUBLE, sizeof(SPdouble), value);
-}
-
-
-void _motInsertBytes(MOT_tree* tree, SPlong name, MOT_tag tag, SPsize length, const SPchar* value)
-{
-    MOT_INIT_RECURSIVE(_motInsertBytes, value);
+	_motInsertBytes(tree, hash, MOT_TAG_DOUBLE, sizeof(SPdouble), (const SPbyte*) &value);
 }
 
 void motInsertString(MOT_tree* tree, const SPchar* name, const SPchar* value)
@@ -306,6 +307,28 @@ void motInsertLongArray(MOT_tree* tree, const SPchar* name, MOT_long_array value
 		long long hash = _motHashSDBM(name);
 		_motInsertBytes(tree, hash, MOT_TAG_LONG | MOT_TAG_ARRAY, value.length * sizeof(SPlong), (SPbyte*)value.data);
 	}
+}
+
+void motInsertArray(MOT_tree* tree, const SPchar* name, MOT_tag tag, SPsize length, const void* data)
+{
+	if(tag == MOT_TAG_ROOT || tag == MOT_TAG_BRANCH)
+	{
+		SP_WARNING("Tag \"MOT_TAG_TREE\" or \"MOT_TAG_BRANCH\" invalid with \"MOT_TAG_ARRAY\"");
+		return;
+	}
+	
+	if(data && length > 0)
+	{
+		long long hash = _motHashSDBM(name);
+		_motInsertBytes(tree, hash, tag | MOT_TAG_ARRAY, length * _motLengthOf(tag), (const SPbyte*)data);
+	}
+}
+
+void* motAllocChunk(SPsize size)
+{
+	SPbyte* ptr = NULL;
+	MOT_CHECKED_CALLOC(ptr, size, sizeof(SPbyte), ;);
+	return ptr;
 }
 /*<==========================================================>*
  *  debug
@@ -372,20 +395,6 @@ const char* _motGetTypeStr(MOT_tag tag)
     return "null";
 }
 
-SPsize _motBaseLength(MOT_tag tag)
-{
-    switch(tag)
-    {
-        case MOT_TAG_BYTE: return sizeof(SPbyte);
-        case MOT_TAG_SHORT: return sizeof(SPshort);
-        case MOT_TAG_INT: return sizeof(SPint);
-        case MOT_TAG_LONG: return sizeof(SPlong);
-        case MOT_TAG_FLOAT: return sizeof(SPfloat);
-        case MOT_TAG_DOUBLE: return sizeof(SPdouble);
-    }
-    return 0;
-}
-
 void motPrintTreeImpl(const MOT_tree* tree, int level)
 {
 	if(tree)
@@ -395,20 +404,41 @@ void motPrintTreeImpl(const MOT_tree* tree, int level)
 		
 		if(tree->tag & MOT_TAG_ARRAY)
 		{
+			
 			MOT_tag scalar = tree->tag & ~MOT_TAG_ARRAY;
-			SPsize stride = _motBaseLength(tree->tag & ~MOT_TAG_ARRAY);
+			SPsize stride = _motLengthOf(tree->tag & ~MOT_TAG_ARRAY);
 			
 			printf("%s (length: %lld stride: %lld) (%lld):\n", _motGetTypeStr(tree->tag), tree->length, stride, tree->id);
+			
 			for(int i = 0; i < level + 1; i++)
 				printf("\t");
 			
-			for(SPsize i = 0; i < tree->length; i += stride)
+			if(MOT_INTEGER_MASK & scalar)
 			{
-				SPlong l = 0;
-				memcpy(&l, tree->data + i, stride * sizeof(SPbyte));
-				printf("%lld ", l);
+				for(SPsize i = 0; i < tree->length; i += stride)
+				{
+					SPlong l = 0;
+					memcpy(&l, tree->data + i, stride * sizeof(SPbyte));
+					printf("%lld ", l);
+				}
+				printf("\n");
 			}
-			printf("\n");
+			
+			if(MOT_FLOAT_MASK & scalar)
+			{
+				union
+				{
+					float _f;
+					double _d;
+				} value;
+				for(SPsize i = 0; i < tree->length; i += stride)
+				{
+					(scalar == MOT_TAG_FLOAT) ? (value._f = 0.f) : (value._d = 0.0);
+					memcpy(((scalar == MOT_TAG_FLOAT) ? (void*)&value._f : (void*)&value._d), tree->data + i, stride);
+					printf("%f ", ((scalar == MOT_TAG_FLOAT) ? value._f : value._d));
+				}
+				printf("\n");
+			}
 		}
 		else
 		{
