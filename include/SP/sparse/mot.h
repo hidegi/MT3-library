@@ -68,7 +68,20 @@ typedef struct
 	SPbyte* data;
 } MOT_byte_array;
 
+typedef struct
+{
+	SPsize length;
+	SPint* data;
+} MOT_int_array;
+
+typedef struct
+{
+	SPsize length;
+	SPlong* data;
+} MOT_long_array;
+
 typedef struct MOT_node MOT_tree;
+typedef struct MOT_node MOT_node;
 
 /*<==========================================================>*
  *  debug
@@ -91,6 +104,12 @@ SP_API void motInsertFloat(MOT_tree* tree, const SPchar* name, SPfloat value);
 SP_API void motInsertDouble(MOT_tree* tree, const SPchar* name, SPdouble value);
 SP_API void motInsertString(MOT_tree* tree, const SPchar* name, const SPchar* value);
 SP_API void motInsertByteArray(MOT_tree* tree, const SPchar* name, MOT_byte_array value);
+SP_API void motInsertIntArray(MOT_tree* tree, const SPchar* name, MOT_int_array value);
+SP_API void motInsertLongArray(MOT_tree* tree, const SPchar* name, MOT_long_array value);
+SP_API MOT_tree* motSearch(MOT_tree* tree, const char* name);
+SP_API MOT_byte_array motAllocByteArray(SPsize length);
+SP_API MOT_int_array motAllocIntArray(SPsize length);
+SP_API MOT_long_array motAllocLongArray(SPsize length);
 
 
 /*<==========================================================>*
