@@ -25,12 +25,17 @@ extern "C" {
  
 typedef enum
 {
-	MOT_TAG_NONE 	= 0x00,
-	MOT_TAG_INTEGER = 0x01,
-	MOT_TAG_FLOAT 	= 0x02,
-	MOT_TAG_STRING 	= 0x04,
-	MOT_TAG_TREE 	= 0x08,
-	MOT_TAG_ARRAY	= 0x10
+	MOT_TAG_NULL 	= 0x0000,
+	MOT_TAG_ROOT    = 0x0001,
+	MOT_TAG_BRANCH 	= 0x0002,
+	MOT_TAG_BYTE    = 0x0004,
+	MOT_TAG_SHORT   = 0x0008,
+	MOT_TAG_INT     = 0x0010,
+	MOT_TAG_LONG    = 0x0020,
+	MOT_TAG_FLOAT 	= 0x0040,
+	MOT_TAG_DOUBLE  = 0x0080,
+	MOT_TAG_STRING 	= 0x0100,
+	MOT_TAG_ARRAY	= 0x0200
 } MOT_tag;
 
 typedef enum
@@ -44,21 +49,15 @@ typedef enum
 
 typedef struct
 {
-	SPsize length;
-	SPsize stride;
-	SPbyte* data;
+
 } MOT_buffer;
 
 struct MOT_node
 {
 	SPlong id;
 	MOT_tag tag;
-	
-	union
-	{
-		MOT_buffer buffer;
-		//struct MOT_node* tree;
-	} payload;
+	SPsize length;
+	SPbyte* data;
 	struct MOT_node* major;
 	struct MOT_node* minor;
 };

@@ -1,6 +1,72 @@
 #include "SP/sparse/mot.h"
 #include <errno.h>
 
+/*
+ *  root nodes should have tag MOT_TAG_ROOT (there is always only one root-node for each tree)!!
+ *  branch nodes have a payload of NULL but connect the tree further..
+ *  to serialize/deserialize read or write all major branches first and then all minor branches..
+ *  this makes the tree one-dimensional..
+ *  append the NULL tag to the end of each branch..
+ */
+
+/*
+ *------------------------------------------------------------------------------------------------------------------
+ *   writing rule
+ *------------------------------------------------------------------------------------------------------------------
+ *  for all nodes:
+ *  write current tag..
+ *  write id..
+ *  write data (explained below)..
+ *  for major and minor repeat step 1 if not NULL, otherwise write for each 0 as tag..
+ *
+ *  for root nodes:
+ *  skip step 3..
+ *
+ *  for scalar nodes:
+ *  write data..
+ *  (you neither need length nor stride, since type is known by tag)..
+ *
+ *  for number array nodes:
+ *  write length..
+ *  write data..
+ *  (stride is known by tag, counts for byte, short, int long, float double and string)..
+ *  for string array nodes:
+ *  write length (how many strings)..
+ *  write length (string length)..
+ *  write data (char data)..
+ *  write null (end)..
+ *  due to this, the number types have to be known, therefore more concrete tags needed..
+*/
+
+/*
+ *------------------------------------------------------------------------------------------------------------------
+ *   reading rule
+ *------------------------------------------------------------------------------------------------------------------
+ *  for all nodes:
+ *  read tag..
+ *  read id..
+ *  read data..
+ *  for major and minor, repeat step 1 (if not 0 as tag, respectively)..
+ *
+ *  for branch nodes:
+ *  skip step 3..
+ *
+ *  for scalar nodes:
+ *  read n bytes (length known by tag, counts for byte, short, int, long, float, double)..
+ *
+ *  for number array nodes:
+ *  read m × n bytes, where m is the length of the array and n is the stride..
+ *  (stride known by tag, counts for byte, short, int, long, float, double and string)..
+ *
+ *  for string array nodes:
+ *  read array length..
+ *  read string length..
+ *  read n bytes..
+ *  repeat step 1 until NULL is found..
+ *
+ *  reading stops when a tag of 0 is found..
+*/
+
 #define MOT_CHECKED_CALLOC(ptr, n, size, on_error)	\
 	do												\
 	{												\
@@ -29,13 +95,12 @@
 		MOT_CHECKED_CALLOC(node, 1, sizeof(struct MOT_node), return);		\
 		node->tag = _tag;													\
 		node->id = name;													\
-		node->payload.buffer.length = (_length);							\
-		node->payload.buffer.stride = 1;									\
+		node->length = (_length);							                \
 		node->major = node->minor = NULL;									\
-		MOT_CHECKED_CALLOC(node->payload.buffer.data, 						\
-			node->payload.buffer.length, sizeof(SPbyte), return);			\
-		memcpy(node->payload.buffer.data, (v), 								\
-			node->payload.buffer.length * sizeof(SPbyte));					\
+		MOT_CHECKED_CALLOC(node->data, 						                \
+			node->length, sizeof(SPbyte), return);			                \
+		memcpy(node->data, (v), 								            \
+			node->length * sizeof(SPbyte));					                \
 		(ptr) = node;														\
 	} while(0)
 		
@@ -68,7 +133,7 @@ MOT_tree* motAllocTree(const SPchar* name)
 	struct MOT_node* root = NULL;
 	MOT_CHECKED_CALLOC(root, 1, sizeof(struct MOT_node), return NULL);
 	MOT_SET_ID(root, name, return NULL);
-	root->tag = MOT_TAG_TREE;
+	root->tag = MOT_TAG_ROOT;
 	root->major = NULL;
 	root->minor = NULL;
 	return root;
@@ -80,15 +145,19 @@ void motFreeTree(MOT_tree* tree)
 	{
 		switch(tree->tag)
 		{
-			case MOT_TAG_TREE:
+			case MOT_TAG_ROOT:
+			case MOT_TAG_BRANCH:
 			{
 				break;
 			}
-			case MOT_TAG_INTEGER:
+			case MOT_TAG_BYTE:
+			case MOT_TAG_SHORT:
+			case MOT_TAG_INT:
+			case MOT_TAG_LONG:
 			case MOT_TAG_FLOAT:
 			case MOT_TAG_STRING:
 			{
-				free(tree->payload.buffer.data);
+				free(tree->data);
 				break;
 			}
 		}
@@ -102,16 +171,16 @@ void motFreeTree(MOT_tree* tree)
 			SPubyte tag = tree->tag & 0xF;
 			switch(tag)
 			{
-				case MOT_TAG_TREE:
+				case MOT_TAG_BRANCH:
 				{
-					for(SPsize i = 0; i < tree->payload.buffer.length; i++)
-						motFreeTree((MOT_tree*)tree->payload.buffer.data[i]);
+					for(SPsize i = 0; i < tree->length; i++)
+						motFreeTree((MOT_tree*)tree->data[i]);
 				}
 				case MOT_TAG_INTEGER:
 				case MOT_TAG_FLOAT:
 				case MOT_TAG_STRING:
 				{
-					free(tree->payload.buffer.data);
+					free(tree->data);
 					break;
 				}
 			}
@@ -127,14 +196,47 @@ void _motAddInteger(MOT_tree* tree, SPlong name, MOT_tag tag, SPsize length, SPl
 	
 	if(name > tree->id)
 		if(!tree->major)
+		{
 			MOT_ALLOC_TYPE(tag, length, tree->major, &value);
+		}
 		else
-			_motAddInteger(tree->major, name, tag, length, value);
+		{
+		    if(tree->tag != MOT_TAG_BRANCH)
+			    _motAddInteger(tree->major, name, tag, length, value);
+            else
+            {
+                //relink here..
+                struct MOT_node* node;
+                MOT_ALLOC_TYPE(tag, length, node, &value);
+                if(tree->major->id < name)
+                    node->minor = tree->major;
+                else
+                    node->major = tree->major;
+                node->minor = NULL;
+                tree->major = node;
+            }
+		}
 	else
 		if(!tree->minor)
 			MOT_ALLOC_TYPE(tag, length, tree->minor, &value);
 		else
-			_motAddInteger(tree->minor, name, tag, length, value);
+		{
+		    if(tree->tag != MOT_TAG_BRANCH)
+		        _motAddInteger(tree->minor, name, tag, length, value);
+            else
+            {
+                //relink here..
+                struct MOT_node* node;
+                MOT_ALLOC_TYPE(tag, length, node, &value);
+                if(tree->minor->id < name)
+                    node->minor = tree->minor;
+                else
+                    node->major = tree->minor;
+
+                node->major = NULL;
+                tree->minor = node;
+            }
+        }
 }
 
 void _motAddFloat(MOT_tree* tree, SPlong name, MOT_tag tag, SPsize length, SPfloat value)
@@ -174,25 +276,25 @@ void _motAddDouble(MOT_tree* tree, SPlong name, MOT_tag tag, SPsize length, SPdo
 void motAddByte(MOT_tree* tree, const SPchar* name, SPbyte value)
 {
 	long long hash = _motHashSDBM(name);
-	_motAddInteger(tree, hash, MOT_TAG_INTEGER, sizeof(SPbyte), (SPlong) value);
+	_motAddInteger(tree, hash, MOT_TAG_BYTE, sizeof(SPbyte), (SPlong) value);
 }
 
 void motAddShort(MOT_tree* tree, const SPchar* name, SPshort value)
 {
 	long long hash = _motHashSDBM(name);
-	_motAddInteger(tree, hash, MOT_TAG_INTEGER, sizeof(SPshort), (SPlong) value);
+	_motAddInteger(tree, hash, MOT_TAG_SHORT, sizeof(SPshort), (SPlong) value);
 }
 
 void motAddInt(MOT_tree* tree, const SPchar* name, SPint value)
 {
 	long long hash = _motHashSDBM(name);
-	_motAddInteger(tree, hash, MOT_TAG_INTEGER, sizeof(SPint), (SPlong) value);
+	_motAddInteger(tree, hash, MOT_TAG_INT, sizeof(SPint), (SPlong) value);
 }
 
 void motAddLong(MOT_tree* tree, const SPchar* name, SPlong value)
 {
 	long long hash = _motHashSDBM(name);
-	_motAddInteger(tree, hash, MOT_TAG_INTEGER, sizeof(SPlong), value);
+	_motAddInteger(tree, hash, MOT_TAG_LONG, sizeof(SPlong), value);
 }
 
 void motAddFloat(MOT_tree* tree, const SPchar* name, SPfloat value)
@@ -204,7 +306,7 @@ void motAddFloat(MOT_tree* tree, const SPchar* name, SPfloat value)
 void motAddDouble(MOT_tree* tree, const SPchar* name, SPdouble value)
 {
 	long long hash = _motHashSDBM(name);
-	_motAddDouble(tree, hash, MOT_TAG_FLOAT, sizeof(SPdouble), value);
+	_motAddDouble(tree, hash, MOT_TAG_DOUBLE, sizeof(SPdouble), value);
 }
 
 
@@ -239,7 +341,7 @@ void motAddByteArray(MOT_tree* tree, const SPchar* name, MOT_byte_array value)
 	if(value.data && value.length > 0)
 	{
 		long long hash = _motHashSDBM(name);
-		_motAddString(tree, hash, MOT_TAG_INTEGER & MOT_TAG_ARRAY, value.length, value.data);
+		_motAddString(tree, hash, MOT_TAG_BYTE & MOT_TAG_ARRAY, value.length, value.data);
 	}
 }
 /*<==========================================================>*
@@ -255,30 +357,32 @@ void motPrintTreeImpl(const MOT_tree* tree, int level)
 		
 		switch(tree->tag)
 		{
-			case MOT_TAG_TREE:
+			case MOT_TAG_BRANCH:
 			{
 				printf("Tree (%lld):\n", tree->id);
 				break;
 			}
-			case MOT_TAG_INTEGER:
+			case MOT_TAG_BYTE:
+			case MOT_TAG_SHORT:
+			case MOT_TAG_INT:
+			case MOT_TAG_LONG:
 			{
-				SPbyte* buffer = tree->payload.buffer.data;
+				SPbyte* buffer = tree->data;
 				SP_ASSERT(buffer, "Node has invalid data");
-				SP_ASSERT(tree->payload.buffer.stride == 1L, "Node is supposed to hold one value");
-				SP_ASSERT(tree->payload.buffer.length <= 8 && tree->payload.buffer.length > 0, "Invalid data size for an integer");
+				SP_ASSERT(tree->length <= 8 && tree->length > 0, "Invalid data size for an integer");
 				
 				long value = 0;
-				memcpy(&value, buffer, tree->payload.buffer.length * sizeof(SPbyte));
+				memcpy(&value, buffer, tree->length * sizeof(SPbyte));
 				
 				const char* type = NULL;
-				switch(tree->payload.buffer.length)
+				switch(tree->length)
 				{
 					case 1: type = "byte"; break;
 					case 2: type = "short"; break;
 					case 4: type = "int"; break;
 					case 8: type = "long"; break;
 				}
-				if(tree->payload.buffer.length <= 4)
+				if(tree->length <= 4)
 					printf("%s (%lld): %d\n", type, tree->id, value);
 				else
 					printf("%s (%lld): %lld\n", type, tree->id, value);
@@ -286,25 +390,25 @@ void motPrintTreeImpl(const MOT_tree* tree, int level)
 			}
 			
 			case MOT_TAG_FLOAT:
+			case MOT_TAG_DOUBLE:
 			{
-				SPbyte* buffer = tree->payload.buffer.data;
+				SPbyte* buffer = tree->data;
 				SP_ASSERT(buffer, "Node has invalid data");
-				SP_ASSERT(tree->payload.buffer.stride == 1L, "Node is supposed to hold one value");
-				SP_ASSERT(tree->payload.buffer.length <= 8 && tree->payload.buffer.length >= 4, "Invalid data size for an integer");
+				SP_ASSERT(tree->length <= 8 && tree->length >= 4, "Invalid data size for an integer");
 				
-				switch(tree->payload.buffer.length)
+				switch(tree->length)
 				{
 					case 4: 
 					{
 						float value = 0.0f;
-						memcpy(&value, buffer, tree->payload.buffer.length * sizeof(SPbyte));
+						memcpy(&value, buffer, tree->length * sizeof(SPbyte));
 						printf("float (%lld): %f\n", tree->id, value);
 						break;
 					}
 					case 8: 
 					{
 						double value = 0.0;
-						memcpy(&value, buffer, tree->payload.buffer.length * sizeof(SPbyte));
+						memcpy(&value, buffer, tree->length * sizeof(SPbyte));
 						printf("double (%lld): %f\n", tree->id, value);
 						break;
 					}
@@ -315,7 +419,7 @@ void motPrintTreeImpl(const MOT_tree* tree, int level)
 			
 			case MOT_TAG_STRING:
 			{
-				SPbyte* buffer = tree->payload.buffer.data;
+				SPbyte* buffer = tree->data;
 				SP_ASSERT(buffer, "Node has invalid data");
 				printf("string (%lld): %s\n", tree->id, buffer);
 				break;

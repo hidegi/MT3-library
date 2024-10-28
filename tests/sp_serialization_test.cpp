@@ -19,7 +19,7 @@ void test_serialization_trivial()
 	motAddLong(tree, "nmg3", 495845);
 	motAddDouble(tree, "fjackfink", 1.998E+58);
 	motAddFloat(tree, "fjackfink2", 0.00001f);
-	motAddString(tree, "hidegion", NULL);
+	motAddString(tree, "hidegion", "hidegion");
 	/*
 	motAddInt(tree, "z", 3);
 	*/
