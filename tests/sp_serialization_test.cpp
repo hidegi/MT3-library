@@ -7,21 +7,21 @@ void test_serialization_trivial()
 	MOT_tree* tree = motAllocTree("head");
 	SP_ASSERT_NOT_NULL(tree);
 	
-	motAddInt(tree, "x", 1);
-	motAddInt(tree, "y", 2);
-	motAddInt(tree, "fjiaw", 300);
-	motAddInt(tree, "motex", 220);
-	motAddInt(tree, "value", 30);
-	motAddInt(tree, "nmg", -14543);
-	motAddShort(tree, "nmg0", -14543);
-	motAddByte(tree, "nmg1", true);
-	motAddByte(tree, "nmg2", false);
-	motAddLong(tree, "nmg3", 495845);
-	motAddDouble(tree, "fjackfink", 1.998E+58);
-	motAddFloat(tree, "fjackfink2", 0.00001f);
-	motAddString(tree, "hidegion", "hidegion");
+	motInsertInt(tree, "x", 1);
+	motInsertInt(tree, "y", 2);
+	motInsertInt(tree, "fjiaw", 300);
+	motInsertInt(tree, "motex", 220);
+	motInsertInt(tree, "value", 30);
+	motInsertInt(tree, "nmg", -14543);
+	motInsertShort(tree, "nmg0", -14543);
+	motInsertByte(tree, "nmg1", true);
+	motInsertByte(tree, "nmg2", false);
+	motInsertLong(tree, "nmg3", 495845);
+	motInsertDouble(tree, "fjackfink", 1.998E+58);
+	motInsertFloat(tree, "fjackfink2", 0.00001f);
+	motInsertString(tree, "hidegion", "hidegion");
 	/*
-	motAddInt(tree, "z", 3);
+	motInsertInt(tree, "z", 3);
 	*/
 	motPrintTree(tree);
 	motFreeTree(tree);

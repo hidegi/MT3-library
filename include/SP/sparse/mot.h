@@ -83,14 +83,14 @@ SP_API MOT_tree* motAllocTree(const SPchar* name);
 /*<==========================================================>*
  *  data feed
  *<==========================================================>*/
-SP_API void motAddByte(MOT_tree* tree, const SPchar* name, SPbyte value);
-SP_API void motAddShort(MOT_tree* tree, const SPchar* name, SPshort value);
-SP_API void motAddInt(MOT_tree* tree, const SPchar* name, SPint value);
-SP_API void motAddLong(MOT_tree* tree, const SPchar* name, SPlong value);
-SP_API void motAddFloat(MOT_tree* tree, const SPchar* name, SPfloat value);
-SP_API void motAddDouble(MOT_tree* tree, const SPchar* name, SPdouble value);
-SP_API void motAddString(MOT_tree* tree, const SPchar* name, const SPchar* value);
-SP_API void motAddByteArray(MOT_tree* tree, const SPchar* name, MOT_byte_array value);
+SP_API void motInsertByte(MOT_tree* tree, const SPchar* name, SPbyte value);
+SP_API void motInsertShort(MOT_tree* tree, const SPchar* name, SPshort value);
+SP_API void motInsertInt(MOT_tree* tree, const SPchar* name, SPint value);
+SP_API void motInsertLong(MOT_tree* tree, const SPchar* name, SPlong value);
+SP_API void motInsertFloat(MOT_tree* tree, const SPchar* name, SPfloat value);
+SP_API void motInsertDouble(MOT_tree* tree, const SPchar* name, SPdouble value);
+SP_API void motInsertString(MOT_tree* tree, const SPchar* name, const SPchar* value);
+SP_API void motInsertByteArray(MOT_tree* tree, const SPchar* name, MOT_byte_array value);
 
 
 /*<==========================================================>*
