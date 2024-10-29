@@ -107,11 +107,11 @@ void test_insert_generic_array()
 	motInsertArray(tree, "doubles", MOT_TAG_DOUBLE, 10, doubles);
 	SP_ASSERT_NOT_NULL(motSearch(tree, "doubles"));
 	
-	motInsertLong(tree, "constant", 10);
-	motInsertInt(tree, "inter", 10);
-	motInsertShort(tree, "shortser", 10);
-	motInsertByte(tree, "baite", 10);
-	motInsertFloat(tree, "floater", 10.45f);
+	motInsertLong(tree, "constant", 999);
+	motInsertInt(tree, "inter", 888);
+	motInsertShort(tree, "shortser", 777);
+	motInsertByte(tree, "baite", 55);
+	motInsertFloat(tree, "floater", 1111.45f);
 	motInsertDouble(tree, "doubleman", 435.344);
 	motInsertString(tree, "hda", "hidegious hidegi was here..");
 	printf("\n");
@@ -125,7 +125,7 @@ void test_insert_generic_array()
 }
 void test_if_all_available()
 {
-	MOT_tree* tree = motAllocTree("head");
+    MOT_tree* tree = motAllocTree("head");
 	SP_ASSERT_NOT_NULL(tree);
 	
 	motInsertInt(tree, "x", 1);
@@ -140,21 +140,59 @@ void test_if_all_available()
 	motInsertLong(tree, "nmg3", 495845);
 	motInsertDouble(tree, "byte_array", 1.998E+58);
 	motInsertFloat(tree, "byte_array1", 0.00001f);
-	
-	
+
 	SP_ASSERT_NOT_NULL(motSearch(tree, "x"));
 	SP_ASSERT_NULL(motSearch(tree, "hda1"));
 	SP_ASSERT_NOT_NULL(motSearch(tree, "byte_array"));
 	SP_ASSERT_NOT_NULL(motSearch(tree, "head"));
-	
+
+	motPrintTree(tree);
 	motFreeTree(tree);
 }
+
+void test_tree_insert()
+{
+	MOT_tree* tree = motAllocTree("head");
+	SP_ASSERT_NOT_NULL(tree);
+
+    motInsertInt(tree, "x", 1);
+    motInsertInt(tree, "yre", 2);
+    motInsertInt(tree, "zv", 3);
+
+    MOT_tree* child1 = motAllocTree("a");
+
+    //motInsertInt(child1, "x", 1);
+    //motInsertInt(child1, "y", 2);
+
+    motInsertTree(tree, child1);
+
+    MOT_tree* child2 = motAllocTree("b");
+    motInsertTree(tree, child2);
+
+    MOT_tree* child3 = motAllocTree("c");
+
+    /*
+    motInsertTree(tree, child3);
+
+    MOT_tree* child4 = motAllocTree("d");
+    motInsertTree(tree, child4);
+
+
+    MOT_tree* child5 = motAllocTree("e");
+    motInsertTree(tree, child5);
+    */
+
+    motPrintTree(tree);
+	motFreeTree(tree);
+}
+
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
 	//SP_TEST_ADD(test_serialization_trivial);
 	//SP_TEST_ADD(test_if_all_available);
-	SP_TEST_ADD(test_insert_generic_array);
+	//SP_TEST_ADD(test_if_all_available);
+	SP_TEST_ADD(test_tree_insert);
 
 	spTestRunAll();
 	spTestTerminate();

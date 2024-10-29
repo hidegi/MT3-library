@@ -47,11 +47,6 @@ typedef enum
 	MOT_ERR_COMP
 } MOT_status;
 
-typedef struct
-{
-
-} MOT_buffer;
-
 struct MOT_node
 {
 	SPlong id;
