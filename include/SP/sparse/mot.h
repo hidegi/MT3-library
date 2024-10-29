@@ -1,6 +1,7 @@
 #ifndef SP_MOTREE_H
 #define SP_MOTREE_H
 #include "SP/config.h"
+#include "SP/sparse/buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,17 +26,16 @@ extern "C" {
  
 typedef enum
 {
-	MOT_TAG_NULL 	= 0x0000,
-	MOT_TAG_ROOT    = 0x0001,
-	MOT_TAG_BRANCH 	= 0x0002,
-	MOT_TAG_BYTE    = 0x0004,
-	MOT_TAG_SHORT   = 0x0008,
-	MOT_TAG_INT     = 0x0010,
-	MOT_TAG_LONG    = 0x0020,
-	MOT_TAG_FLOAT 	= 0x0040,
-	MOT_TAG_DOUBLE  = 0x0080,
-	MOT_TAG_STRING 	= 0x0100,
-	MOT_TAG_ARRAY	= 0x0200
+	MOT_TAG_NULL 	= 0,
+	MOT_TAG_ROOT    = 1,
+	MOT_TAG_BYTE    = 2,
+	MOT_TAG_SHORT   = 3,
+	MOT_TAG_INT     = 4,
+	MOT_TAG_LONG    = 5,
+	MOT_TAG_FLOAT 	= 6,
+	MOT_TAG_DOUBLE  = 7,
+	MOT_TAG_STRING 	= 8,
+	MOT_TAG_ARRAY	= 0x80
 } MOT_tag;
 
 typedef enum
@@ -47,12 +47,25 @@ typedef enum
 	MOT_ERR_COMP
 } MOT_status;
 
+typedef struct 
+{
+	struct MOT_node* major;
+	struct MOT_node* minor;
+} MOT_branch;
 struct MOT_node
 {
-	SPlong id;
+	SPlong weight;
 	MOT_tag tag;
 	SPsize length;
-	SPbyte* data;
+	union
+	{
+		SPbyte* data;
+		
+		//does not hold the root-node
+		//but only major and minor branches..
+		MOT_branch branch; 
+	} payload;
+	
 	struct MOT_node* major;
 	struct MOT_node* minor;
 };
@@ -106,14 +119,17 @@ SP_API void motInsertByteArray(MOT_tree* tree, const SPchar* name, MOT_byte_arra
 SP_API void motInsertIntArray(MOT_tree* tree, const SPchar* name, MOT_int_array value);
 SP_API void motInsertLongArray(MOT_tree* tree, const SPchar* name, MOT_long_array value);
 SP_API void motInsertStringArray(MOT_tree* tree, const SPchar* name, MOT_long_array value);
-
 SP_API MOT_tree* motSearch(MOT_tree* tree, const char* name);
 
+SP_API void motDelete(const SPchar* name);
 
 SP_API MOT_byte_array motAllocByteArray(SPsize length);
 SP_API MOT_int_array motAllocIntArray(SPsize length);
 SP_API MOT_long_array motAllocLongArray(SPsize length);
 
+
+SP_API SPbuffer motWriteBinary(MOT_tree* tree);
+SP_API MOT_tree* motReadBinary(SPbuffer buffer);
 
 /*<==========================================================>*
  *  freeing

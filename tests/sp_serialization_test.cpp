@@ -19,66 +19,8 @@ void test_serialization_trivial()
 	motInsertLong(tree, "nmg3", 495845);
 	motInsertDouble(tree, "byte_array", 1.998E+58);
 	motInsertFloat(tree, "byte_array1", 0.00001f);
-	//motInsertString(tree, "hidegion", "hidegion");
-	
-	/*
-	motInsertString(tree, "byte_array", "motex");
-	motInsertString(tree, "byte_array1", "hidegi");
-	motInsertString(tree, "byte_array2", "motex");
-	motInsertString(tree, "byte_array_2", "hidegi");
-	*/
-	
-	MOT_byte_array ba;
-	ba.length = 10;
-	ba.data = (SPbyte*) malloc(ba.length);
-	for(int i = 0; i < ba.length; i++)
-		ba.data[i] = i;
-	motInsertByteArray(tree, "byte_array", ba);
-	/*
-	ba.length = 10;
-	ba.data = (SPbyte*) malloc(ba.length);
-	
-	for(int i = 0; i < ba.length; i++)
-		ba.data[i] = i * 2;
-	motInsertByteArray(tree, "byte_array1", ba);
-	motInsertByteArray(tree, "byte_array2", ba);
-	motInsertByteArray(tree, "byte_array_2", ba);
-	*/
-	
-	MOT_int_array ia = motAllocIntArray(10);
-	for(long i = 1; i <= ia.length; i++)
-		ia.data[i] = i;
-	motInsertIntArray(tree, "int_array", ia);
-	
-	MOT_tree* node = motSearch(tree, "int_array");
-	SP_ASSERT_NOT_NULL(node);
-	
-	MOT_tag tag = node->tag;
-	SP_ASSERT_EQUAL(MOT_TAG_INT, tag & 0x1FF);
-	SP_ASSERT_NOT_EQUAL(0, tag & MOT_TAG_ARRAY);
-	
-	MOT_long_array la = motAllocLongArray(10);
-	la.data[0] = 1;
-	for(long i = 0; i < la.length; i++)
-		la.data[i] = i * 2;
-	
-	SP_DEBUG("long array ok");
-	motInsertLongArray(tree, "factorial", la);
-	
-	SP_ASSERT_NOT_NULL(motSearch(tree, "byte_array"));
-	motInsertFloat(tree, "floatex", 3.141592654f);
-	SPshort* shorts = (SPshort*) motAllocChunk(sizeof(SPshort) * 10);
-	for(int i = 0; i < 10; i++)
-		shorts[i] = 1666 + i;
-	
-	motInsertArray(tree, "shorts", MOT_TAG_SHORT, 10, shorts);
-	SP_ASSERT_NOT_NULL(motSearch(tree, "shorts"));
 	
 	motPrintTree(tree);
-	free(ba.data);
-	free(ia.data);
-	free(la.data);
-	free(shorts);
 	motFreeTree(tree);
 }
 
@@ -145,7 +87,17 @@ void test_if_all_available()
 	SP_ASSERT_NULL(motSearch(tree, "hda1"));
 	SP_ASSERT_NOT_NULL(motSearch(tree, "byte_array"));
 	SP_ASSERT_NOT_NULL(motSearch(tree, "head"));
+	MOT_tree* child = motAllocTree("z");
 
+	motInsertShort(child, "nmg0", -14543);
+	motInsertByte(child, "nmg1", true);
+	motInsertByte(child, "nmg2", false);
+	motInsertLong(child, "nmg3", 495845);
+	motInsertDouble(child, "byte_array", 1.998E+58);
+	motInsertFloat(child, "byte_array1", 0.00001f);
+	motInsertString(child, "name", "Hello World!!");
+	motInsertTree(tree, child);
+	
 	motPrintTree(tree);
 	motFreeTree(tree);
 }
@@ -158,12 +110,8 @@ void test_tree_insert()
     motInsertInt(tree, "x", 1);
     motInsertInt(tree, "yre", 2);
     motInsertInt(tree, "zv", 3);
-
+	
     MOT_tree* child1 = motAllocTree("a");
-
-    //motInsertInt(child1, "x", 1);
-    //motInsertInt(child1, "y", 2);
-
     motInsertTree(tree, child1);
 
     MOT_tree* child2 = motAllocTree("b");
@@ -171,19 +119,49 @@ void test_tree_insert()
 
     MOT_tree* child3 = motAllocTree("c");
 
-    /*
-    motInsertTree(tree, child3);
-
-    MOT_tree* child4 = motAllocTree("d");
-    motInsertTree(tree, child4);
-
-
-    MOT_tree* child5 = motAllocTree("e");
-    motInsertTree(tree, child5);
-    */
-
     motPrintTree(tree);
 	motFreeTree(tree);
+}
+
+void printByteArrayInBinary(const unsigned char *byteArray, size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        unsigned char byte = byteArray[i];
+        // Print the byte in binary
+        for (int j = 7; j >= 0; j--) {
+            // Use bitwise AND and right shift to get each bit
+            printf("%d", (byte >> j) & 1);
+        }
+        printf("\n"); // New line after each byte
+    }
+}
+
+void test_write_binary()
+{
+	MOT_tree* tree = motAllocTree("head");
+	SP_ASSERT_NOT_NULL(tree);
+	
+	motInsertByte(tree, "x", 1);
+	motInsertByte(tree, "y", 2);
+	//motInsertInt(tree, "y", 2);
+	/*
+	motInsertInt(tree, "fjiaw", 300);
+	motInsertInt(tree, "motex", 220);
+	motInsertInt(tree, "value", 30);
+	motInsertInt(tree, "nmg", -14543);
+	motInsertShort(tree, "nmg0", -14543);
+	motInsertByte(tree, "nmg1", true);
+	motInsertByte(tree, "nmg2", false);
+	motInsertLong(tree, "nmg3", 495845);
+	motInsertDouble(tree, "byte_array", 1.998E+58);
+	motInsertFloat(tree, "byte_array1", 0.00001f);
+	*/
+	motPrintTree(tree);
+	
+	SPbuffer buffer = motWriteBinary(tree);
+	printByteArrayInBinary((const unsigned char*) buffer.data, buffer.length);
+	motFreeTree(tree);
+	
+	spBufferFree(&buffer);
 }
 
 int main(int argc, char** argv)
@@ -192,7 +170,7 @@ int main(int argc, char** argv)
 	//SP_TEST_ADD(test_serialization_trivial);
 	//SP_TEST_ADD(test_if_all_available);
 	//SP_TEST_ADD(test_if_all_available);
-	SP_TEST_ADD(test_tree_insert);
+	SP_TEST_ADD(test_write_binary);
 
 	spTestRunAll();
 	spTestTerminate();
