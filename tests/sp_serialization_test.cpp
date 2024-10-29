@@ -142,6 +142,12 @@ void test_write_binary()
 	
 	motInsertByte(tree, "x", 1);
 	motInsertByte(tree, "y", 2);
+	motInsertByte(tree, "header", 3);
+	motInsertByte(tree, "headerer", 4);
+	motInsertByte(tree, "fjiaw", 5);
+	motInsertByte(tree, "fjiaw2", 46);
+	motInsertLong(tree, "fjiaw3", 4565);
+	motInsertFloat(tree, "sun", 45.34);
 	//motInsertInt(tree, "y", 2);
 	/*
 	motInsertInt(tree, "fjiaw", 300);
@@ -155,12 +161,19 @@ void test_write_binary()
 	motInsertDouble(tree, "byte_array", 1.998E+58);
 	motInsertFloat(tree, "byte_array1", 0.00001f);
 	*/
-	motPrintTree(tree);
+	
 	
 	SPbuffer buffer = motWriteBinary(tree);
-	printByteArrayInBinary((const unsigned char*) buffer.data, buffer.length);
-	motFreeTree(tree);
+	//printByteArrayInBinary((const unsigned char*) buffer.data, buffer.length);
+	printf("expected:\n");
+	motPrintTree(tree);
 	
+	MOT_tree* output = motReadBinary(buffer);
+	SP_ASSERT_NOT_NULL(output);
+	motPrintTree(output);
+	motFreeTree(output);
+	motFreeTree(tree);
+	//SP_DEBUG("%lld bytes", buffer.length);
 	spBufferFree(&buffer);
 }
 

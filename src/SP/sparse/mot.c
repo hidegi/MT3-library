@@ -107,6 +107,19 @@
 		SP_ASSERT(hash != 0, "Name cannot be empty");			\
 	} while(0)
 		
+#define MOT_READ_GENERIC(dst, n, scanner, on_failure)            \
+    do                                                          \
+    {                                                           \
+        if(*length < (n))                                       \
+        {                                                       \
+            on_failure;                                         \
+        }                                                       \
+        *memory = scanner((dst), *memory, (n));                 \
+        *length -= n;                                           \
+    } while(0)
+		
+#define MOT_COPY_TO_PAYLOAD(tagName) SP_READ_GENERIC(&node->payload.tagName, sizeof(node->payload.tagName), _spSwappedMemscan, goto sp_error)
+
 #define ne2be _mot_big_endian_to_native_endian
 #define be2ne _mot_big_endian_to_native_endian
 static int _mot_is_little_endian()
@@ -547,7 +560,13 @@ void _mot_print_tree(const MOT_tree* tree, int level)
 				}
 			}
 		}
+		for(int i = 0; i < level + 1; i++)
+            printf("\t");
+		printf("major:\n");
 		_mot_print_tree(tree->major, level + 1);
+		for(int i = 0; i < level + 1; i++)
+            printf("\t");
+		printf("minor:\n");
 		_mot_print_tree(tree->minor, level + 1);
 	}
 }
@@ -567,30 +586,33 @@ static void _mot_write_bytes_native_endian(SPbuffer* buffer, const SPbyte* src, 
 
 static void _motWriteBinary(MOT_tree* tree, SPbuffer* buffer)
 {
-	if(tree)
+	if(!tree)
 	{
-		//encode the tag..
-		_mot_write_bytes_native_endian(buffer, (SPbyte*) &tree->tag, sizeof(SPbyte), 1);
-		
-		//encode the weight..
-		_mot_write_bytes_native_endian(buffer, (SPbyte*) &tree->weight, sizeof(SPlong), 1);
-		
-		//encode the data..
-		switch(tree->tag)
-		{
-			case MOT_TAG_BYTE: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPbyte), tree->length); break;
-			case MOT_TAG_SHORT: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPshort), tree->length); break;
-			case MOT_TAG_INT: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPint), tree->length); break;
-			case MOT_TAG_LONG: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPlong), tree->length); break;
-			case MOT_TAG_FLOAT: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPfloat), tree->length); break;
-			case MOT_TAG_DOUBLE: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPdouble), tree->length); break;
-		}
-		_motWriteBinary(tree->major, buffer);
-		_motWriteBinary(tree->minor, buffer);
-		
+		//signal that this node is done..
 		MOT_tag null = MOT_TAG_NULL;
 		_mot_write_bytes_native_endian(buffer, (SPbyte*) &null, sizeof(SPbyte), 1);
+		return;
 	}
+	
+	//encode the tag..
+	_mot_write_bytes_native_endian(buffer, (SPbyte*) &tree->tag, sizeof(SPbyte), 1);
+	
+	//encode the weight..
+	_mot_write_bytes_native_endian(buffer, (SPbyte*) &tree->weight, sizeof(SPlong), 1);
+	
+	//encode the data..
+	switch(tree->tag)
+	{
+		case MOT_TAG_BYTE: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPbyte), tree->length); break;
+		case MOT_TAG_SHORT: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPshort), tree->length); break;
+		case MOT_TAG_INT: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPint), tree->length); break;
+		case MOT_TAG_LONG: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPlong), tree->length); break;
+		case MOT_TAG_FLOAT: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPfloat), tree->length); break;
+		case MOT_TAG_DOUBLE: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPdouble), tree->length); break;
+	}
+	
+	_motWriteBinary(tree->major, buffer);
+	_motWriteBinary(tree->minor, buffer);
 }
 SPbuffer motWriteBinary(MOT_tree* tree)
 {
@@ -604,18 +626,49 @@ SPbuffer motWriteBinary(MOT_tree* tree)
 	return buffer;
 }
 
-/*
-static void _motReadBinary(const SPbyte* data, SPsize length)
+
+static MOT_tree* _motReadBinary(const SPubyte** memory, SPsize* length)
 {
+	SPbyte tag;
+	MOT_READ_GENERIC(&tag, sizeof(SPbyte), _mot_memcpy, return NULL);
 	
+	if(tag == MOT_TAG_NULL)
+		return NULL;
+	
+	MOT_tree* tree;
+	MOT_CHECKED_CALLOC(tree, 1, sizeof(MOT_tree), return NULL);
+	MOT_READ_GENERIC(&tree->weight, sizeof(SPlong), _mot_swapped_memcpy, return NULL);
+	tree->tag = tag;
+	
+	if(tag != MOT_TAG_ROOT)
+	{
+		SPsize readLength = 0;
+		switch(tag)
+		{
+			case MOT_TAG_BYTE: readLength = sizeof(SPbyte); break;
+			case MOT_TAG_SHORT: readLength = sizeof(SPshort); break;
+			case MOT_TAG_INT: readLength = sizeof(SPint); break;
+			case MOT_TAG_LONG: readLength = sizeof(SPlong); break;
+		}
+		if(readLength)
+		{
+			MOT_CHECKED_CALLOC(tree->payload.data, readLength, sizeof(SPbyte), return NULL);
+			MOT_READ_GENERIC(tree->payload.data, readLength, _mot_swapped_memcpy, return NULL);
+			tree->length = readLength;
+		}
+	}
+	tree->major = _motReadBinary(memory, length);
+	tree->minor = _motReadBinary(memory, length);
+	return tree;
 }
 
 MOT_tree* motReadBinary(SPbuffer buffer)
 {
+	const SPubyte** memory = (const SPubyte**) &buffer.data;
+	SPsize* length = &buffer.length;
 	
+	return _motReadBinary(memory, length);
 }
-*/
-
 
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
 #pragma GCC diagnostic pop

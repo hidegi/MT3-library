@@ -52,6 +52,8 @@ typedef struct
 	struct MOT_node* major;
 	struct MOT_node* minor;
 } MOT_branch;
+
+
 struct MOT_node
 {
 	SPlong weight;
