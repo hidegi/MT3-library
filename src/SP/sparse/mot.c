@@ -695,22 +695,13 @@ static MOT_tree* _motReadBinary(const SPubyte** memory, SPsize* length)
 
 	if(tag != MOT_TAG_ROOT)
 	{
-	    if(tag != MOT_TAG_STRING && !(tag & MOT_TAG_ARRAY))
+	    if(!(tag & MOT_TAG_ARRAY) && tag != MOT_TAG_STRING)
 	    {
 	        tree->length = _mot_length_of(tag);
 	        if(tree->length)
 	        {
 	            MOT_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return NULL);
 	            MOT_READ_GENERIC(tree->payload.data, tree->length, _mot_swapped_memcpy, return NULL);
-            }
-        }
-        else if(tag == MOT_TAG_STRING || tag == (MOT_TAG_BYTE | MOT_TAG_ARRAY))
-        {
-            MOT_READ_GENERIC(&tree->length, sizeof(SPlong), _mot_swapped_memcpy, return NULL);
-            if(tree->length)
-            {
-                MOT_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return NULL);
-                MOT_READ_GENERIC(tree->payload.data, tree->length, _mot_memcpy, return NULL);
             }
         }
         else
@@ -723,6 +714,12 @@ static MOT_tree* _motReadBinary(const SPubyte** memory, SPsize* length)
 
                 switch(scalar)
                 {
+                    case MOT_TAG_BYTE:
+                    case MOT_TAG_STRING:
+                    {
+                        MOT_READ_GENERIC(tree->payload.data, tree->length, _mot_memcpy, return NULL);
+                        break;
+                    }
                     case MOT_TAG_SHORT:
                     case MOT_TAG_INT:
                     case MOT_TAG_LONG:

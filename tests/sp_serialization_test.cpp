@@ -169,7 +169,15 @@ void test_write_binary()
     motInsertArray(tree, "doubles", MOT_TAG_DOUBLE, 10, doubles);
 	SP_ASSERT_NOT_NULL(motSearch(tree, "doubles"));
 
+    SPbyte* bytes = (SPbyte*) motAllocChunk(sizeof(SPbyte) * 20);
+    for(int i = 0; i < 20; i++)
+        bytes[i] = 5 * i;
+    motInsertArray(tree, "bytes", MOT_TAG_BYTE, 20, bytes);
+	SP_ASSERT_NOT_NULL(motSearch(tree, "bytes"));
 	SPbuffer buffer = motWriteBinary(tree);
+
+    //const char** strings;
+    //motInsertArray(tree, "strings", MOT_TAG_STRING, 10, strings);
 
 	//printByteArrayInBinary((const unsigned char*) buffer.data, buffer.length);
 	printf("expected:\n");
@@ -183,6 +191,7 @@ void test_write_binary()
 	free(doubles);
 	free(floats);
 	free(shorts);
+	free(bytes);
 
 	motFreeTree(tree);
     SP_DEBUG("%lld bytes", buffer.length);

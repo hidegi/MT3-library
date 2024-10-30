@@ -117,10 +117,6 @@ SP_API void motInsertString(MOT_tree* tree, const SPchar* name, const SPchar* va
 SP_API void motInsertTree(MOT_tree* tree, MOT_tree* value);
 
 SP_API void motInsertArray(MOT_tree* tree, const SPchar* name, MOT_tag tag, SPsize length, const void* value);
-SP_API void motInsertByteArray(MOT_tree* tree, const SPchar* name, MOT_byte_array value);
-SP_API void motInsertIntArray(MOT_tree* tree, const SPchar* name, MOT_int_array value);
-SP_API void motInsertLongArray(MOT_tree* tree, const SPchar* name, MOT_long_array value);
-SP_API void motInsertStringArray(MOT_tree* tree, const SPchar* name, MOT_long_array value);
 SP_API MOT_tree* motSearch(MOT_tree* tree, const char* name);
 
 SP_API void motDelete(const SPchar* name);
