@@ -1,5 +1,6 @@
 #include "SP/sparse/mot.h"
 #include <errno.h>
+#include <stdarg.h>
 
 /*
  *  root nodes should have tag MOT_TAG_ROOT (there is always only one root-node for each tree)!!
@@ -223,9 +224,16 @@ MOT_tree* motAllocTree(const SPchar* name)
 	if(!name)
 	{
 		SP_WARNING("Tree must have a name");
+		free(root);
 		return NULL;
 	}
 	root->weight = _mot_sdbm(name);
+	if(root->weight == 0)
+	{
+	    SP_WARNING("Name cannot be empty");
+	    free(root);
+	    return NULL;
+	}
 	root->tag = MOT_TAG_ROOT;
 	root->major = root->minor = NULL;
 	return root;
@@ -293,9 +301,11 @@ static void _mot_insert_bytes(MOT_tree* tree, SPlong weight, MOT_tag tag, SPsize
 
 static void _mot_insert_root(MOT_tree* tree, MOT_tree* value)
 {
-    SP_ASSERT(tree, "Cannot Insert integer to empty tree");
+    SP_ASSERT(tree, "Cannot insert tree to empty tree");
+    SP_ASSERT(value, "Cannot insert empty to empty tree");
     SP_ASSERT(value->weight != tree->weight, "Name has already been given to a node");
-    SP_ASSERT(tree->weight != MOT_TAG_ROOT, "Cannot insert data to root-or branch-nodes");
+    SP_ASSERT(tree->tag == MOT_TAG_ROOT, "Root-node must be a tree");
+    SP_ASSERT(value->tag == MOT_TAG_ROOT, "Inserted node must be a tree");
 
     SPbool isMajor = (value->weight > tree->weight);
     MOT_tree* primary  = isMajor ? tree->major : tree->minor;
@@ -417,7 +427,7 @@ void* motAllocChunk(SPsize size)
  *  debug
  *<==========================================================>*/
 
-const char* _mot_type_to_str(MOT_tag tag)
+const char* _mot_tag_to_str(MOT_tag tag)
 {
 	if(tag & MOT_TAG_ARRAY)
 	{
@@ -464,7 +474,7 @@ void _mot_print_tree(const MOT_tree* tree, int level)
 			MOT_tag scalar = tree->tag & ~MOT_TAG_ARRAY;
 			SPsize stride = _mot_length_of(tree->tag & ~MOT_TAG_ARRAY);
 			
-			printf("%s (length: %lld stride: %lld) (%lld):\n", _mot_type_to_str(tree->tag), tree->length, stride, tree->weight);
+			printf("%s (length: %lld stride: %lld) (%lld):\n", _mot_tag_to_str(tree->tag), tree->length, stride, tree->weight);
 			
 			for(int i = 0; i < level + 1; i++)
 				printf("\t");
@@ -531,7 +541,7 @@ void _mot_print_tree(const MOT_tree* tree, int level)
 					SPlong value = 0;
 					memcpy(&value, buffer, tree->length * sizeof(SPbyte));
 					
-					printf("%s (%lld): %lld\n", _mot_type_to_str(tree->tag), tree->weight, value);
+					printf("%s (%lld): %lld\n", _mot_tag_to_str(tree->tag), tree->weight, value);
 					
 					break;
 				}
@@ -547,7 +557,7 @@ void _mot_print_tree(const MOT_tree* tree, int level)
 						double _d;
 					} value;
 					memcpy(((tree->tag == MOT_TAG_FLOAT) ? (void*)&value._f : (void*)&value._d), buffer, tree->length * sizeof(SPbyte));
-					printf("%s (%lld): %f\n", _mot_type_to_str(tree->tag), tree->weight, (tree->tag == MOT_TAG_FLOAT) ? value._f : value._d);
+					printf("%s (%lld): %f\n", _mot_tag_to_str(tree->tag), tree->weight, (tree->tag == MOT_TAG_FLOAT) ? value._f : value._d);
 					break;
 				}
 				
@@ -576,43 +586,80 @@ void motPrintTree(const MOT_tree* tree)
 	printf("\n");
 }
 
-static void _mot_write_bytes_native_endian(SPbuffer* buffer, const SPbyte* src, SPsize stride, SPsize amount)
+void printByteArrayInBinary(const unsigned char *byteArray, size_t size, int level) {
+    for (size_t i = 0; i < size; i++) {
+        unsigned char byte = byteArray[i];
+        for(int i = 0; i < level; i++)
+            printf("\t");
+        printf("    ");
+        // Print the byte in binary
+        for (int j = 7; j >= 0; j--) {
+            // Use bitwise AND and right shift to get each bit
+            printf("%d", (byte >> j) & 1);
+        }
+        printf("\n"); // New line after each byte
+    }
+}
+
+static void _mot_write_bytes_native_endian(SPbuffer* buffer, const SPubyte* src, SPsize amount, int level)
 {	
-	SPbyte* chunk = motAllocChunk(stride * amount);
-	_mot_swapped_memcpy(chunk, src, stride * amount);
-	spBufferAppend(buffer, chunk, stride * amount);
+	SPbyte* chunk = motAllocChunk(amount);
+	_mot_swapped_memcpy(chunk, src, amount);
+	spBufferAppend(buffer, chunk, amount);
+
+	printByteArrayInBinary(src, amount, level);
 	free(chunk);
 }
 
-static void _motWriteBinary(MOT_tree* tree, SPbuffer* buffer)
+#define _mot_print_indent(ntabs, msg, ...)\
+do\
+{\
+    for(int i = 0; i < ntabs; i++)\
+        printf("\t");\
+    printf((msg), ##__VA_ARGS__);\
+    printf("\n");\
+} while(0)
+
+static void _motWriteBinary(MOT_tree* tree, SPbuffer* buffer, int level)
 {
 	if(!tree)
 	{
 		//signal that this node is done..
+        _mot_print_indent(level, "(end)");
+
+        //encode the tag
 		MOT_tag null = MOT_TAG_NULL;
-		_mot_write_bytes_native_endian(buffer, (SPbyte*) &null, sizeof(SPbyte), 1);
+		_mot_write_bytes_native_endian(buffer, (const SPubyte*) &null, sizeof(SPbyte), level);
 		return;
 	}
-	
 	//encode the tag..
-	_mot_write_bytes_native_endian(buffer, (SPbyte*) &tree->tag, sizeof(SPbyte), 1);
-	
+	_mot_print_indent(level, "tag: (%s)", _mot_tag_to_str(tree->tag));
+	_mot_write_bytes_native_endian(buffer, (const SPubyte*) &tree->tag, sizeof(SPbyte), level);
+
 	//encode the weight..
-	_mot_write_bytes_native_endian(buffer, (SPbyte*) &tree->weight, sizeof(SPlong), 1);
-	
-	//encode the data..
+    _mot_print_indent(level, "weight: %lld", tree->weight);
+	_mot_write_bytes_native_endian(buffer, (const SPubyte*) &tree->weight, sizeof(SPlong), level);
+
+
+    if(tree->tag != MOT_TAG_ROOT)
+    {
+        //encode the data..
+        _mot_print_indent(level, "data: (%lld byte(s))", tree->length);
+	}
 	switch(tree->tag)
 	{
-		case MOT_TAG_BYTE: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPbyte), tree->length); break;
-		case MOT_TAG_SHORT: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPshort), tree->length); break;
-		case MOT_TAG_INT: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPint), tree->length); break;
-		case MOT_TAG_LONG: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPlong), tree->length); break;
-		case MOT_TAG_FLOAT: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPfloat), tree->length); break;
-		case MOT_TAG_DOUBLE: _mot_write_bytes_native_endian(buffer, tree->payload.data, sizeof(SPdouble), tree->length); break;
+		case MOT_TAG_BYTE: _mot_write_bytes_native_endian(buffer, (const SPubyte*)tree->payload.data, tree->length, level); break;
+		case MOT_TAG_SHORT: _mot_write_bytes_native_endian(buffer, (const SPubyte*)tree->payload.data, tree->length, level); break;
+		case MOT_TAG_INT: _mot_write_bytes_native_endian(buffer, (const SPubyte*)tree->payload.data, tree->length, level); break;
+		case MOT_TAG_LONG: _mot_write_bytes_native_endian(buffer, (const SPubyte*)tree->payload.data, tree->length, level); break;
+		case MOT_TAG_FLOAT: _mot_write_bytes_native_endian(buffer, (const SPubyte*)tree->payload.data, tree->length, level); break;
+		case MOT_TAG_DOUBLE: _mot_write_bytes_native_endian(buffer, (const SPubyte*)tree->payload.data, tree->length, level); break;
 	}
-	
-	_motWriteBinary(tree->major, buffer);
-	_motWriteBinary(tree->minor, buffer);
+	_mot_print_indent(level + 1, "major");
+	_motWriteBinary(tree->major, buffer, level + 1);
+
+	_mot_print_indent(level + 1, "minor");
+	_motWriteBinary(tree->minor, buffer, level + 1);
 }
 SPbuffer motWriteBinary(MOT_tree* tree)
 {
@@ -622,7 +669,7 @@ SPbuffer motWriteBinary(MOT_tree* tree)
 		SP_WARNING("Cannot serialize empty tree");
 		return buffer;
 	}
-	_motWriteBinary(tree, &buffer);
+	_motWriteBinary(tree, &buffer, 0);
 	return buffer;
 }
 
@@ -642,14 +689,7 @@ static MOT_tree* _motReadBinary(const SPubyte** memory, SPsize* length)
 	
 	if(tag != MOT_TAG_ROOT)
 	{
-		SPsize readLength = 0;
-		switch(tag)
-		{
-			case MOT_TAG_BYTE: readLength = sizeof(SPbyte); break;
-			case MOT_TAG_SHORT: readLength = sizeof(SPshort); break;
-			case MOT_TAG_INT: readLength = sizeof(SPint); break;
-			case MOT_TAG_LONG: readLength = sizeof(SPlong); break;
-		}
+		SPsize readLength = _mot_length_of(tag);
 		if(readLength)
 		{
 			MOT_CHECKED_CALLOC(tree->payload.data, readLength, sizeof(SPbyte), return NULL);

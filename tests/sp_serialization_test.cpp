@@ -167,12 +167,15 @@ void test_write_binary()
 	//printByteArrayInBinary((const unsigned char*) buffer.data, buffer.length);
 	printf("expected:\n");
 	motPrintTree(tree);
-	
+    printf("\n");
 	MOT_tree* output = motReadBinary(buffer);
+	printf("actual:\n");
 	SP_ASSERT_NOT_NULL(output);
 	motPrintTree(output);
 	motFreeTree(output);
 	motFreeTree(tree);
+    SP_DEBUG("%lld bytes", buffer.length);
+	sp::writeData("output.mot", buffer.data, buffer.length);
 	//SP_DEBUG("%lld bytes", buffer.length);
 	spBufferFree(&buffer);
 }
