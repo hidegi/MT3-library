@@ -3,10 +3,8 @@
 #include <stdarg.h>
 
 /*
- *  root nodes should have tag MOT_TAG_ROOT (there is always only one root-node for each tree)!!
- *  branch nodes have a payload of NULL but connect the tree further..
+ *  root nodes have tag MOT_TAG_ROOT..
  *  to serialize/deserialize read or write all major branches first and then all minor branches..
- *  this makes the tree one-dimensional..
  *  append the NULL tag to the end of each branch..
  */
 
