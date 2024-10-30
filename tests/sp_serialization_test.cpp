@@ -148,22 +148,29 @@ void test_write_binary()
 	motInsertByte(tree, "fjiaw2", 46);
 	motInsertLong(tree, "fjiaw3", 4565);
 	motInsertFloat(tree, "sun", 45.34);
-	//motInsertInt(tree, "y", 2);
-	/*
-	motInsertInt(tree, "fjiaw", 300);
-	motInsertInt(tree, "motex", 220);
-	motInsertInt(tree, "value", 30);
-	motInsertInt(tree, "nmg", -14543);
-	motInsertShort(tree, "nmg0", -14543);
-	motInsertByte(tree, "nmg1", true);
-	motInsertByte(tree, "nmg2", false);
-	motInsertLong(tree, "nmg3", 495845);
-	motInsertDouble(tree, "byte_array", 1.998E+58);
-	motInsertFloat(tree, "byte_array1", 0.00001f);
-	*/
-	
-	
+	motInsertString(tree, "hda", "hidegi was here..");
+
+
+	SPshort* shorts = (SPshort*) motAllocChunk(sizeof(SPshort) * 10);
+	for(int i = 0; i < 10; i++)
+	    shorts[i] = 1666 + i;
+    motInsertArray(tree, "shorts", MOT_TAG_SHORT, 10, shorts);
+    SP_ASSERT_NOT_NULL(motSearch(tree, "shorts"));
+
+    SPfloat* floats = (SPfloat*) motAllocChunk(sizeof(SPfloat) * 10);
+    for(int i = 0; i < 10; i++)
+        floats[i]= 3.45 * 10.f * i;
+    motInsertArray(tree, "floats", MOT_TAG_FLOAT, 10, floats);
+    SP_ASSERT_NOT_NULL(motSearch(tree, "floats"));
+
+    SPdouble* doubles= (SPdouble*) motAllocChunk(sizeof(SPdouble) * 10);
+    for(int i = 0; i < 10; i++)
+        doubles[i]= 0.3f * i * i + 1.4 * i + 5.2;
+    motInsertArray(tree, "doubles", MOT_TAG_DOUBLE, 10, doubles);
+	SP_ASSERT_NOT_NULL(motSearch(tree, "doubles"));
+
 	SPbuffer buffer = motWriteBinary(tree);
+
 	//printByteArrayInBinary((const unsigned char*) buffer.data, buffer.length);
 	printf("expected:\n");
 	motPrintTree(tree);
@@ -172,7 +179,11 @@ void test_write_binary()
 	printf("actual:\n");
 	SP_ASSERT_NOT_NULL(output);
 	motPrintTree(output);
-	motFreeTree(output);
+
+	free(doubles);
+	free(floats);
+	free(shorts);
+
 	motFreeTree(tree);
     SP_DEBUG("%lld bytes", buffer.length);
 	sp::writeData("output.mot", buffer.data, buffer.length);
