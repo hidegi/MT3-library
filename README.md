@@ -3,7 +3,7 @@
 </p>
 
 # The MOT-library (SP 1994)
-This is a framework to serialize a JSON-file to a MOT-file..\
+This is a framework to serialize data structures into a binary-tree..\
 MOT is an open format that encodes an arbitrary structure to binary (similar to Mojang's NBT format)..\
 However, the MOT-format uses an actual "binary tree", unlike NBT, alluding to use a binary\
 tree, when merely just the representation is binary..
