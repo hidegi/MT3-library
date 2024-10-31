@@ -433,14 +433,16 @@ void motInsertArray(MOT_tree* tree, const SPchar* name, MOT_tag tag, SPsize leng
 		return;
 	}
 	
-	if(!(tag & ~MOT_TAG_ARRAY))
+	MOT_tag scalar = tag & ~MOT_TAG_ARRAY;
+	if(scalar == MOT_TAG_NULL)
 	{
 		SP_WARNING("Expected type");
 		return;
 	}
 	
+	
 	MOT_CHECK_INPUT(name);
-	if(tag != MOT_TAG_STRING)
+	if(scalar != MOT_TAG_STRING)
 	{	
 		_mot_insert_bytes(tree, hash, tag | MOT_TAG_ARRAY, length * _mot_length_of(tag), (const SPbyte*)data);
 	}
