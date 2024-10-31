@@ -180,7 +180,7 @@ void test_write_binary()
 		"motex",
 		"betelgus"
 	}; //12 bytes
-	motInsertArray(tree, "names", MOT_TAG_STRING, 3, (const SPchar**)strings);
+	motInsertArray(tree, "names", (MOT_tag) (MOT_TAG_STRING | MOT_TAG_ARRAY), 3, (const SPchar**)strings);
 	
 	SPbuffer buffer = motWriteBinary(tree);
 	
