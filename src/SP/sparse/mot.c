@@ -846,9 +846,9 @@ static MOT_tree* _motReadBinary(const SPubyte** memory, SPsize* length)
 MOT_tree* motReadBinary(SPbuffer buffer)
 {
 	const SPubyte** memory = (const SPubyte**) &buffer.data;
-	SPsize* length = &buffer.length;
+	SPsize length = buffer.length;
 	
-	return _motReadBinary(memory, length);
+	return _motReadBinary(memory, &length);
 }
 
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
