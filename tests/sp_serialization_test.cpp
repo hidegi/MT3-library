@@ -191,14 +191,12 @@ void test_write_binary()
 	printf("actual:\n");
 	SP_ASSERT_NOT_NULL(output);
 	motPrintTree(output);
-	//motPrintTree(tree);
 
 	free(doubles);
 	free(floats);
 	free(shorts);
 	free(bytes);
-
-	//motFreeTree(tree);
+	//write data..
 	SP_ASSERT_TRUE(sp::writeData("output.mot", buffer.data, buffer.length));
 	
 	SP_DEBUG("%lld bytes written to output.mot", buffer.length);
