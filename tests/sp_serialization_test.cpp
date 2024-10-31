@@ -150,7 +150,6 @@ void test_write_binary()
 	motInsertFloat(tree, "sun", 45.34);
 	motInsertString(tree, "hda", "hidegi was here..");
 
-
 	SPshort* shorts = (SPshort*) motAllocChunk(sizeof(SPshort) * 10);
 	for(int i = 0; i < 10; i++)
 	    shorts[i] = 1666 + i;
@@ -174,12 +173,17 @@ void test_write_binary()
         bytes[i] = 5 * i;
     motInsertArray(tree, "bytes", MOT_TAG_BYTE, 20, bytes);
 	SP_ASSERT_NOT_NULL(motSearch(tree, "bytes"));
+	
+	const char* strings[] = 
+	{
+		"hidegi",
+		"motex",
+		"betelgus"
+	}; //12 bytes
+	motInsertArray(tree, "names", MOT_TAG_STRING, 3, (const SPchar**)strings);
+	
 	SPbuffer buffer = motWriteBinary(tree);
-
-    //const char** strings;
-    //motInsertArray(tree, "strings", MOT_TAG_STRING, 10, strings);
-
-	//printByteArrayInBinary((const unsigned char*) buffer.data, buffer.length);
+	
 	printf("expected:\n");
 	motPrintTree(tree);
     printf("\n");
@@ -187,17 +191,49 @@ void test_write_binary()
 	printf("actual:\n");
 	SP_ASSERT_NOT_NULL(output);
 	motPrintTree(output);
+	//motPrintTree(tree);
 
 	free(doubles);
 	free(floats);
 	free(shorts);
 	free(bytes);
 
-	motFreeTree(tree);
-    SP_DEBUG("%lld bytes", buffer.length);
-	sp::writeData("output.mot", buffer.data, buffer.length);
-	//SP_DEBUG("%lld bytes", buffer.length);
+	//motFreeTree(tree);
+	SP_ASSERT_TRUE(sp::writeData("output.mot", buffer.data, buffer.length));
+	
+	SP_DEBUG("%lld bytes written to output.mot", buffer.length);
 	spBufferFree(&buffer);
+	
+}
+
+void test_string_array()
+{
+	MOT_tree* tree = motAllocTree("head");
+	SP_ASSERT_NOT_NULL(tree);
+	SPbyte* bytes = (SPbyte*) motAllocChunk(sizeof(SPbyte) * 20);
+    for(int i = 0; i < 20; i++)
+        bytes[i] = 5 * i;
+    motInsertArray(tree, "bytes", MOT_TAG_BYTE, 20, bytes);
+	SP_ASSERT_NOT_NULL(motSearch(tree, "bytes"));
+	
+	motInsertInt(tree, "x", 1);
+	const char* strings[] = 
+	{
+		"hd",
+		"hd"
+	}; //12 bytes
+	motInsertArray(tree, "names", MOT_TAG_STRING, 2, (const SPchar**)strings);
+	
+	SPbuffer buffer = motWriteBinary(tree);
+	
+	
+	MOT_tree* output = motReadBinary(buffer);
+	SP_ASSERT_NOT_NULL(output);
+	motPrintTree(output);
+	spBufferFree(&buffer);
+	motFreeTree(output);
+	motFreeTree(tree);
+	free(bytes);
 }
 
 int main(int argc, char** argv)

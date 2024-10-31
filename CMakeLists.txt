@@ -59,6 +59,12 @@ if(APPLE)
 	set(SP_PLATFORM_MACOS 1)
 endif()
 
+sp_set_option(SP_OUTPUT_DEBUG OFF BOOL "Print the read and write procedures")
+
+if(SP_OUTPUT_DEBUG)
+	set(MOT_PRINT_OUTPUT_DEBUG 1)
+endif()
+
 configure_file(
 	"${CMAKE_SOURCE_DIR}/include/SP/config.h.in"
 	"${CMAKE_SOURCE_DIR}/include/SP/config.h" ESCAPE_QUOTES)
@@ -66,6 +72,8 @@ configure_file(
 sp_set_option(BUILD_SHARED_LIBS OFF BOOL "Build shared libraries")
 sp_set_option(SP_BUILD_EXAMPLES ON BOOL "Build the MOT example programs")
 sp_set_option(SP_BUILD_TESTS ON BOOL "Build tests")
+
+
 
 
 include_directories(${CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES} ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/tests)

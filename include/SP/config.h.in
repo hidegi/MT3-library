@@ -8,6 +8,8 @@
 #define SP_VERSION_MAJOR @playground_VERSION_MAJOR@
 #define SP_VERSION_MINOR @playground_VERSION_MINOR@
 #define SP_VERSION_PATCH @playground_VERSION_PATCH@
+
+#cmakedefine MOT_PRINT_OUTPUT_DEBUG
 #cmakedefine SP_STATIC_BUILD
 #cmakedefine SP_PLATFORM_WINDOWS
 #cmakedefine SP_PLATFORM_MACOS
