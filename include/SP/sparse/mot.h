@@ -26,16 +26,21 @@ extern "C" {
  
 typedef enum
 {
-	MOT_TAG_NULL 	= 0,
-	MOT_TAG_ROOT    = 1,
-	MOT_TAG_BYTE    = 2,
-	MOT_TAG_SHORT   = 3,
-	MOT_TAG_INT     = 4,
-	MOT_TAG_LONG    = 5,
-	MOT_TAG_FLOAT 	= 6,
-	MOT_TAG_DOUBLE  = 7,
-	MOT_TAG_STRING 	= 8,
-	MOT_TAG_ARRAY	= 0x80
+	MOT_TAG_NULL 	= 0, // NULL
+	MOT_TAG_ROOT    = 1, // ROOT
+	MOT_TAG_BYTE    = 2, // BYTE
+	MOT_TAG_SHORT   = 3, // SHORT
+	MOT_TAG_INT     = 4, // INT
+	MOT_TAG_LONG    = 5, // LONG
+	MOT_TAG_FLOAT 	= 6, // FLOAT
+	MOT_TAG_DOUBLE  = 7, // DOUBLE
+	MOT_TAG_STRING 	= 8, // STRING	
+	MOT_TAG_ARRAY	= 0x80, //ARRAY
+	// optimized list of roots without writing tag and weight on disk.. (only applies to roots!!)
+	// elements are indexed from 1 to n, since no node can have a weight of 0..
+	// in memory, this is a linked list, where the major branch points to the next element,
+	// and the minor one to the last element (mutually exclusive with anything but MOT_TAG_ROOT)..
+	MOT_TAG_LIST	= 9,
 } MOT_tag;
 
 typedef enum
@@ -56,9 +61,9 @@ typedef struct
 
 struct MOT_node
 {
-	SPlong weight;
-	MOT_tag tag;
-	SPsize length;
+	SPlong weight; // 8 bytes
+	MOT_tag tag;   // 1 byte
+	SPsize length; // 8 bytes
 	union
 	{
 		SPbyte* data;
@@ -66,8 +71,9 @@ struct MOT_node
 		//does not hold the root-node
 		//but only major and minor branches..
 		MOT_branch branch; 
-	} payload;
+	} payload; //length bytes
 	
+	// total bytes written = 17 + length bytes
 	struct MOT_node* major;
 	struct MOT_node* minor;
 };

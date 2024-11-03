@@ -234,13 +234,38 @@ void test_string_array()
 	free(bytes);
 }
 
+void test_root_insert()
+{
+	MOT_tree* parent = motAllocTree("parent");
+	SP_ASSERT_NOT_NULL(parent);
+	
+	MOT_tree* child = motAllocTree("child");
+	SP_ASSERT_NOT_NULL(child);
+	motInsertByte(child, "byte", 2);
+	motInsertTree(parent, child);
+	motInsertByte(parent, "byte", 1);
+	
+	SPbuffer buffer = motWriteBinary(parent);
+	MOT_tree* output = motReadBinary(buffer);
+	SP_ASSERT_NOT_NULL(output);
+	
+	printf("expected:\n");
+	motPrintTree(parent);
+	printf("actual:\n");
+	motPrintTree(output);
+	motFreeTree(parent);
+	motFreeTree(output);
+	SP_DEBUG("%lld bytes", buffer.length);
+	spBufferFree(&buffer);
+}
+
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
 	//SP_TEST_ADD(test_serialization_trivial);
 	//SP_TEST_ADD(test_if_all_available);
 	//SP_TEST_ADD(test_if_all_available);
-	SP_TEST_ADD(test_write_binary);
+	SP_TEST_ADD(test_root_insert);
 
 	spTestRunAll();
 	spTestTerminate();

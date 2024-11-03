@@ -7,6 +7,28 @@
  *  to serialize/deserialize read or write all major branches first and then all minor branches..
  *  append the NULL tag to the end of each branch..
  */
+ 
+ /*
+  *------------------------------------------------------------------------------------------------------------------
+  *	JSON parsing rule
+  *------------------------------------------------------------------------------------------------------------------
+  *	
+  *	number:
+  *	depending on value range, converts to apprpriate format
+  *	
+  *	boolean:
+  *	converts to BYTE
+  *
+  *	string:
+  *	converts to STRING
+  *
+  *	array:
+  *	converts to ROOT (nodes indexed with values from 1 to n-elements, branching off from the median of n)
+  *	(starting from 1, because 0 cannot be used as weight)
+  *
+  *	object:
+  * converts to ROOT
+  */
 
 /*
  *------------------------------------------------------------------------------------------------------------------
@@ -79,23 +101,7 @@
 			errno = MOT_ERR_MEM;					\
 			on_error;								\
 		}											\
-	} while(0)
-		
-#define MOT_CHECKED_APPEND(b, ptr, len)    	\
-    do                                      \
-    {                                       \
-    if(spBufferAppend((b), (ptr), (len)))   \
-        return MOT_ERR_MEM;                 \
-    } while(0)
-		
-#define MOT_DUMP_NUM(type, x)                       \
-    do                                              \
-    {                                               \
-        type temp = x;                              \
-        ne2be(&temp, sizeof temp);                  \
-        MOT_CHECKED_APPEND(b, &temp, sizeof temp); 	\
-    } while(0)
-		
+	} while(0)	
 	
 #define MOT_CHECK_INPUT(_name)									\
 	long long hash = 0;											\
@@ -501,30 +507,29 @@ const char* _mot_tag_to_str(MOT_tag tag)
 		MOT_tag scalar = tag & ~MOT_TAG_ARRAY;
 		switch(scalar)
 		{
-			case MOT_TAG_BYTE: return "byte array";
-			case MOT_TAG_SHORT: return "short array";
-			case MOT_TAG_INT: return "int array";
-			case MOT_TAG_LONG: return "long array";
-			case MOT_TAG_FLOAT: return "float array";
-			case MOT_TAG_DOUBLE: return "double array";
-			case MOT_TAG_STRING: return "string array";
-			case MOT_TAG_NULL: return "null";
+			case MOT_TAG_BYTE: return "BYTE ARRAY";
+			case MOT_TAG_SHORT: return "SHORT ARRAY";
+			case MOT_TAG_INT: return "INT ARRAY";
+			case MOT_TAG_LONG: return "LONG ARRAY";
+			case MOT_TAG_FLOAT: return "FLOAT ARRAY";
+			case MOT_TAG_DOUBLE: return "DOUBLE ARRAY";
+			case MOT_TAG_STRING: return "STRING ARRAY";
 		}
 	}
-	
-    switch(tag)
-    {
-        case MOT_TAG_BYTE: return "byte";
-        case MOT_TAG_SHORT: return "short";
-        case MOT_TAG_INT: return "int";
-        case MOT_TAG_LONG: return "long";
-        case MOT_TAG_FLOAT: return "float";
-        case MOT_TAG_DOUBLE: return "double";
-        case MOT_TAG_STRING: return "string";
-        case MOT_TAG_ARRAY: return "array";
-        case MOT_TAG_ROOT: return "root";
-    }
-
+	else
+	{
+		switch(tag)
+		{
+			case MOT_TAG_BYTE: return "BYTE";
+			case MOT_TAG_SHORT: return "SHORT";
+			case MOT_TAG_INT: return "INT";
+			case MOT_TAG_LONG: return "LONG";
+			case MOT_TAG_FLOAT: return "FLOAT";
+			case MOT_TAG_DOUBLE: return "DOUBLE";
+			case MOT_TAG_STRING: return "STRING";
+			case MOT_TAG_ROOT: return "ROOT";
+		}
+	}
     return "null";
 }
 
@@ -532,9 +537,10 @@ void _mot_print_tree(const MOT_tree* tree, int level)
 {
 	if(tree)
 	{
+		/*
 		for(int i = 0; i < level; i++)
             printf("\t");
-		
+		*/
 		if(tree->tag & MOT_TAG_ARRAY)
 		{
 			
@@ -610,7 +616,7 @@ void _mot_print_tree(const MOT_tree* tree, int level)
 				
 				case MOT_TAG_ROOT:
 				{
-					printf("root (%lld):\n", tree->weight);
+					printf("ROOT (%lld):\n", tree->weight);
 					_mot_print_tree(tree->payload.branch.major, level + 1);
 					_mot_print_tree(tree->payload.branch.minor, level + 1);
 					break;
@@ -655,14 +661,25 @@ void _mot_print_tree(const MOT_tree* tree, int level)
 				}
 			}
 		}
-		for(int i = 0; i < level + 1; i++)
-            printf("\t");
-		printf("major:\n");
-		_mot_print_tree(tree->major, level + 1);
-		for(int i = 0; i < level + 1; i++)
-            printf("\t");
-		printf("minor:\n");
-		_mot_print_tree(tree->minor, level + 1);
+		
+		
+		if(tree->major)
+		{
+			for(int i = 0; i < level + 1; i++)
+				printf("\t");
+			printf("MAJ ");
+			_mot_print_tree(tree->major, level + 1);
+			for(int i = 0; i < level + 1; i++)
+				printf("\t");
+		}
+		
+		if(tree->minor)
+		{
+			for(int i = 0; i < level + 1; i++)
+				printf("\t");
+			printf("MIN ");
+			_mot_print_tree(tree->minor, level + 1);
+		}
 	}
 }
 void motPrintTree(const MOT_tree* tree)
@@ -707,6 +724,7 @@ static void _motWriteBinary(MOT_tree* tree, SPbuffer* buffer, int level)
 		_mot_write_bytes(buffer, (const SPubyte*) &null, sizeof(SPbyte), level, SP_FALSE);
 		return;
 	}
+	
 	//encode the tag..
 	_mot_print_indent(level, "tag: (%s)", _mot_tag_to_str(tree->tag));
 	_mot_write_bytes(buffer, (const SPubyte*) &tree->tag, sizeof(SPbyte), level, SP_FALSE);
@@ -757,6 +775,13 @@ static void _motWriteBinary(MOT_tree* tree, SPbuffer* buffer, int level)
 					_mot_write_bytes(buffer, (const SPubyte*)tree->payload.data + stride * i, stride, level, SP_TRUE);
 			}
         }
+	}
+	else
+	{
+		_mot_print_indent(level + 1, "major");
+		_motWriteBinary(tree->payload.branch.major, buffer, level + 1);
+		_mot_print_indent(level + 1, "minor");
+		_motWriteBinary(tree->payload.branch.minor, buffer, level + 1);
 	}
 	_mot_print_indent(level + 1, "major");
 	_motWriteBinary(tree->major, buffer, level + 1);
@@ -839,6 +864,11 @@ static MOT_tree* _motReadBinary(const SPubyte** memory, SPsize* length)
 				}
 			}
         }
+	}
+	else
+	{
+		tree->payload.branch.major = _motReadBinary(memory, length);
+		tree->payload.branch.minor = _motReadBinary(memory, length);
 	}
 	tree->major = _motReadBinary(memory, length);
 	tree->minor = _motReadBinary(memory, length);
