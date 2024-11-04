@@ -157,8 +157,49 @@ static const void* _mot_swapped_memcpy(void* dst, const void* src, SPsize n)
     const void* ret = _mot_memcpy(dst, src, n);
     return ne2be(dst, n), ret;
 }
+SPbool _mot_is_major(struct MOT_node* node)
+{
+    return (node && node->parent) ? (node->parent->major == node) : SP_FALSE;
+}
 
-struct MOT_node* _motAllocNode(MOT_tag tag, SPlong name, SPsize length, const SPbyte* value)
+SPbool _mot_is_minor(struct MOT_node* node)
+{
+    return (node && node->parent) ? (node->parent->minor == node) : SP_FALSE;
+}
+
+SPbool _mot_is_root(struct MOT_node* node)
+{
+    return node ? node->parent == NULL : SP_FALSE;
+}
+
+static struct MOT_node* _mot_find_member(struct MOT_node* node)
+{
+    if(node)
+    {
+        if(node->parent)
+        {
+            if(node->parent->parent)
+            {
+                return _mot_is_major(node->parent) ? node->parent->parent->minor : node->parent->parent->major;
+            }
+        }
+    }
+    return NULL;
+}
+
+static void _mot_rotate_left(struct MOT_node* node)
+{
+    MOT_node* member = _mot_find_member(node);
+    SPbool isRed = member->color == MOT_COLOR_RED;
+
+}
+
+static void _mot_rotate_right(struct MOT_node* node)
+{
+
+}
+
+static struct MOT_node* _mot_alloc_node(MOT_tag tag, SPlong name, SPsize length, const SPbyte* value)
 {
 		struct MOT_node* node = NULL;
 	    MOT_CHECKED_CALLOC(node, 1, sizeof(struct MOT_node), return NULL);
@@ -178,21 +219,6 @@ struct MOT_node* _motAllocNode(MOT_tag tag, SPlong name, SPsize length, const SP
         }
 
         return node;
-}
-
-SPbool _mot_is_major(struct MOT_node* node)
-{
-    return (node && node->parent) ? (node->parent->major == node) : SP_FALSE;
-}
-
-SPbool _mot_is_minor(struct MOT_node* node)
-{
-    return (node && node->parent) ? (node->parent->minor == node) : SP_FALSE;
-}
-
-SPbool _mot_is_root(struct MOT_node* node)
-{
-    return node ? node->parent == NULL : SP_FALSE;
 }
 
 static SPsize _mot_length_of(MOT_tag tag)
@@ -327,7 +353,7 @@ static MOT_tree* _mot_insert_bytes(MOT_tree* tree, SPlong weight, MOT_tag tag, S
 		_mot_insert_bytes(primary, weight, tag, length, value);
     else
     {
-        primary = _motAllocNode(tag, weight, length, value);
+        primary = _mot_alloc_node(tag, weight, length, value);
         primary->parent = tree;
         primary->color = MOT_COLOR_RED;
         isMajor ? (tree->major = primary) : (tree->minor = primary);
@@ -350,7 +376,7 @@ static void _mot_insert_root(MOT_tree* tree, MOT_tree* value)
 		_mot_insert_root(primary, value);
     else
     {
-		primary = _motAllocNode(MOT_TAG_ROOT, value->weight, 0, NULL);
+		primary = _mot_alloc_node(MOT_TAG_ROOT, value->weight, 0, NULL);
 		primary->payload.head.major = value->major;
 		primary->payload.head.minor = value->minor;
 		free(value);
