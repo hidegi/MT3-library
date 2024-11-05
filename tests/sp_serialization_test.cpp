@@ -2,6 +2,7 @@
 #include "SP/utils/io.h"
 #include "SP/sparse/mot.h"
 
+/*
 void test_serialization_trivial()
 {
 	MOT_tree* tree = motAllocTree("head");
@@ -234,13 +235,82 @@ void test_string_array()
 	free(bytes);
 }
 
+void test_root_insert()
+{
+	MOT_tree* parent = motAllocTree("parent");
+	SP_ASSERT_NOT_NULL(parent);
+	
+	MOT_tree* child = motAllocTree("child");
+	SP_ASSERT_NOT_NULL(child);
+	motInsertByte(child, "byte", 2);
+	motInsertTree(parent, child);
+	motInsertByte(parent, "byte", 1);
+	
+	SPbuffer buffer = motWriteBinary(parent);
+	MOT_tree* output = motReadBinary(buffer);
+	SP_ASSERT_NOT_NULL(output);
+	
+	printf("expected:\n");
+	motPrintTree(parent);
+	printf("actual:\n");
+	motPrintTree(output);
+	motFreeTree(parent);
+	motFreeTree(output);
+	SP_DEBUG("%lld bytes", buffer.length);
+	spBufferFree(&buffer);
+}
+
+void test_deletion_trivial()
+{
+	MOT_tree* tree = motAllocTree("head");
+	SP_ASSERT_NOT_NULL(tree);
+
+	motInsertInt(tree, "x", 1);
+	motInsertInt(tree, "y", 2);
+	motInsertInt(tree, "fjiaw", 300);
+	motInsertInt(tree, "motex", 220);
+	motInsertInt(tree, "value", 30);
+	motInsertInt(tree, "nmg", -14543);
+	motInsertShort(tree, "nmg0", -14543);
+	motInsertByte(tree, "nmg1", true);
+	motInsertByte(tree, "nmg2", false);
+	motInsertLong(tree, "nmg3", 495845);
+	motInsertDouble(tree, "byte_array", 1.998E+58);
+	motInsertFloat(tree, "byte_array1", 0.00001f);
+
+    //SP_ASSERT_TRUE(motDelete(tree, "fjiaw"));
+	motPrintTree(tree);
+	motFreeTree(tree);
+}
+*/
+
+void test_insertion()
+{
+	MOT_tree* tree = motAllocTree("head");
+	motInsertString(&tree, "x", "x");
+	motInsertString(&tree, "y", "y");
+	motInsertString(&tree, "fjiaw", "fjiaw");
+	motInsertString(&tree, "motex", "motex");
+	motInsertString(&tree, "value", "value");
+	
+	motInsertString(&tree, "nmg", "nmg");
+	motInsertString(&tree, "nmg0", "nmg0");
+	motInsertString(&tree, "nmg1", "nmg1");
+	motInsertString(&tree, "nmg2", "nmg2");
+	motInsertString(&tree, "nmg3", "nmg3");
+	motInsertString(&tree, "byte_array", "byte_array");
+	motInsertString(&tree, "byte_array1", "byte_array1");
+	
+	motPrintTree(tree);
+	motFreeTree(tree);
+}
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
 	//SP_TEST_ADD(test_serialization_trivial);
 	//SP_TEST_ADD(test_if_all_available);
 	//SP_TEST_ADD(test_if_all_available);
-	SP_TEST_ADD(test_write_binary);
+	SP_TEST_ADD(test_insertion);
 
 	spTestRunAll();
 	spTestTerminate();
