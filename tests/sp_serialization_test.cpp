@@ -2,6 +2,7 @@
 #include "SP/utils/io.h"
 #include "SP/sparse/mot.h"
 
+/*
 void test_serialization_trivial()
 {
 	MOT_tree* tree = motAllocTree("head");
@@ -281,14 +282,35 @@ void test_deletion_trivial()
 	motPrintTree(tree);
 	motFreeTree(tree);
 }
+*/
 
+void test_insertion()
+{
+	MOT_tree* tree = motAllocTree("head");
+	motInsertString(&tree, "x", "x");
+	motInsertString(&tree, "y", "y");
+	motInsertString(&tree, "fjiaw", "fjiaw");
+	motInsertString(&tree, "motex", "motex");
+	motInsertString(&tree, "value", "value");
+	
+	motInsertString(&tree, "nmg", "nmg");
+	motInsertString(&tree, "nmg0", "nmg0");
+	motInsertString(&tree, "nmg1", "nmg1");
+	motInsertString(&tree, "nmg2", "nmg2");
+	motInsertString(&tree, "nmg3", "nmg3");
+	motInsertString(&tree, "byte_array", "byte_array");
+	motInsertString(&tree, "byte_array1", "byte_array1");
+	
+	motPrintTree(tree);
+	motFreeTree(tree);
+}
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
 	//SP_TEST_ADD(test_serialization_trivial);
 	//SP_TEST_ADD(test_if_all_available);
 	//SP_TEST_ADD(test_if_all_available);
-	SP_TEST_ADD(test_deletion_trivial);
+	SP_TEST_ADD(test_insertion);
 
 	spTestRunAll();
 	spTestTerminate();

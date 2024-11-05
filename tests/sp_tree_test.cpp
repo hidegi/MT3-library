@@ -1,10 +1,17 @@
 #include <SP/test/unit.h>
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
+unsigned long long values[][20] =
+{
+	{554, 865, 140, 9, 893, 859, 616, 146, 559, 166, 	852, 525, 538, 241, 540, 994, 699, 730, 701, 548}
+};
 struct Node
 {
     bool red;
-    int data;
+    unsigned long long data;
     Node* parent;
     Node* major;
     Node* minor;
@@ -36,7 +43,7 @@ Node* nodeFindMember(Node* n)
     return (isMajor(n->parent)) ? n->parent->parent->minor : n->parent->parent->major;
 }
 
-Node* nodeAlloc(int value)
+Node* nodeAlloc(unsigned long long value)
 {
     Node* n = new Node;
     n->data = value;
@@ -62,7 +69,7 @@ void nodePrintImpl(Node* n, int level)
     {
         for(int i = 0; i < level; i++)
             printf("\t");
-        printf("(%c) (%c) %d\n", n->red ? 'R' : 'B', isRoot(n) ? '*' : isMajor(n) ? '+' : '-', n->data);
+        printf("(%c) (%c) %lld\n", n->red ? 'R' : 'B', isRoot(n) ? '*' : isMajor(n) ? '+' : '-', n->data);
         nodePrintImpl(n->major, level + 1);
         nodePrintImpl(n->minor, level + 1);
     }
@@ -73,7 +80,7 @@ void nodePrint(Node* n)
     nodePrintImpl(n, 0);
 }
 
-void nodeAdd_BST(Node* node, int value)
+void nodeAdd_BST(Node* node, unsigned long long value)
 {
     if(node)
     {
@@ -114,7 +121,6 @@ void nodeAdd_BST(Node* node, int value)
 
 Node* rotateLeft(Node* n, Node** head)
 {
-    printf("rotate left\n");
     bool maj = isMajor(n);
     Node* parent = n->parent;
     Node* major = n->major;
@@ -145,7 +151,6 @@ Node* rotateLeft(Node* n, Node** head)
 
 Node* rotateRight(Node* n, Node** head)
 {
-    printf("rotate right\n");
     bool maj = isMajor(n);
     Node* parent = n->parent;
     Node* minor = n->minor;
@@ -176,104 +181,102 @@ Node* rotateRight(Node* n, Node** head)
 
 void fixViolations(Node* node, Node** head)
 {
-    if(!node)
+    if(node)
     {
-        printf("node = NULL\n");
-        return;
-    }
-    if(node->red && node->parent->red)
-    {
-        Node* member = nodeFindMember(node);
-        Node* parent = node->parent;
-        Node* grandParent = parent->parent;
+		if(node->red && node->parent->red)
+		{
+			Node* member = nodeFindMember(node);
+			Node* parent = node->parent;
+			Node* grandParent = parent->parent;
 
-        bool isRed = member != NULL ? member->red : false;
-        if(isRed)
-        {
-            //color switch parent, parent-sibling and grandparent..
-            parent->red = !parent->red;
-            grandParent->red = grandParent->parent ? !grandParent->red : false;
-            member->red = !member->red;
-            fixViolations(grandParent, head);
-        }
-        else
-        {
-            /*
-             *  child-parent combinations:
-             *
-             *  0 = minor..
-             *  1 = major..
-             *
-             *  P   C | rotation
-             * -------|----------
-             *  0   0 |    RR
-             *  0   1 |    LR
-             *  1   0 |    RL
-             *  1   1 |    LL
-             *
-             */
-            // RR rotation..
-            if(isMinor(parent) && isMinor(node))
-            {
-                printf("RR %d\n", node->data);
-                Node* next = rotateRight(node->parent->parent, head);
+			bool isRed = member != NULL ? member->red : false;
+			if(isRed)
+			{
+				//color switch parent, parent-sibling and grandparent..
+				parent->red = !parent->red;
+				grandParent->red = grandParent->parent ? !grandParent->red : false;
+				member->red = !member->red;
+				fixViolations(grandParent, head);
+			}
+			else
+			{
+				/*
+				 *  child-parent combinations:
+				 *
+				 *  0 = minor..
+				 *  1 = major..
+				 *
+				 *  P   C | rotation
+				 * -------|----------
+				 *  0   0 |    RR
+				 *  0   1 |    LR
+				 *  1   0 |    RL
+				 *  1   1 |    LL
+				 *
+				 */
+				// RR rotation..
+				if(isMinor(parent) && isMinor(node))
+				{
+					//printf("RR %d\n", node->data);
+					Node* next = rotateRight(node->parent->parent, head);
 
-                next->red = !next->red;
-                next->major->red = !next->major->red;
-                fixViolations(next, head);
-                return;
-            }
+					next->red = !next->red;
+					next->major->red = !next->major->red;
+					fixViolations(next, head);
+					return;
+				}
 
-            // LR-rotation..
-            if(isMinor(parent) && isMajor(node))
-            {
-                printf("LR %d\n", node->data);
-                //new node becomes root..
-                //major is grand-parent..
-                //minor is parent..
-                Node* next = rotateLeft(node->parent, head);
-                             rotateRight(next->parent, head);
-                next->red = !next->red;
-                next->major->red = !node->major->red;
-                fixViolations(next, head);
-                return;
-            }
+				// LR-rotation..
+				if(isMinor(parent) && isMajor(node))
+				{
+					//printf("LR %d\n", node->data);
+					//new node becomes root..
+					//major is grand-parent..
+					//minor is parent..
+					Node* next = rotateLeft(node->parent, head);
+								 rotateRight(next->parent, head);
+					next->red = !next->red;
+					next->major->red = !node->major->red;
+					fixViolations(next, head);
+					return;
+				}
 
-            // RL-rotation..
-            if(isMajor(parent) && isMinor(node))
-            {
-                printf("RL %d\n", node->data);
-                /*
-                printf("grandparent: %d, parent: %d, child: %d\n", node->parent->parent->data, node->parent->data, node->data);
-                printf("parent minor: %lld\n", parent->minor->data);
-                */
+				// RL-rotation..
+				if(isMajor(parent) && isMinor(node))
+				{
+					//printf("RL %d\n", node->data);
+					/*
+					printf("grandparent: %d, parent: %d, child: %d\n", node->parent->parent->data, node->parent->data, node->data);
+					printf("parent minor: %lld\n", parent->minor->data);
+					*/
 
-                Node* next = rotateRight(node->parent, head);
-                             rotateLeft(next->parent, head);
-                next->red = !next->red;
-                next->minor->red = !node->minor->red;
+					Node* next = rotateRight(node->parent, head);
+								 rotateLeft(next->parent, head);
+					next->red = !next->red;
+					next->minor->red = !node->minor->red;
 
-                //printf("RL ok\n");
-                fixViolations(next, head);
-                return;
-            }
+					//printf("RL ok\n");
+					fixViolations(next, head);
+					return;
+				}
 
-            // LL-rotation
-            if(isMajor(parent) && isMajor(node))
-            {
-                printf("LL %d\n", node->data);
-                Node* next = rotateLeft(node->parent->parent, head);
-                next->red = !next->red;
-                next->minor->red = !next->minor->red;
+				// LL-rotation
+				if(isMajor(parent) && isMajor(node))
+				{
+					//printf("LL %d\n", node->data);
+					Node* next = rotateLeft(node->parent->parent, head);
+					next->red = !next->red;
+					next->minor->red = !next->minor->red;
 
-                fixViolations(next, head);
-                return;
-            }
-        }
+					fixViolations(next, head);
+					return;
+				}
+			}
+		}
     }
 }
 
-void nodeAdd_RBT(Node* node, Node** head, int value)
+void nodeAdd_RBT(Node* node, Node** head, unsigned long long value)
 {
     if(node)
     {
@@ -328,44 +331,45 @@ void test_tree_insert()
 {
     //41 13 87 96 95 25 31 54 43 19 1 22 77 99 65 64 73 4 55 93
     //2 65 52 6 38 34 68 40 85 72 70 39 16 24 54 26 28 89 45 97
-    Node* n = nodeAlloc(2);
-
-    nodeAdd_RBT(n, &n, 65);
-    nodeAdd_RBT(n, &n, 52);
-    nodeAdd_RBT(n, &n, 6);
-
-    nodeAdd_RBT(n, &n, 38);
-
-    nodeAdd_RBT(n, &n, 34);
-
-    nodeAdd_RBT(n, &n, 68);
-
-
-    nodeAdd_RBT(n, &n, 40);
-
-    nodeAdd_RBT(n, &n, 85);
-
-    nodeAdd_RBT(n, &n, 72);
-
-    nodeAdd_RBT(n, &n, 70);
-
-    nodeAdd_RBT(n, &n, 39);
-
-    nodeAdd_RBT(n, &n, 16);
-
-    nodeAdd_RBT(n, &n, 24);
-
-    nodeAdd_RBT(n, &n, 54); //correct
-
-
-    nodeAdd_RBT(n, &n, 26);
-
-    nodeAdd_RBT(n, &n, 28);
-
-    nodeAdd_RBT(n, &n, 89);
-
-    nodeAdd_RBT(n, &n, 45);
-    nodeAdd_RBT(n, &n, 97);
+	
+	//srand(time(NULL));
+    
+	/*
+	for(int i = 19; i >= 1; i--)
+	{
+		//int value = rand() % 1000 + 1;
+		nodeAdd_RBT(n, &n, i);
+	}
+	*/
+	/*
+	 *	417465280
+	 *	120
+	 *	121
+	 *	2283126203
+	 *	1369249285
+	 *	632064625
+	 *	915915944
+	 *	872506760
+	 *	872506761
+	 *	872506762
+	 *	872506763
+	 *	4109031586
+	 *	510480399
+	 */
+	Node* n = nodeAlloc(417465280);
+	nodeAdd_RBT(n, &n, 120);
+	nodeAdd_RBT(n, &n, 121);
+	nodeAdd_RBT(n, &n, 2283126203);
+	nodeAdd_RBT(n, &n, 1369249285);
+	nodeAdd_RBT(n, &n, 632064625);
+	nodeAdd_RBT(n, &n, 915915944);
+	nodeAdd_RBT(n, &n, 872506760);
+	nodeAdd_RBT(n, &n, 872506761);
+	nodeAdd_RBT(n, &n, 872506762);
+	nodeAdd_RBT(n, &n, 872506763);
+	nodeAdd_RBT(n, &n, 4109031586);
+	nodeAdd_RBT(n, &n, 510480399);
+	printf("\n");
 
     nodePrint(n);
     nodeFree(n);

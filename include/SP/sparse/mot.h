@@ -72,13 +72,13 @@ typedef struct
 struct MOT_node
 {
     //written to disk:
-	SPlong weight; // 8 bytes
+	SPhash weight; // 8 bytes
 	MOT_tag tag;   // 1 byte
 	SPsize length; // 8 bytes
 
 	//not written to disk:
 	struct MOT_node* parent;
-	SPuint8 color;
+	SPuint8 red;
 
 	union
 	{
@@ -129,17 +129,18 @@ SP_API MOT_tree* motAllocTree(const SPchar* name);
  *  data feed
  *<==========================================================>*/
 SP_API void* motAllocChunk(SPsize size);
-SP_API void motInsertByte(MOT_tree* tree, const SPchar* name, SPbyte value);
-SP_API void motInsertShort(MOT_tree* tree, const SPchar* name, SPshort value);
-SP_API void motInsertInt(MOT_tree* tree, const SPchar* name, SPint value);
-SP_API void motInsertLong(MOT_tree* tree, const SPchar* name, SPlong value);
-SP_API void motInsertFloat(MOT_tree* tree, const SPchar* name, SPfloat value);
-SP_API void motInsertDouble(MOT_tree* tree, const SPchar* name, SPdouble value);
-SP_API void motInsertString(MOT_tree* tree, const SPchar* name, const SPchar* value);
+SP_API void motInsertByte(MOT_tree** tree, const SPchar* name, SPbyte value);
+SP_API void motInsertShort(MOT_tree** tree, const SPchar* name, SPshort value);
+SP_API void motInsertInt(MOT_tree** tree, const SPchar* name, SPint value);
+SP_API void motInsertLong(MOT_tree** tree, const SPchar* name, SPlong value);
+SP_API void motInsertFloat(MOT_tree** tree, const SPchar* name, SPfloat value);
+SP_API void motInsertDouble(MOT_tree** tree, const SPchar* name, SPdouble value);
+SP_API void motInsertString(MOT_tree** tree, const SPchar* name, const SPchar* value);
 SP_API void motInsertTree(MOT_tree* tree, MOT_tree* value);
 
-SP_API void motInsertArray(MOT_tree* tree, const SPchar* name, MOT_tag tag, SPsize length, const void* value);
-SP_API void motInsertStringArray(MOT_tree* tree, const SPchar* name, SPsize length, const SPchar** value);
+SP_API void motInsertArray(MOT_tree** tree, const SPchar* name, MOT_tag tag, SPsize length, const void* value);
+SP_API void motInsertStringArray(MOT_tree** tree, const SPchar* name, SPsize length, const SPchar** value);
+
 SP_API MOT_tree* motSearch(MOT_tree* tree, const char* name);
 SP_API SPbool motDelete(MOT_tree* tree, const SPchar* name);
 
