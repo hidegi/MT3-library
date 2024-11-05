@@ -3,19 +3,18 @@
 </p>
 
 # The MOT-library (SP 1994)
-This is a framework to serialize a JSON-file to a MOT-file..\
-MOT is an open format that encodes an arbitrary structure to binary (similar to Mojang's NBT format)..\
-However, the MOT-format uses an actual "binary tree", unlike NBT, alluding to use a binary\
-tree, when merely just the representation is binary..
+MOT is an open format that encodes an arbitrary structure into binary (similar to Mojang's NBT format)..
 
 ## Specification
 The MOT-format only knows two fundamental types of data: binary-trees and byte-sequences..\
 To distinguish between the type of a byte-sequence, each byte-sequence comes with attributes, namely\
-a length, a stride and the byte-information itself..\
+the length and the payload..\
 \
 Like NBT, each member is stored as a node with a tag; however, the huge difference between the two is\
 that MOT uses an 8-Byte number to store the name (unlike a string), using an SDBM-hash..\
-The default compression strategy is the Fast-ZLIB-Compression, although, GZIP is also possible..
+The default compression strategy is the Fast-ZLIB-Compression, although, GZIP is also possible..\
+\
+The internal layout of MOT is a Red-Black-Tree (the color-bit is the 7th bit in the tag)..
 
 ## How to build
 To build this project, you will need to install the CMake CLI-tool,\
