@@ -327,44 +327,45 @@ void roatateLeftImpl()
 void test_tree_insert()
 {
     //41 13 87 96 95 25 31 54 43 19 1 22 77 99 65 64 73 4 55 93
-    Node* n = nodeAlloc(41);
+    //2 65 52 6 38 34 68 40 85 72 70 39 16 24 54 26 28 89 45 97
+    Node* n = nodeAlloc(2);
 
-    nodeAdd_RBT(n, &n, 13);
-    nodeAdd_RBT(n, &n, 87);
-    nodeAdd_RBT(n, &n, 96);
+    nodeAdd_RBT(n, &n, 65);
+    nodeAdd_RBT(n, &n, 52);
+    nodeAdd_RBT(n, &n, 6);
 
-    nodeAdd_RBT(n, &n, 95);
+    nodeAdd_RBT(n, &n, 38);
 
-    nodeAdd_RBT(n, &n, 25);
+    nodeAdd_RBT(n, &n, 34);
 
-    nodeAdd_RBT(n, &n, 31);
-
-
-    nodeAdd_RBT(n, &n, 54);
-
-    nodeAdd_RBT(n, &n, 43);
-
-    nodeAdd_RBT(n, &n, 19);
-
-    nodeAdd_RBT(n, &n, 1);
-
-    nodeAdd_RBT(n, &n, 22);
-
-    nodeAdd_RBT(n, &n, 77);
-
-    nodeAdd_RBT(n, &n, 99);
-
-    nodeAdd_RBT(n, &n, 65); //correct
+    nodeAdd_RBT(n, &n, 68);
 
 
-    nodeAdd_RBT(n, &n, 64);
+    nodeAdd_RBT(n, &n, 40);
 
-    nodeAdd_RBT(n, &n, 73);
+    nodeAdd_RBT(n, &n, 85);
 
-    nodeAdd_RBT(n, &n, 4);
+    nodeAdd_RBT(n, &n, 72);
 
-    nodeAdd_RBT(n, &n, 55);
-    nodeAdd_RBT(n, &n, 93);
+    nodeAdd_RBT(n, &n, 70);
+
+    nodeAdd_RBT(n, &n, 39);
+
+    nodeAdd_RBT(n, &n, 16);
+
+    nodeAdd_RBT(n, &n, 24);
+
+    nodeAdd_RBT(n, &n, 54); //correct
+
+
+    nodeAdd_RBT(n, &n, 26);
+
+    nodeAdd_RBT(n, &n, 28);
+
+    nodeAdd_RBT(n, &n, 89);
+
+    nodeAdd_RBT(n, &n, 45);
+    nodeAdd_RBT(n, &n, 97);
 
     nodePrint(n);
     nodeFree(n);
