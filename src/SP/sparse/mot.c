@@ -1,6 +1,7 @@
 #include "SP/sparse/mot.h"
 #include <errno.h>
 #include <stdarg.h>
+#include <zlib.h>
 
 /*
  *------------------------------------------------------------------------------------------------------------------
@@ -133,12 +134,12 @@ struct MOT_node
 	{
 		SPbyte* data;
 
-		//does not hold the root-node
-		//but only major and minor branches..
+		// does not hold the root-node
+		// but only major and minor branches..
 		MOT_tree head;
 	} payload; //length bytes
 
-	// total bytes written = 17 + length bytes
+	// total bytes written = 17 + length bytes..
 	struct MOT_node* parent;
 	struct MOT_node* major;
 	struct MOT_node* minor;
@@ -180,12 +181,123 @@ static const void* _mot_swapped_memcpy(void* dst, const void* src, SPsize n)
     return ne2be(dst, n), ret;
 }
 
-SPbool _mot_is_major(const struct MOT_node* node)
+static SPbuffer _mot_compress(const void* memory, SPsize length)
+{
+    const SPsize CHUNK_SIZE = 4096;
+    SPbuffer buffer = SP_BUFFER_INIT;
+
+    z_stream stream =
+    {
+        .zalloc   = Z_NULL,
+        .zfree    = Z_NULL,
+        .opaque   = Z_NULL,
+        .next_in  = (void*) memory,
+        .avail_in = length
+    };
+
+    int windowbits = 15;
+    if(deflateInit2(
+        &stream,
+        Z_DEFAULT_COMPRESSION,
+        Z_DEFLATED,
+        windowbits,
+        8,
+        Z_DEFAULT_STRATEGY) != Z_OK)
+    {
+        SP_WARNING("Failed to initialize zlib");
+        return SP_BUFFER_INIT;
+    }
+
+    SP_ASSERT(stream.avail_in == length, "Available input does not match length");
+    do
+    {
+        if(spBufferReserve(&buffer, buffer.length + CHUNK_SIZE) != MOT_ERR_NONE)
+        {
+            SP_DEBUG("Failed to reserve buffer");
+            spBufferFree(&buffer);
+            return SP_BUFFER_INIT;
+        }
+
+        stream.next_out = buffer.data + buffer.length;
+        stream.avail_out = CHUNK_SIZE;
+
+        if(deflate(&stream, Z_FINISH) == Z_STREAM_ERROR)
+        {
+            SP_WARNING("Failed to write data");
+            spBufferFree(&buffer);
+            return SP_BUFFER_INIT;
+        }
+
+        buffer.length += CHUNK_SIZE - stream.avail_out;
+    } while(!stream.avail_out);
+
+    deflateEnd(&stream);
+    return buffer;
+}
+
+static SPbuffer _mot_decompress(const void* memory, SPsize length)
+{
+    const SPsize CHUNK_SIZE = 4096;
+    SPbuffer buffer = SP_BUFFER_INIT;
+
+    z_stream stream =
+    {
+        .zalloc   = Z_NULL,
+        .zfree    = Z_NULL,
+        .opaque   = Z_NULL,
+        .next_in  = (void*) memory,
+        .avail_in = length
+    };
+
+    if(inflateInit2(&stream, 47) != Z_OK)
+    {
+        SP_WARNING("Failed to initialize zlib");
+        return SP_BUFFER_INIT;
+    }
+
+    SPint zlib_ret;
+    do
+    {
+        if(spBufferReserve(&buffer, buffer.length + CHUNK_SIZE))
+        {
+            SP_DEBUG("Failed to reserve buffer");
+            spBufferFree(&buffer);
+            return SP_BUFFER_INIT;
+        }
+
+        stream.avail_out = CHUNK_SIZE;
+        stream.next_out = (SPubyte*) buffer.data + buffer.length;
+
+        switch((zlib_ret = inflate(&stream, Z_NO_FLUSH)))
+        {
+            case Z_MEM_ERROR:
+            case Z_DATA_ERROR:
+            case Z_NEED_DICT:
+            {
+                SP_WARNING("Error while decompressing");
+                spBufferFree(&buffer);
+                return SP_BUFFER_INIT;
+            }
+            default:
+                buffer.length += CHUNK_SIZE - stream.avail_out;
+        }
+    } while(!stream.avail_out);
+
+    if(zlib_ret != Z_STREAM_END)
+    {
+        SP_WARNING("Error while decompressing");
+        return SP_BUFFER_INIT;
+    }
+
+    inflateEnd(&stream);
+    return buffer;
+}
+static SPbool _mot_is_major(const struct MOT_node* node)
 {
     return (node && node->parent) ? (node->parent->major == node) : SP_FALSE;
 }
 
-SPbool _mot_is_root(const struct MOT_node* node)
+static SPbool _mot_is_root(const struct MOT_node* node)
 {
     return (node && !node->parent);
 }
@@ -356,29 +468,28 @@ static SPhash _mot_sdbm_impl(const SPchar *str) {
 static SPhash _mot_sdbm(const SPchar* str)
 {
 	SPhash hash = _mot_sdbm_impl(str);
-    SPbyte buffer[4];
-    // Split the hash into 8 bytes
-    for (SPsize i = 0; i < 8; i++) {
-	buffer[i] = (hash >> (i * 8)) & 0xFF; // Get the i-th byte
-    }
+    SPubyte buffer[4];
 
+    for(SPsize i = 0; i < 8; i++)
+    {
+	    buffer[i] = (hash >> (i * 8)) & 0xFF;
+    }
 	SPhash output = 0;
 	memcpy(&output, buffer, sizeof(SPbyte) * 4);
 	return output;
 }
 
-void _mot_print_binary(const unsigned char *byteArray, size_t size, int level) {
-    for (size_t i = 0; i < size; i++) {
-	unsigned char byte = byteArray[i];
-	for(int i = 0; i < level; i++)
-	    printf("\t");
-	printf("    ");
-	// Print the byte in binary
-	for (int j = 7; j >= 0; j--) {
-	    // Use bitwise AND and right shift to get each bit
-	    printf("%d", (byte >> j) & 1);
-	}
-	printf("\n"); // New line after each byte
+void _mot_print_binary(const unsigned char *byteArray, size_t size, int level)
+{
+    for (size_t i = 0; i < size; i++)
+    {
+        SPubyte byte = byteArray[i];
+        for(int i = 0; i < level; i++)
+            printf("\t");
+        printf("    ");
+        for (int j = 7; j >= 0; j--)
+            printf("%d", (byte >> j) & 1);
+        printf("\n");
     }
 }
 
@@ -438,8 +549,6 @@ static MOT_tree _mot_insert_bytes(MOT_tree* head, MOT_tree node, SPhash weight, 
 	if(!node)
 	{
 	    *head = _mot_alloc_node(tag, weight, length, value);
-	    (*head)->parent = NULL;
-	    (*head)->red = SP_FALSE;
 	    return *head;
 	}
 
@@ -528,6 +637,7 @@ static MOT_tree _mot_insert_root(MOT_tree* head, MOT_tree node, SPhash weight, M
 	    isMajor ? (node->major = primary) : (node->minor = primary);
 	    _mot_fix_rbt_violations(primary, head);
     }
+
     return primary;
 }
 
@@ -943,9 +1053,10 @@ SPbuffer motWriteBinary(const MOT_tree tree)
 		return buffer;
 	}
 	_mot_write_binary(tree, &buffer, 0);
-	return buffer;
+	SPbuffer compressed = _mot_compress(buffer.data, buffer.length);
+	spBufferFree(&buffer);
+	return compressed;
 }
-
 
 static MOT_tree _mot_read_binary(const SPubyte** memory, SPsize* length)
 {
@@ -1034,8 +1145,9 @@ static MOT_tree _mot_read_binary(const SPubyte** memory, SPsize* length)
 
 MOT_tree motReadBinary(SPbuffer buffer)
 {
-	const SPubyte** memory = (const SPubyte**) &buffer.data;
-	SPsize length = buffer.length;
+    SPbuffer decompressed = _mot_decompress(buffer.data, buffer.length);
+	const SPubyte** memory = (const SPubyte**) &decompressed.data;
+	SPsize length = decompressed.length;
 	
 	return _mot_read_binary(memory, &length);
 }

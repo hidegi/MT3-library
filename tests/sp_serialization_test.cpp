@@ -387,8 +387,11 @@ void test_sub_tree()
 
     printf("actual:\n");
     motPrintTree(output);
+
+    printf("(%lld bytes)\n\n", buffer.length);
     motFreeTree(parent);
     motFreeTree(output);
+    spBufferFree(&buffer);
 }
 
 int main(int argc, char** argv)

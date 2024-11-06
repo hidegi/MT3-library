@@ -94,6 +94,7 @@ find_package(ZLIB REQUIRED)
 #	target_link_libraries(${PROJECT_NAME} PRIVATE ${GLFW_LIBRARY} ${OPENGL_LIBRARIES} ${ZLIB_LIBRARIES})
 #endif()
 
+target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})
 set_target_properties(
 	${PROJECT_NAME} PROPERTIES
 	CXX_STANDARD 11
