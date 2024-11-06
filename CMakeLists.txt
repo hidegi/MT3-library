@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 project(mot VERSION 1.1.1 LANGUAGES C CXX)
 
 macro(sp_set_option var default type docstring)
-    if(NOT DEFINED ${var})
-        set(${var} ${default})
-    endif()
-    set(${var} ${${var}} CACHE ${type} ${docstring} FORCE)
+	if(NOT DEFINED ${var})
+		set(${var} ${default})
+	endif()
+	set(${var} ${${var}} CACHE ${type} ${docstring} FORCE)
 endmacro()
 
 if(POLICY CMP0079)
@@ -23,7 +23,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 cmake_policy(SET CMP0042 NEW)
 if (NOT CMAKE_VERSION VERSION_LESS 3.9)
-    cmake_policy(SET CMP0068 NEW)
+	cmake_policy(SET CMP0068 NEW)
 endif()
 
 message(STATUS "Installing project to ${CMAKE_INSTALL_PREFIX}")
@@ -86,13 +86,6 @@ endif()
 
 find_package(OpenGL REQUIRED)
 find_package(ZLIB REQUIRED)
-#if(WIN32)
-#	target_link_libraries(${PROJECT_NAME} PRIVATE ${GLFW_LIBRARY} ${OPENGL_LIBRARIES} ${ZLIB_LIBRARIES} winmm)
-#elseif(APPLE)
-#	target_link_libraries(${PROJECT_NAME} PRIVATE ${GLFW_LIBRARY} ${OPENGL_LIBRARIES} ${ZLIB_LIBRARIES})
-#elseif(UNIX AND NOT APPLE)
-#	target_link_libraries(${PROJECT_NAME} PRIVATE ${GLFW_LIBRARY} ${OPENGL_LIBRARIES} ${ZLIB_LIBRARIES})
-#endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})
 set_target_properties(

@@ -68,51 +68,51 @@
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
 #define MOT_CHECKED_CALLOC(ptr, n, size, on_error)	\
-	do												\
-	{												\
-		if(!((ptr) = calloc(n, size)))				\
-		{											\
-			errno = MOT_ERR_MEM;					\
-			on_error;								\
-		}											\
+	do						\
+	{						\
+		if(!((ptr) = calloc(n, size)))		\
+		{					\
+			errno = MOT_ERR_MEM;		\
+			on_error;			\
+		}					\
 	} while(0)
 
 #define MOT_CHECKED_APPEND(b, ptr, len)		        \
-    do				                                \
-    {				                                \
-    if(spBufferAppend((b), (ptr), (len)))           \
-	return MOT_ERR_MEM;		                        \
+    do				     			\
+    {				              		\
+    if(spBufferAppend((b), (ptr), (len)))           	\
+	return MOT_ERR_MEM;		          	\
     } while(0)
 
-#define MOT_DUMP_NUM(type, x)		                \
-    do					                            \
-    {					                            \
-	type temp = x;			                        \
-	ne2be(&temp, sizeof temp);		                \
-	MOT_CHECKED_APPEND(b, &temp, sizeof temp); 	    \
-    } while(0)
-
-
-#define MOT_CHECK_INPUT(_name)									\
-	SPhash hash = 0;											\
-	do															\
-	{															\
-		SP_ASSERT(tree, "Cannot Insert data to empty tree");	\
-		SP_ASSERT((_name), "Node must have a name");			\
-		hash = _mot_sdbm((_name));								\
-		SP_ASSERT(hash != 0, "Name cannot be empty");			\
+#define MOT_DUMP_NUM(type, x)					\
+	do							\
+	{							\
+		type temp = x;			         	\
+		ne2be(&temp, sizeof temp);		  	\
+		MOT_CHECKED_APPEND(b, &temp, sizeof temp);	\
 	} while(0)
 
-#define MOT_READ_GENERIC(dst, n, scanner, on_failure)   \
-    do							                        \
-    {							                        \
-	    if(*length < (n))				                \
-	    {						                        \
-	        on_failure;					                \
-	    }						                        \
-	    *memory = scanner((dst), *memory, (n));		    \
-	    *length -= n;					                \
-    } while(0)
+
+#define MOT_CHECK_INPUT(_name)						\
+	SPhash hash = 0;						\
+	do								\
+	{								\
+		SP_ASSERT(tree, "Cannot Insert data to empty tree");	\
+		SP_ASSERT((_name), "Node must have a name");		\
+		hash = _mot_sdbm((_name));				\
+		SP_ASSERT(hash != 0, "Name cannot be empty");		\
+	} while(0)
+
+#define MOT_READ_GENERIC(dst, n, scanner, on_failure)	\
+	do						\
+	{						\
+		if(*length < (n))			\
+		{					\
+			on_failure;			\
+		}					\
+		*memory = scanner((dst), *memory, (n));	\
+		*length -= n;				\
+	} while(0)
 
 #define MOT_COPY_TO_PAYLOAD(tagName) SP_READ_GENERIC(&node->payload.tagName, sizeof(node->payload.tagName), _spSwappedMemscan, goto sp_error)
 
@@ -128,7 +128,7 @@ struct MOT_node
 
 	// encoded in the 7th bit of the tag..
 	// signals the node's color..
-    SPbool red;
+	SPbool red;
 
 	union
 	{
@@ -147,165 +147,165 @@ struct MOT_node
 
 static int _mot_is_little_endian()
 {
-    SPuint16 t = 0x0001;
-    SPchar c[2];
-    memcpy(c, &t, sizeof t);
-    return c[0];
+	SPuint16 t = 0x0001;
+	SPchar c[2];
+	memcpy(c, &t, sizeof t);
+	return c[0];
 }
 
 static void* _mot_swap_bytes(void* s, SPsize length)
 {
-    for(SPchar *b = s, *e = b + length - 1; b < e; b++, e--)
-    {
-	SPchar t = *b;
-	*b = *e;
-	*e = t;
-    }
-    return s;
+	for(SPchar *b = s, *e = b + length - 1; b < e; b++, e--)
+	{
+		SPchar t = *b;
+		*b = *e;
+		*e = t;
+	}
+	return s;
 }
 
 static void* _mot_big_endian_to_native_endian(void* s, size_t len)
 {
-    return _mot_is_little_endian() ? _mot_swap_bytes(s, len) : s;
+	return _mot_is_little_endian() ? _mot_swap_bytes(s, len) : s;
 }
 
 static const void* _mot_memcpy(void* dst, const void* src, SPsize n)
 {
-    memcpy(dst, src, n);
-    return (const SPchar*) src + n;
+	memcpy(dst, src, n);
+	return (const SPchar*) src + n;
 }
 
 static const void* _mot_swapped_memcpy(void* dst, const void* src, SPsize n)
 {
-    const void* ret = _mot_memcpy(dst, src, n);
-    return ne2be(dst, n), ret;
+	const void* ret = _mot_memcpy(dst, src, n);
+	return ne2be(dst, n), ret;
 }
 
 static SPbuffer _mot_compress(const void* memory, SPsize length)
 {
-    const SPsize CHUNK_SIZE = 4096;
-    SPbuffer buffer = SP_BUFFER_INIT;
+	const SPsize CHUNK_SIZE = 4096;
+	SPbuffer buffer = SP_BUFFER_INIT;
 
-    z_stream stream =
-    {
-        .zalloc   = Z_NULL,
-        .zfree    = Z_NULL,
-        .opaque   = Z_NULL,
-        .next_in  = (void*) memory,
-        .avail_in = length
-    };
+	z_stream stream =
+	{
+		.zalloc   = Z_NULL,
+		.zfree    = Z_NULL,
+		.opaque   = Z_NULL,
+		.next_in  = (void*) memory,
+		.avail_in = length
+	};
 
-    int windowbits = 15;
-    if(deflateInit2(
-        &stream,
-        Z_DEFAULT_COMPRESSION,
-        Z_DEFLATED,
-        windowbits,
-        8,
-        Z_DEFAULT_STRATEGY) != Z_OK)
-    {
-        SP_WARNING("Failed to initialize zlib");
-        return SP_BUFFER_INIT;
-    }
+	int windowbits = 15;
+	if(deflateInit2(
+		&stream,
+		Z_DEFAULT_COMPRESSION,
+		Z_DEFLATED,
+		windowbits,
+		8,
+		Z_DEFAULT_STRATEGY) != Z_OK)
+	{
+		SP_WARNING("Failed to initialize zlib");
+		return SP_BUFFER_INIT;
+	}
 
-    SP_ASSERT(stream.avail_in == length, "Available input does not match length");
-    do
-    {
-        if(spBufferReserve(&buffer, buffer.length + CHUNK_SIZE) != MOT_ERR_NONE)
-        {
-            SP_DEBUG("Failed to reserve buffer");
-            spBufferFree(&buffer);
-            return SP_BUFFER_INIT;
-        }
+	SP_ASSERT(stream.avail_in == length, "Available input does not match length");
+	do
+	{
+		if(spBufferReserve(&buffer, buffer.length + CHUNK_SIZE) != MOT_ERR_NONE)
+		{
+			SP_DEBUG("Failed to reserve buffer");
+			spBufferFree(&buffer);
+			return SP_BUFFER_INIT;
+		}
 
-        stream.next_out = buffer.data + buffer.length;
-        stream.avail_out = CHUNK_SIZE;
+		stream.next_out = buffer.data + buffer.length;
+		stream.avail_out = CHUNK_SIZE;
 
-        if(deflate(&stream, Z_FINISH) == Z_STREAM_ERROR)
-        {
-            SP_WARNING("Failed to write data");
-            spBufferFree(&buffer);
-            return SP_BUFFER_INIT;
-        }
+		if(deflate(&stream, Z_FINISH) == Z_STREAM_ERROR)
+		{
+			SP_WARNING("Failed to write data");
+			spBufferFree(&buffer);
+			return SP_BUFFER_INIT;
+		}
 
-        buffer.length += CHUNK_SIZE - stream.avail_out;
-    } while(!stream.avail_out);
+		buffer.length += CHUNK_SIZE - stream.avail_out;
+	} while(!stream.avail_out);
 
-    deflateEnd(&stream);
-    return buffer;
+	deflateEnd(&stream);
+	return buffer;
 }
 
 static SPbuffer _mot_decompress(const void* memory, SPsize length)
 {
-    const SPsize CHUNK_SIZE = 4096;
-    SPbuffer buffer = SP_BUFFER_INIT;
+	const SPsize CHUNK_SIZE = 4096;
+	SPbuffer buffer = SP_BUFFER_INIT;
 
-    z_stream stream =
-    {
-        .zalloc   = Z_NULL,
-        .zfree    = Z_NULL,
-        .opaque   = Z_NULL,
-        .next_in  = (void*) memory,
-        .avail_in = length
-    };
+	z_stream stream =
+	{
+		.zalloc   = Z_NULL,
+		.zfree    = Z_NULL,
+		.opaque   = Z_NULL,
+		.next_in  = (void*) memory,
+		.avail_in = length
+	};
 
-    if(inflateInit2(&stream, 47) != Z_OK)
-    {
-        SP_WARNING("Failed to initialize zlib");
-        return SP_BUFFER_INIT;
-    }
+	if(inflateInit2(&stream, 47) != Z_OK)
+	{
+		SP_WARNING("Failed to initialize zlib");
+		return SP_BUFFER_INIT;
+	}
 
-    SPint zlib_ret;
-    do
-    {
-        if(spBufferReserve(&buffer, buffer.length + CHUNK_SIZE))
-        {
-            SP_DEBUG("Failed to reserve buffer");
-            spBufferFree(&buffer);
-            return SP_BUFFER_INIT;
-        }
+	SPint zlib_ret;
+	do
+	{
+		if(spBufferReserve(&buffer, buffer.length + CHUNK_SIZE))
+		{
+			SP_DEBUG("Failed to reserve buffer");
+			spBufferFree(&buffer);
+			return SP_BUFFER_INIT;
+		}
 
-        stream.avail_out = CHUNK_SIZE;
-        stream.next_out = (SPubyte*) buffer.data + buffer.length;
+		stream.avail_out = CHUNK_SIZE;
+		stream.next_out = (SPubyte*) buffer.data + buffer.length;
 
-        switch((zlib_ret = inflate(&stream, Z_NO_FLUSH)))
-        {
-            case Z_MEM_ERROR:
-            case Z_DATA_ERROR:
-            case Z_NEED_DICT:
-            {
-                SP_WARNING("Error while decompressing");
-                spBufferFree(&buffer);
-                return SP_BUFFER_INIT;
-            }
-            default:
-                buffer.length += CHUNK_SIZE - stream.avail_out;
-        }
-    } while(!stream.avail_out);
+		switch((zlib_ret = inflate(&stream, Z_NO_FLUSH)))
+		{
+			case Z_MEM_ERROR:
+			case Z_DATA_ERROR:
+			case Z_NEED_DICT:
+			{
+				SP_WARNING("Error while decompressing");
+				spBufferFree(&buffer);
+				return SP_BUFFER_INIT;
+			}
+			default:
+				buffer.length += CHUNK_SIZE - stream.avail_out;
+		}
+	} while(!stream.avail_out);
 
-    if(zlib_ret != Z_STREAM_END)
-    {
-        SP_WARNING("Error while decompressing");
-        return SP_BUFFER_INIT;
-    }
+	if(zlib_ret != Z_STREAM_END)
+	{
+		SP_WARNING("Error while decompressing");
+		return SP_BUFFER_INIT;
+	}
 
-    inflateEnd(&stream);
-    return buffer;
+	inflateEnd(&stream);
+	return buffer;
 }
 static SPbool _mot_is_major(const struct MOT_node* node)
 {
-    return (node && node->parent) ? (node->parent->major == node) : SP_FALSE;
+	return (node && node->parent) ? (node->parent->major == node) : SP_FALSE;
 }
 
 static SPbool _mot_is_root(const struct MOT_node* node)
 {
-    return (node && !node->parent);
+	return (node && !node->parent);
 }
 
 static struct MOT_node* _mot_find_member(struct MOT_node* node)
 {
 	SP_ASSERT(!_mot_is_root(node->parent), "Oopsie, this should not have happened");
-    return _mot_is_major(node->parent) ? node->parent->parent->minor : node->parent->parent->major;
+	return _mot_is_major(node->parent) ? node->parent->parent->minor : node->parent->parent->major;
 }
 
 static struct MOT_node* _mot_rotate_left(struct MOT_node* n, struct MOT_node** head)
@@ -339,11 +339,11 @@ static struct MOT_node* _mot_rotate_right(struct MOT_node* n, struct MOT_node** 
 	if(c)
 	   c->parent = n;
    
-   n->minor = c;
-   m->parent = p;
-   
-   p ? (isMajor ? (p->major = m) : (p->minor = m)) : (*head = m);
-   return m;
+	n->minor = c;
+	m->parent = p;
+	
+	p ? (isMajor ? (p->major = m) : (p->minor = m)) : (*head = m);
+	return m;
 }
 
 static void _mot_fix_rbt_violations(struct MOT_node* node, struct MOT_node** head)
@@ -420,22 +420,22 @@ static void _mot_fix_rbt_violations(struct MOT_node* node, struct MOT_node** hea
 
 static struct MOT_node* _mot_alloc_node(MOT_tag tag, SPhash name, SPsize length, const SPbyte* value)
 {
-    struct MOT_node* node = NULL;
-    MOT_CHECKED_CALLOC(node, 1, sizeof(struct MOT_node), return NULL);
-    node->tag = tag;
-    node->weight = name;
-    node->length = length;
-    node->major = node->minor = NULL;
-    node->parent = NULL;
-    node->red = SP_FALSE;
+	struct MOT_node* node = NULL;
+	MOT_CHECKED_CALLOC(node, 1, sizeof(struct MOT_node), return NULL);
+	node->tag = tag;
+	node->weight = name;
+	node->length = length;
+	node->major = node->minor = NULL;
+	node->parent = NULL;
+	node->red = SP_FALSE;
 
 	if(value && length > 0)
 	{
-	    MOT_CHECKED_CALLOC(node->payload.data, node->length, sizeof(SPbyte), return NULL);
-	    memcpy(node->payload.data, value, node->length * sizeof(SPbyte));
+		MOT_CHECKED_CALLOC(node->payload.data, node->length, sizeof(SPbyte), return NULL);
+		memcpy(node->payload.data, value, node->length * sizeof(SPbyte));
 
-	    if(tag == MOT_TAG_STRING)
-	        node->payload.data[node->length - 1] = 0;
+		if(tag == MOT_TAG_STRING)
+			node->payload.data[node->length - 1] = 0;
 	}
 
 	return node;
@@ -443,37 +443,38 @@ static struct MOT_node* _mot_alloc_node(MOT_tag tag, SPhash name, SPsize length,
 
 static SPsize _mot_length_of(MOT_tag tag)
 {
-    switch(tag)
-    {
-        case MOT_TAG_BYTE: return sizeof(SPbyte);
-        case MOT_TAG_SHORT: return sizeof(SPshort);
-        case MOT_TAG_INT: return sizeof(SPint);
-        case MOT_TAG_LONG: return sizeof(SPlong);
-        case MOT_TAG_FLOAT: return sizeof(SPfloat);
-        case MOT_TAG_DOUBLE: return sizeof(SPdouble);
-        case MOT_TAG_NULL: break;
-    }
-    return 0;
+	switch(tag)
+	{
+		case MOT_TAG_BYTE: return sizeof(SPbyte);
+		case MOT_TAG_SHORT: return sizeof(SPshort);
+		case MOT_TAG_INT: return sizeof(SPint);
+		case MOT_TAG_LONG: return sizeof(SPlong);
+		case MOT_TAG_FLOAT: return sizeof(SPfloat);
+		case MOT_TAG_DOUBLE: return sizeof(SPdouble);
+		case MOT_TAG_NULL: break;
+	}
+	return 0;
 }
 
-static SPhash _mot_sdbm_impl(const SPchar *str) {
-    SPhash hash = 0;
-    int c;
-    while ((c = *str++))
-	    hash = c + (hash << 6) + (hash << 16) - hash; // hash * 65599 + c
+static SPhash _mot_sdbm_impl(const SPchar *str) 
+{
+	SPhash hash = 0;
+	int c;
+	while ((c = *str++))
+		hash = c + (hash << 6) + (hash << 16) - hash; // hash * 65599 + c
 
-    return hash;
+	return hash;
 }
 
 static SPhash _mot_sdbm(const SPchar* str)
 {
 	SPhash hash = _mot_sdbm_impl(str);
-    SPubyte buffer[4];
+	SPubyte buffer[4];
 
-    for(SPsize i = 0; i < 8; i++)
-    {
-	    buffer[i] = (hash >> (i * 8)) & 0xFF;
-    }
+	for(SPsize i = 0; i < 8; i++)
+	{
+		buffer[i] = (hash >> (i * 8)) & 0xFF;
+	}
 	SPhash output = 0;
 	memcpy(&output, buffer, sizeof(SPbyte) * 4);
 	return output;
@@ -481,16 +482,16 @@ static SPhash _mot_sdbm(const SPchar* str)
 
 void _mot_print_binary(const unsigned char *byteArray, size_t size, int level)
 {
-    for (size_t i = 0; i < size; i++)
-    {
-        SPubyte byte = byteArray[i];
-        for(int i = 0; i < level; i++)
-            printf("\t");
-        printf("    ");
-        for (int j = 7; j >= 0; j--)
-            printf("%d", (byte >> j) & 1);
-        printf("\n");
-    }
+	for (size_t i = 0; i < size; i++)
+	{
+		SPubyte byte = byteArray[i];
+		for(int i = 0; i < level; i++)
+			printf("\t");
+		printf("    ");
+		for (int j = 7; j >= 0; j--)
+			printf("%d", (byte >> j) & 1);
+		printf("\n");
+	}
 }
 
 MOT_tree motAllocTree()
@@ -548,95 +549,95 @@ static MOT_tree _mot_insert_bytes(MOT_tree* head, MOT_tree node, SPhash weight, 
 {
 	if(!node)
 	{
-	    *head = _mot_alloc_node(tag, weight, length, value);
-	    return *head;
+		*head = _mot_alloc_node(tag, weight, length, value);
+		return *head;
 	}
 
 	if(node->weight == 0 || node->tag == MOT_TAG_NULL)
 	{
-	    SP_ASSERT(node->length == 0LL, "Empty tree cannot have length defined (%lld)", node->length);
-	    SP_ASSERT(!node->payload.data, "Empty tree cannot have data");
-	    SP_ASSERT(!node->major && !node->minor, "Empty tree cannot have sub-trees");
-	    SP_ASSERT(!node->parent, "Empty tree cannot have a parent");
-	    SP_ASSERT(!node->red, "Empty tree must be black-coded");
+		SP_ASSERT(node->length == 0LL, "Empty tree cannot have length defined (%lld)", node->length);
+		SP_ASSERT(!node->payload.data, "Empty tree cannot have data");
+		SP_ASSERT(!node->major && !node->minor, "Empty tree cannot have sub-trees");
+		SP_ASSERT(!node->parent, "Empty tree cannot have a parent");
+		SP_ASSERT(!node->red, "Empty tree must be black-coded");
 
-	    MOT_tree root = _mot_alloc_node(tag, weight, length, value);
-	    (*head)->weight = weight;
-	    (*head)->length = root->length;
-	    (*head)->payload.data = root->payload.data;
-	    (*head)->tag = tag;
+		MOT_tree root = _mot_alloc_node(tag, weight, length, value);
+		(*head)->weight = weight;
+		(*head)->length = root->length;
+		(*head)->payload.data = root->payload.data;
+		(*head)->tag = tag;
 
-        free(root);
-        return *head;
+		free(root);
+		return *head;
 	}
 
-	if(weight == node->weight)
-    {
-        SP_DEBUG("Name has already been given to a node");
-        return NULL;
-    }
+		if(weight == node->weight)
+	{
+		SP_DEBUG("Name has already been given to a node");
+		return NULL;
+	}
 
-    SPbool isMajor = (weight > node->weight);
-    MOT_tree primary  = isMajor ? node->major : node->minor;
+	SPbool isMajor = (weight > node->weight);
+	MOT_tree primary  = isMajor ? node->major : node->minor;
 
 	if(primary)
 		_mot_insert_bytes(head, primary, weight, tag, length, value);
-    else
-    {
-	    primary = _mot_alloc_node(tag, weight, length, value);
-	    primary->parent = node;
-	    primary->red = SP_TRUE;
-	    isMajor ? (node->major = primary) : (node->minor = primary);
-	    _mot_fix_rbt_violations(primary, head);
-    }
+	else
+	{
+		primary = _mot_alloc_node(tag, weight, length, value);
+		primary->parent = node;
+		primary->red = SP_TRUE;
+		isMajor ? (node->major = primary) : (node->minor = primary);
+		_mot_fix_rbt_violations(primary, head);
+	}
 	return primary;
 }
 
 static MOT_tree _mot_insert_root(MOT_tree* head, MOT_tree node, SPhash weight, MOT_tree value)
 {
-    if(!node)
+	if(!node)
 	{
-	    *head = _mot_alloc_node(MOT_TAG_ROOT, weight, 0LL, NULL);
-	    (*head)->payload.head = value;
+		*head = _mot_alloc_node(MOT_TAG_ROOT, weight, 0LL, NULL);
+		(*head)->payload.head = value;
 
-	    return *head;
+		return *head;
 	}
 
 	if(node->weight == 0 || node->tag == MOT_TAG_NULL)
-    {
-        SP_ASSERT(node->length == 0LL, "Empty tree cannot have length defined (%lld)", node->length);
-        SP_ASSERT(!node->payload.data, "Empty tree cannot have data");
-        SP_ASSERT(!node->major && !node->minor, "Empty tree cannot have sub-trees");
-        SP_ASSERT(!node->parent, "Empty tree cannot have a parent");
-        SP_ASSERT(!node->red, "Empty tree must be black-coded");
+	{
+		SP_ASSERT(node->length == 0LL, "Empty tree cannot have length defined (%lld)", node->length);
+		SP_ASSERT(!node->payload.data, "Empty tree cannot have data");
+		SP_ASSERT(!node->major && !node->minor, "Empty tree cannot have sub-trees");
+		SP_ASSERT(!node->parent, "Empty tree cannot have a parent");
+		SP_ASSERT(!node->red, "Empty tree must be black-coded");
 
-        (*head)->weight = weight;
-        (*head)->payload.head = value;
-        (*head)->tag = MOT_TAG_ROOT;
+		(*head)->weight = weight;
+		(*head)->payload.head = value;
+		(*head)->tag = MOT_TAG_ROOT;
 
-        return *head;
-    }
+		return *head;
+	}
 
-    if(value->weight == node->weight)
-    {
-        SP_DEBUG("Name has already been given to a node");
-        return NULL;
-    }
+	if(value->weight == node->weight)
+	{
+		SP_DEBUG("Name has already been given to a node");
+		return NULL;
+	}
 
-    SPbool isMajor = (value->weight > node->weight);
-    MOT_tree primary  = isMajor ? node->major : node->minor;
+	SPbool isMajor = (value->weight > node->weight);
+	MOT_tree primary  = isMajor ? node->major : node->minor;
 
 	if(primary)
 		_mot_insert_root(head, primary, weight, value);
-    else
-    {
+	else
+	{
 		primary = _mot_alloc_node(MOT_TAG_ROOT, value->weight, 0, NULL);
 		primary->parent = node;
 		primary->payload.head = value;
 		primary->red = SP_TRUE;
 	    isMajor ? (node->major = primary) : (node->minor = primary);
 	    _mot_fix_rbt_violations(primary, head);
-    }
+	}
 
     return primary;
 }
@@ -704,9 +705,9 @@ void motInsertArray(MOT_tree* tree, const SPchar* name, MOT_tag tag, SPsize leng
 
 	if(scalar == MOT_TAG_NULL)
 	{
-	    SP_WARNING("Expected type");
-	    return;
-    }
+		SP_WARNING("Expected type");
+		return;
+	}
 
 	if(!(data && length > 0))
 	{
@@ -780,23 +781,23 @@ const char* _mot_tag_to_str(MOT_tag tag)
 			case MOT_TAG_FLOAT: return "float array";
 			case MOT_TAG_DOUBLE: return "double array";
 			case MOT_TAG_STRING: return "string array";
-			case MOT_TAG_NULL: return "null";
 		}
 	}
-
-    switch(tag)
-    {
-	case MOT_TAG_BYTE: return "byte";
-	case MOT_TAG_SHORT: return "short";
-	case MOT_TAG_INT: return "int";
-	case MOT_TAG_LONG: return "long";
-	case MOT_TAG_FLOAT: return "float";
-	case MOT_TAG_DOUBLE: return "double";
-	case MOT_TAG_STRING: return "string";
-	case MOT_TAG_ARRAY: return "array";
-	case MOT_TAG_ROOT: return "root";
-    }
-
+	else
+	{
+		switch(tag)
+		{
+			case MOT_TAG_BYTE: return "byte";
+			case MOT_TAG_SHORT: return "short";
+			case MOT_TAG_INT: return "int";
+			case MOT_TAG_LONG: return "long";
+			case MOT_TAG_FLOAT: return "float";
+			case MOT_TAG_DOUBLE: return "double";
+			case MOT_TAG_STRING: return "string";
+			case MOT_TAG_ARRAY: return "array";
+			case MOT_TAG_ROOT: return "root";
+		}
+	}
     return "null";
 }
 
@@ -805,7 +806,7 @@ void _mot_print_tree(const MOT_tree tree, int level)
 	if(tree)
 	{
 		for(int i = 0; i < level; i++)
-	        printf("\t");
+		printf("\t");
 
 		SPchar color = tree->red ? 'R' : 'B';
 		SPchar rank = _mot_is_root(tree) ? '~' : (_mot_is_major(tree) ? '+' : '-');
@@ -877,10 +878,10 @@ void _mot_print_tree(const MOT_tree tree, int level)
 		{
 			switch(tree->tag)
 			{
-			    case MOT_TAG_NULL:
-			    {
-				    break;
-			    }
+				case MOT_TAG_NULL:
+				{
+					break;
+				}
 
 				case MOT_TAG_ROOT:
 				{
@@ -956,13 +957,13 @@ static void _mot_write_bytes(SPbuffer* buffer, const SPubyte* src, SPsize amount
 
 #ifdef MOT_PRINT_OUTPUT_DEBUG
 #define _mot_print_indent(ntabs, msg, ...)\
-do\
-{\
-    for(int i = 0; i < ntabs; i++)\
-	printf("\t");\
-    printf((msg), ##__VA_ARGS__);\
-    printf("\n");\
-} while(0)
+	do\
+	{\
+		for(int i = 0; i < ntabs; i++)\
+		printf("\t");\
+		printf((msg), ##__VA_ARGS__);\
+		printf("\n");\
+	} while(0)
 #else
 #define _mot_print_indent(ntabs, msg, ...)
 #endif
@@ -986,26 +987,26 @@ static void _mot_write_binary(const MOT_tree tree, SPbuffer* buffer, int level)
 	_mot_write_bytes(buffer, (const SPubyte*) &tag, sizeof(SPbyte), level, SP_FALSE);
 
 	//encode the weight..
-    _mot_print_indent(level, "weight: %lld", tree->weight);
+	_mot_print_indent(level, "weight: %lld", tree->weight);
 	_mot_write_bytes(buffer, (const SPubyte*) &tree->weight, sizeof(SPlong), level, SP_TRUE);
 
-    if(tree->tag == MOT_TAG_STRING || (tree->tag & MOT_TAG_ARRAY))
-    {
-	    //write the length of the string
-	    _mot_print_indent(level, "length: %lld", tree->length);
-	    _mot_write_bytes(buffer, (const SPubyte*) &tree->length, sizeof(SPsize), level, SP_TRUE);
-    }
-
-    if(tree->tag != MOT_TAG_ROOT)
-    {
-		SP_ASSERT(tree->payload.data, "Node %lld has invalid data to write", tree->weight);
-	if((tree->tag & MOT_TAG_ARRAY) == 0)
+	if(tree->tag == MOT_TAG_STRING || (tree->tag & MOT_TAG_ARRAY))
 	{
-		_mot_print_indent(level, "data: (%lld byte(s))", tree->length);
-	    _mot_write_bytes(buffer, (const SPubyte*)tree->payload.data, tree->length, level, tree->tag != MOT_TAG_STRING);
+		//write the length of the string
+		_mot_print_indent(level, "length: %lld", tree->length);
+		_mot_write_bytes(buffer, (const SPubyte*) &tree->length, sizeof(SPsize), level, SP_TRUE);
 	}
-	else
+
+	if(tree->tag != MOT_TAG_ROOT)
 	{
+		SP_ASSERT(tree->payload.data, "Node %lld has invalid data to write", tree->weight);
+		if((tree->tag & MOT_TAG_ARRAY) == 0)
+		{
+			_mot_print_indent(level, "data: (%lld byte(s))", tree->length);
+			_mot_write_bytes(buffer, (const SPubyte*)tree->payload.data, tree->length, level, tree->tag != MOT_TAG_STRING);
+		}
+		else
+		{
 			if((tree->tag & ~MOT_TAG_ARRAY) == MOT_TAG_STRING)
 			{
 				_mot_print_indent(level, "data: (%lld byte(s))", tree->length);
@@ -1030,12 +1031,12 @@ static void _mot_write_binary(const MOT_tree tree, SPbuffer* buffer, int level)
 				for(SPsize i = 0; i < tree->length / stride; i++)
 					_mot_write_bytes(buffer, (const SPubyte*)tree->payload.data + stride * i, stride, level, SP_TRUE);
 			}
-	}
+		}
 	}
 	else
 	{
 	    _mot_print_indent(level + 1, "root");
-        _mot_write_binary(tree->payload.head, buffer, level + 1);
+	_mot_write_binary(tree->payload.head, buffer, level + 1);
 	}
 	_mot_print_indent(level + 1, "major");
 	_mot_write_binary(tree->major, buffer, level + 1);
@@ -1063,8 +1064,8 @@ static MOT_tree _mot_read_binary(const SPubyte** memory, SPsize* length)
 	SPubyte tag;
 	MOT_READ_GENERIC(&tag, sizeof(SPubyte), _mot_memcpy, return NULL);
 
-    SPbool redness = (tag >> 6) & 1;
-    tag &= ~0x40;
+	SPbool redness = (tag >> 6) & 1;
+	tag &= ~0x40;
 
 	if(tag == MOT_TAG_NULL)
 		return NULL;
@@ -1077,26 +1078,26 @@ static MOT_tree _mot_read_binary(const SPubyte** memory, SPsize* length)
 
 	if(tag != MOT_TAG_ROOT)
 	{
-	    if(!(tag & MOT_TAG_ARRAY) && tag != MOT_TAG_STRING)
-	    {
-            tree->length = _mot_length_of(tag);
-            if(tree->length)
-            {
-                MOT_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return NULL);
-                MOT_READ_GENERIC(tree->payload.data, tree->length, _mot_swapped_memcpy, return NULL);
-            }
-        }
-        else if(tag == MOT_TAG_STRING || tag == (MOT_TAG_BYTE | MOT_TAG_ARRAY))
-        {
-            MOT_READ_GENERIC(&tree->length, sizeof(SPlong), _mot_swapped_memcpy, return NULL);
-            if(tree->length)
-            {
-                MOT_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return NULL);
-                MOT_READ_GENERIC(tree->payload.data, tree->length, _mot_memcpy, return NULL);
-            }
-        }
-        else
-        {
+		if(!(tag & MOT_TAG_ARRAY) && tag != MOT_TAG_STRING)
+		{
+			tree->length = _mot_length_of(tag);
+			if(tree->length)
+			{
+				MOT_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return NULL);
+				MOT_READ_GENERIC(tree->payload.data, tree->length, _mot_swapped_memcpy, return NULL);
+			}
+		}
+		else if(tag == MOT_TAG_STRING || tag == (MOT_TAG_BYTE | MOT_TAG_ARRAY))
+		{
+			MOT_READ_GENERIC(&tree->length, sizeof(SPlong), _mot_swapped_memcpy, return NULL);
+			if(tree->length)
+			{
+				MOT_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return NULL);
+				MOT_READ_GENERIC(tree->payload.data, tree->length, _mot_memcpy, return NULL);
+			}
+		}
+		else
+		{
 			MOT_READ_GENERIC(&tree->length, sizeof(SPlong), _mot_swapped_memcpy, return NULL);
 			if(tree->length)
 			{
@@ -1126,19 +1127,19 @@ static MOT_tree _mot_read_binary(const SPubyte** memory, SPsize* length)
 					tree->payload.data[tree->length - 1] = zero;
 				}
 			}
-	    }
+		}
 	}
 	else
 	{
-	    tree->payload.head = _mot_read_binary(memory, length);
+		tree->payload.head = _mot_read_binary(memory, length);
 	}
 	tree->major = _mot_read_binary(memory, length);
 	tree->minor = _mot_read_binary(memory, length);
 
-    if(tree->major)
-        tree->major->parent = tree;
-    if(tree->minor)
-        tree->minor->parent = tree;
+	if(tree->major)
+	tree->major->parent = tree;
+	if(tree->minor)
+		tree->minor->parent = tree;
 
 	return tree;
 }

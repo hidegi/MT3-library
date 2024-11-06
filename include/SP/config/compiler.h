@@ -20,8 +20,8 @@
 
 
 #if defined(SP_PLATFORM_WINDOWS) && (defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC))
-    #define SP_ALIGN_STACK __attribute__((__force_align_arg_pointer__))
+	#define SP_ALIGN_STACK __attribute__((__force_align_arg_pointer__))
 #else
-    #define SP_ALIGN_STACK
+	#define SP_ALIGN_STACK
 #endif
 #endif // SIMPLE_COMPILER_H_INCLUDED

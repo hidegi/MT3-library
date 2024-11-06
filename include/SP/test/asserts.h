@@ -9,16 +9,16 @@
 #define unlikely(x) (x)
 #endif
 extern SP_API SPint sp_test_status;
-#define SP_TEST_ASSERT(c, msg, ...)             		\
-    do                                          		\
-    {                                           		\
-        if(!(c))                                		\
-        {                                       		\
-            sp_test_status = SP_TEST_FAIL;      		\
+#define SP_TEST_ASSERT(c, msg, ...)			 		\
+	do								\
+	{								\
+		if(!(c))						\
+		{							\
+			sp_test_status = SP_TEST_FAIL;	  		\
 			SP_PRINT("[SP-test]:", msg, ##__VA_ARGS__);	\
-            return;                             		\
-        }                                       		\
-    } while(0)
+			return;						\
+		}							\
+	} while(0)
 
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
 #pragma GCC diagnostic push

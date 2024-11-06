@@ -3,9 +3,9 @@
 
 #ifdef __cplusplus
 #if defined(__cpp_constexpr) && (__cpp_constexpr >= 201304L)
-    #define SP_CONSTEXPR constexpr
+	#define SP_CONSTEXPR constexpr
 #else
-    #define SP_CONSTEXPR inline
+	#define SP_CONSTEXPR inline
 #endif // defined
 #endif // __cplusplus
 
