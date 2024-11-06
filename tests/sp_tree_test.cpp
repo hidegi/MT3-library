@@ -16,7 +16,8 @@ struct Node
     Node* major;
     Node* minor;
 };
-
+	
+    
 bool isMajor(Node* n)
 {
     return (n && n->parent) ? (n->parent->major == n) : SP_FALSE;
@@ -36,8 +37,8 @@ Node* nodeFindMember(Node* n)
 {
     if(isRoot(n->parent))
     {
-        printf("impossible state??");
-        return NULL;
+	printf("impossible state??");
+	return NULL;
     }
 
     return (isMajor(n->parent)) ? n->parent->parent->minor : n->parent->parent->major;
@@ -56,10 +57,10 @@ void nodeFree(Node* n)
 {
     if(n)
     {
-        //data free impl..
-        nodeFree(n->major);
-        nodeFree(n->minor);
-        delete n;
+	//data free impl..
+	nodeFree(n->major);
+	nodeFree(n->minor);
+	delete n;
     }
 }
 
@@ -67,11 +68,11 @@ void nodePrintImpl(Node* n, int level)
 {
     if(n)
     {
-        for(int i = 0; i < level; i++)
-            printf("\t");
-        printf("(%c) (%c) %lld\n", n->red ? 'R' : 'B', isRoot(n) ? '*' : isMajor(n) ? '+' : '-', n->data);
-        nodePrintImpl(n->major, level + 1);
-        nodePrintImpl(n->minor, level + 1);
+	for(int i = 0; i < level; i++)
+	    printf("\t");
+	printf("(%c) (%c) %lld\n", n->red ? 'R' : 'B', isRoot(n) ? '*' : isMajor(n) ? '+' : '-', n->data);
+	nodePrintImpl(n->major, level + 1);
+	nodePrintImpl(n->minor, level + 1);
     }
 }
 
@@ -84,38 +85,38 @@ void nodeAdd_BST(Node* node, unsigned long long value)
 {
     if(node)
     {
-        if(node->data == value)
-        {
-            printf("Node %d already available\n", value);
-            return;
-        }
+	if(node->data == value)
+	{
+	    printf("Node %d already available\n", value);
+	    return;
+	}
 
-        if(value > node->data)
-        {
-            if(node->major)
-            {
-                nodeAdd_BST(node->major, value);
-            }
-            else
-            {
-                node->major = nodeAlloc(value);
-                node->major->parent = node;
-                node->red = true;
-            }
-        }
-        else
-        {
-            if(node->minor)
-            {
-                nodeAdd_BST(node->minor, value);
-            }
-            else
-            {
-                node->minor = nodeAlloc(value);
-                node->minor->parent = node;
-                node->red = true;
-            }
-        }
+	if(value > node->data)
+	{
+	    if(node->major)
+	    {
+		nodeAdd_BST(node->major, value);
+	    }
+	    else
+	    {
+		node->major = nodeAlloc(value);
+		node->major->parent = node;
+		node->red = true;
+	    }
+	}
+	else
+	{
+	    if(node->minor)
+	    {
+		nodeAdd_BST(node->minor, value);
+	    }
+	    else
+	    {
+		node->minor = nodeAlloc(value);
+		node->minor->parent = node;
+		node->red = true;
+	    }
+	}
     }
 }
 
@@ -136,14 +137,14 @@ Node* rotateLeft(Node* n, Node** head)
 
     if(parent)
     {
-        if(maj)
-            parent->major = major;  //n was a subtree..
-        else
-            parent->minor = major;
+	if(maj)
+	    parent->major = major;  //n was a subtree..
+	else
+	    parent->minor = major;
     }
     else
     {
-        *head = major; //n was the root node..
+	*head = major; //n was the root node..
     }
 
     return major;
@@ -166,14 +167,14 @@ Node* rotateRight(Node* n, Node** head)
 
     if(parent)
     {
-        if(maj)
-            parent->major = minor;  //n was a subtree..
-        else
-            parent->minor = minor;
+	if(maj)
+	    parent->major = minor;  //n was a subtree..
+	else
+	    parent->minor = minor;
     }
     else
     {
-        *head = minor; //n was the root node..
+	*head = minor; //n was the root node..
     }
 
     return minor;
@@ -280,40 +281,40 @@ void nodeAdd_RBT(Node* node, Node** head, unsigned long long value)
 {
     if(node)
     {
-        if(node->data == value)
-        {
-            printf("Node %d already available\n", value);
-            return;
-        }
+	if(node->data == value)
+	{
+	    printf("Node %d already available\n", value);
+	    return;
+	}
 
-        if(value > node->data)
-        {
-            if(node->major)
-            {
-                nodeAdd_RBT(node->major, head, value);
-            }
-            else
-            {
-                node->major = nodeAlloc(value);
-                node->major->parent = node;
-                node->major->red = true;
-                fixViolations(node->major, head);
-            }
-        }
-        else
-        {
-            if(node->minor)
-            {
-                nodeAdd_RBT(node->minor, head, value);
-            }
-            else
-            {
-                node->minor = nodeAlloc(value);
-                node->minor->parent = node;
-                node->minor->red = true;
-                fixViolations(node->minor, head);
-            }
-        }
+	if(value > node->data)
+	{
+	    if(node->major)
+	    {
+		nodeAdd_RBT(node->major, head, value);
+	    }
+	    else
+	    {
+		node->major = nodeAlloc(value);
+		node->major->parent = node;
+		node->major->red = true;
+		fixViolations(node->major, head);
+	    }
+	}
+	else
+	{
+	    if(node->minor)
+	    {
+		nodeAdd_RBT(node->minor, head, value);
+	    }
+	    else
+	    {
+		node->minor = nodeAlloc(value);
+		node->minor->parent = node;
+		node->minor->red = true;
+		fixViolations(node->minor, head);
+	    }
+	}
     }
 }
 
