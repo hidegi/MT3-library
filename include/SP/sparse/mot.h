@@ -60,97 +60,45 @@ typedef enum
 	MOT_ERR_COMP
 } MOT_status;
 
-typedef struct 
-{
-	struct MOT_node* major;
-	struct MOT_node* minor;
-} MOT_branch;
-
-#define MOT_COLOR_BLACK 0
-#define MOT_COLOR_RED   1
-
-struct MOT_node
-{
-    //written to disk:
-	SPhash weight; // 8 bytes
-	MOT_tag tag;   // 1 byte
-	SPsize length; // 8 bytes
-
-	//not written to disk:
-	struct MOT_node* parent;
-	SPuint8 red;
-
-	union
-	{
-		SPbyte* data;
-		
-		//does not hold the root-node
-		//but only major and minor branches..
-		MOT_branch head;
-	} payload; //length bytes
-
-	// total bytes written = 17 + length bytes
-	struct MOT_node* major;
-	struct MOT_node* minor;
-};
-
-typedef struct
-{
-	SPsize length;
-	SPbyte* data;
-} MOT_byte_array;
-
-typedef struct
-{
-	SPsize length;
-	SPint* data;
-} MOT_int_array;
-
-typedef struct
-{
-	SPsize length;
-	SPlong* data;
-} MOT_long_array;
-
-typedef struct MOT_node MOT_tree;
-typedef struct MOT_node MOT_node;
+struct MOT_node;
+typedef struct MOT_node* MOT_tree;
 
 /*<==========================================================>*
  *  debug
  *<==========================================================>*/
-SP_API void motPrintTree(const MOT_tree* tree);
+SP_API void motPrintTree(const MOT_tree tree);
 
 /*<==========================================================>*
  *  allocation
  *<==========================================================>*/
-SP_API MOT_tree* motAllocTree(const SPchar* name);
+SP_API MOT_tree motAllocTree();
 
 /*<==========================================================>*
  *  data feed
  *<==========================================================>*/
 SP_API void* motAllocChunk(SPsize size);
-SP_API void motInsertByte(MOT_tree** tree, const SPchar* name, SPbyte value);
-SP_API void motInsertShort(MOT_tree** tree, const SPchar* name, SPshort value);
-SP_API void motInsertInt(MOT_tree** tree, const SPchar* name, SPint value);
-SP_API void motInsertLong(MOT_tree** tree, const SPchar* name, SPlong value);
-SP_API void motInsertFloat(MOT_tree** tree, const SPchar* name, SPfloat value);
-SP_API void motInsertDouble(MOT_tree** tree, const SPchar* name, SPdouble value);
-SP_API void motInsertString(MOT_tree** tree, const SPchar* name, const SPchar* value);
-SP_API void motInsertTree(MOT_tree* tree, MOT_tree* value);
+SP_API void motInsertByte(MOT_tree* tree, const SPchar* name, SPbyte value);
+SP_API void motInsertShort(MOT_tree* tree, const SPchar* name, SPshort value);
+SP_API void motInsertInt(MOT_tree* tree, const SPchar* name, SPint value);
+SP_API void motInsertLong(MOT_tree* tree, const SPchar* name, SPlong value);
+SP_API void motInsertFloat(MOT_tree* tree, const SPchar* name, SPfloat value);
+SP_API void motInsertDouble(MOT_tree* tree, const SPchar* name, SPdouble value);
+SP_API void motInsertString(MOT_tree* tree, const SPchar* name, const SPchar* value);
+SP_API void motInsertTree(MOT_tree* tree, const SPchar* name, MOT_tree value);
 
-SP_API void motInsertArray(MOT_tree** tree, const SPchar* name, MOT_tag tag, SPsize length, const void* value);
-SP_API void motInsertStringArray(MOT_tree** tree, const SPchar* name, SPsize length, const SPchar** value);
+SP_API void motInsertArray(MOT_tree* tree, const SPchar* name, MOT_tag tag, SPsize length, const void* value);
+SP_API void motInsertStringArray(MOT_tree* tree, const SPchar* name, SPsize length, const SPchar** value);
 
-SP_API MOT_tree* motSearch(MOT_tree* tree, const char* name);
-SP_API SPbool motDelete(MOT_tree* tree, const SPchar* name);
+SP_API MOT_tree motSearch(MOT_tree tree, const char* name);
+SP_API SPbool motDelete(MOT_tree tree, const SPchar* name);
 
-SP_API SPbuffer motWriteBinary(MOT_tree* tree);
-SP_API MOT_tree* motReadBinary(SPbuffer buffer);
+SP_API SPbuffer motWriteBinary(const MOT_tree tree);
+SP_API MOT_tree motReadBinary(SPbuffer buffer);
 
 /*<==========================================================>*
  *  freeing
  *<==========================================================>*/
-SP_API void motFreeTree(MOT_tree* tree);
+SP_API void motFreeTree(MOT_tree tree);
 
 
 //typedef MOTnode MOThead;
