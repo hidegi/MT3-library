@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <random>
 
 unsigned long long values[][20] =
 {
@@ -81,6 +82,262 @@ void nodePrint(Node* n)
     nodePrintImpl(n, 0);
 }
 
+/*
+ *	deletion rule:
+ *
+ *	- if to be deleted node has no children, replacement is NULL..
+ *	- if to be deleted node has one child, replacement is child..
+ *	- if to be deleted node has two children:
+ *	
+ */
+ 
+
+
+Node* nodeFind(Node* head, unsigned long long value)
+{	
+	if(head)
+	{
+		if(value == head->data)
+			return head;
+		
+		if(value > head->data)
+		{
+			return nodeFind(head->major, value);
+		}
+		else
+		{
+			return nodeFind(head->minor, value);
+		}
+	}
+	return NULL;
+}
+
+void nodeDeleteImpl_RBT(Node* n)
+{
+	if(n)
+	{
+		bool maj = isMajor(n);
+		if(!n->major && !n->minor)
+		{
+			if(maj)
+			{
+				n->parent->major = NULL;
+			}
+			else
+			{
+				n->parent->minor = NULL;
+			}
+			delete n;
+		}
+		else if((n->major && !n->minor) || (!n->major && n->minor))
+		{
+			Node** m = maj ? &n->parent->major : &n->parent->minor;
+			if(n->major)
+			{
+				*m = n->major;
+			}
+			else
+			{
+				*m = n->minor;
+			}
+			delete n;
+		}
+	}
+}
+
+Node* findMajorMost(Node* n)
+{
+	if(n)
+	{
+		if(!n->major)
+			return n;
+		else
+			return findMajorMost(n->major);
+	}
+	return NULL;
+}
+
+Node* findMinorMost(Node* n)
+{
+	if(n)
+	{
+		if(!n->minor)
+			return n;
+		else
+			return findMinorMost(n->minor);
+	}
+	return NULL;
+}
+
+void nodeDeleteImpl_BST(Node* n);
+void nodeAdd_RBT(Node* node, Node** head, unsigned long long value);
+void nodeDelete_BST(Node** head, unsigned long long value);
+
+void test_delete()
+{
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dst(1,1000);
+	
+	int nNodes = 14;
+	Node* n = nodeAlloc(123);
+	
+	int array[nNodes] = {123, 433, 85, 64, 159, 235, 721, 82, 854, 953, 151, 564, 847, 194};
+	
+	/*
+	int* array = new int[nNodes];
+	array[0] = 123;
+	*/
+	printf("123");
+	for(int i = 1; i < nNodes; i++)
+	{
+		//array[i] = dst(rng);
+		//printf(", %lld", array[i]);
+		nodeAdd_RBT(n, &n, array[i]);
+	}
+	
+	printf("\n");
+	printf("before:\n");
+    nodePrint(n);
+	
+	for(int i = 1; i < nNodes; i++)
+	{
+		nodeDelete_BST(&n, array[i]);
+	}
+	
+	//nodeDelete_BST(&n, array[1]);
+	//nodeDelete_BST(&n, array[2]);
+	printf("\n\nafter:\n");
+	nodePrint(n);
+    nodeFree(n);
+	//delete array;
+}
+
+void nodeDeleteImpl_BST(Node* n, Node** head)
+{
+	if(n)
+	{	
+		if(!n->parent)
+		{
+			if(!n->major && !n->minor)
+			{
+				SP_DEBUG("parent issue case 1");
+				delete n;
+				*head = NULL;
+				return;
+			}
+			else if((n->major && !n->minor) || (!n->major && n->minor))
+			{
+				SP_DEBUG("parent issue case 2");
+				Node* m = n->major ? n->major : n->minor;
+				m->parent = NULL;
+				*head = m;
+			}
+			else
+			{
+				SP_DEBUG("parent issue case 3");
+				Node* m = findMinorMost(n->major);
+				if(m != n->major)
+				{
+					Node* mP = m->parent;
+					Node* mMj = m->major;
+					
+					n->major->parent = n->minor->parent = m;
+					
+					m->major = n->major;
+					m->minor = n->minor;
+					m->parent = NULL;
+					mP->minor = mMj;
+					if(mMj)
+					   mMj->parent = mP;
+				}
+				else
+				{
+					m->parent = NULL;
+					n->minor->parent = m;
+					m->minor = n->minor;
+				}
+				
+				*head = m;
+			}
+			delete n;
+			
+			return;
+		}
+		bool maj = isMajor(n);
+		//case 1: no children..
+		if(!n->major && !n->minor)
+		{
+			SP_DEBUG("child issue case 1");
+			if(n->parent)
+				maj ? (n->parent->major = NULL) : (n->parent->minor = NULL);
+		}
+		else if((n->major && !n->minor) || (!n->major && n->minor))
+		{
+			SP_DEBUG("child issue case 2");
+			if(n->major)
+			{
+				if(n->parent)
+					maj ? (n->parent->major = n->major) : (n->parent->minor = n->major);
+				n->major->parent = n->parent;
+			}
+			else
+			{
+				if(n->parent)
+					maj ? (n->parent->major = n->minor) : (n->parent->minor = n->minor);
+				n->minor->parent = n->parent;
+			}
+		}
+		else
+		{
+			SP_DEBUG("child issue case 3");
+			Node* m = findMinorMost(n->major);
+			Node* mP = m->parent;
+			Node* mMj = m->major;
+			
+			Node* nP = n->parent;
+			Node* nMj = n->major;
+			Node* nMn = n->minor;
+			
+			
+			if(m != n->major)
+			{
+				//min and parent know each other..
+				if(nP)
+					maj ? (nP->major = m) : (nP->minor = m);
+				m->parent = n->parent;
+				//link children to new parent..
+				nMj->parent = nMn->parent = m;
+				mP->minor = mMj;
+				if(mMj)
+				   mMj->parent = mP;
+				m->major = nMj;
+				m->minor = nMn;
+			}
+			else
+			{
+				if(nP)
+					maj ? (nP->major = m) : (nP->minor = m);
+				m->parent = nP;
+				m->minor = nMn;
+				nMn->parent = m;
+			}
+		}
+		delete n;
+	}
+}
+
+void nodeDelete_RBT(Node* head, unsigned long long value)
+{
+	Node* n = nodeFind(head, value);
+	nodeDeleteImpl_RBT(n);
+}
+
+void nodeDelete_BST(Node** head, unsigned long long value)
+{
+	Node* n = nodeFind(*head, value);
+	nodeDeleteImpl_BST(n, head);
+}
 void nodeAdd_BST(Node* node, unsigned long long value)
 {
     if(node)
@@ -376,10 +633,34 @@ void test_tree_insert()
     nodeFree(n);
 }
 
+void test_find()
+{
+	Node* n = nodeAlloc(417465280);
+	nodeAdd_RBT(n, &n, 120);
+	nodeAdd_RBT(n, &n, 121);
+	nodeAdd_RBT(n, &n, 2283126203);
+	nodeAdd_RBT(n, &n, 1369249285);
+	nodeAdd_RBT(n, &n, 632064625);
+	nodeAdd_RBT(n, &n, 915915944);
+	nodeAdd_RBT(n, &n, 872506760);
+	nodeAdd_RBT(n, &n, 872506761);
+	nodeAdd_RBT(n, &n, 872506762);
+	nodeAdd_RBT(n, &n, 872506763);
+	nodeAdd_RBT(n, &n, 4109031586);
+	nodeAdd_RBT(n, &n, 510480399);
+	printf("\n");
+	
+	Node* toFind = nodeFind(n, 121);
+	printf("node data: %lld\n", toFind->data);
+	SP_ASSERT_NOT_NULL(toFind);
+    nodePrint(n);
+    nodeFree(n);
+}
+
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
-    SP_TEST_ADD(test_tree_insert);
+    SP_TEST_ADD(test_delete);
 
 	spTestRunAll();
 	spTestTerminate();

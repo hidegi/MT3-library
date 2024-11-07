@@ -81,7 +81,7 @@
 	do												\
 	{												\
 	if(spBufferAppend((b), (ptr), (len)))			\
-	return MOT_ERR_MEM;					  \
+	return MOT_ERR_MEM;					            \
 	} while(0)
 
 #define MOT_DUMP_NUM(type, x)						\
@@ -416,6 +416,11 @@ static void _mot_fix_rbt_violations(struct MOT_node* node, struct MOT_node** hea
 			_mot_fix_rbt_violations(r, head);
 		}
 	}
+}
+
+static void _mot_delete_node(MOT_tree, SPhash number)
+{
+    
 }
 
 static struct MOT_node* _mot_alloc_node(MOT_tag tag, SPhash name, SPsize length, const SPbyte* value)
@@ -1036,7 +1041,7 @@ static void _mot_write_binary(const MOT_tree tree, SPbuffer* buffer, int level)
 	else
 	{
 		_mot_print_indent(level + 1, "root");
-	_mot_write_binary(tree->payload.head, buffer, level + 1);
+        _mot_write_binary(tree->payload.head, buffer, level + 1);
 	}
 	_mot_print_indent(level + 1, "major");
 	_mot_write_binary(tree->major, buffer, level + 1);
