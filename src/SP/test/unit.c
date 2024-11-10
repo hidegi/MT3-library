@@ -51,12 +51,14 @@ SPbool spTestAdd(const SPchar* name, SPaction action)
 	
 	if(SP_TEST_GLOBAL.capacity < SP_TEST_GLOBAL.length + 1)
 	{
-		SPaction* ptr = realloc(SP_TEST_GLOBAL.actions, SP_TEST_GLOBAL.capacity *= 2);
+		SP_TEST_GLOBAL.capacity *= 2;
+		struct SP_action_entry* ptr = realloc(SP_TEST_GLOBAL.actions, SP_TEST_GLOBAL.capacity * sizeof(struct SP_action_entry));
 		if(!ptr)
 		{
 			free(SP_TEST_GLOBAL.actions);
 			return SP_FALSE;
 		}
+		SP_TEST_GLOBAL.actions = ptr;
 	}
 	SPsize length = strlen(name);
 	SP_TEST_GLOBAL.actions[SP_TEST_GLOBAL.length].action = action;
