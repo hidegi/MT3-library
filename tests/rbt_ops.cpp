@@ -9,9 +9,9 @@
 Node* rotateLeft(Node* n, Node** head);
 Node* rotateRight(Node* n, Node** head);
 void fixViolations(Node* node, Node** head);
-bool procedure_2(Node** x, Node** w, Node** head);
-bool procedure_3(Node** x, Node** w, Node** head);
-bool procedure_4(Node** x, Node** w, Node** head);
+bool procedure_2(Node* x, Node* w, Node** head);
+bool procedure_3(Node* x, Node* w, Node** head);
+bool procedure_4(Node* x, Node* w, Node** head);
 
 /*
  *	internal test API
@@ -245,28 +245,14 @@ bool procedure_0(Node* x)
 	return false;
 }
 
-bool procedure_1(Node** _x, Node** _w, Node** head)
+bool procedure_1(Node* x, Node* w, Node** head)
 {
 	// x is black and w is red..
-	Node* x = *_x;
-	Node* w = *_w;
-	
-	if(!x)
-	{
-		return false;
-	}
-	
-	Node dW;
-	if(!w)
-	{
-		dW.parent = x->parent;
-		dW.red = false;
-		dW.major = dW.minor = NULL;
-		w = &dW;
-	}
-	
 	if(!x->red && w->red)
 	{	
+		SP_DEBUG("procedure 1");
+		SP_ASSERT(x && w, "Replacement and sibling expected");
+		SP_ASSERT(x->parent, "Fatal, replacement expected to have parent");
 		SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
 		/*
 		 *	---- 1 ----
@@ -279,7 +265,7 @@ bool procedure_1(Node** _x, Node** _w, Node** head)
 		 *	5. decide case 2, 3 or 4 from this state..
 		 */
 		 
-		bool maj = !isMajor(w);
+		bool maj = isMajor(x);
 		
 		// 1. colour w black..
 		w->red = false;
@@ -291,76 +277,56 @@ bool procedure_1(Node** _x, Node** _w, Node** head)
 		 *		if x is major, then rotate right..
 		 *		if x is minor, then rotate left..
 		 */
+		SP_DEBUG("about to rotate");
 		Node* p = maj ? rotateRight(x->parent, head) : rotateLeft(x->parent, head);
-		SP_ASSERT(p, "Expeceted to have replacement");
-		// 4. set w to x's sibling..
-		w = maj ? x->parent->minor : x->parent->major;
+		SP_DEBUG("rotation ok");
+		SP_ASSERT(p, "Expeceted to have rotation replacement");
+		SP_ASSERT(p == w, "Rotation error");
 		
-		//SP_ASSERT(w, "Expected to have sibling");
-		/*
-		Node n;
+		p = maj ? p->major : p->minor;
+		// 4. set w to x's sibling..
+		//x = maj ? p->major : p->minor;
+		SP_ASSERT(p, "Expected to have parent");
+		x = maj ? p->major : p->minor;
+		w = maj ? p->minor : p->major;
+		
+		Node dX, dW;
 		if(!x)
 		{
-			n.parent = w ? w->parent : NULL;
-			n.red = false;
-			n.major = n.minor = NULL;
-			x = &n;
+			dX.red = false;
+			dX.parent = p;
+			dX.major = dW.minor = NULL;
+			x = &dX;
 		}
 		
-		Node m;
 		if(!w)
 		{
-			m.parent = x ? x->parent : NULL;
-			m.red = false;
-			m.major = m.minor = NULL;
-			w = &m;
+			dW.red = false;
+			dW.parent = p;
+			dW.major = dW.minor = NULL;
+			w = &dW;
 		}
-		*/
-		
+		SP_DEBUG("procedure 1 ok");
 		// 5. decide case 2, 3 or 4 from this state..
-		if(procedure_2(&x, &w, head))
+		/*
+		if(procedure_2(x, w, head))
 			return true;
 		
-		if(procedure_3(&x, &w, head))
+		if(procedure_3(x, w, head))
 			return true;
 		
-		return procedure_4(&x, &w, head);
+		return procedure_4(x, w, head);
+		*/
+		return true;
 	}
 	return false;
 }
 
-bool procedure_2(Node** _x, Node** _w, Node** head)
+bool procedure_2(Node* x, Node* w, Node** head)
 {	
 	// x is black and w is black..
-	Node* w = *_w;
-	Node* x = *_x;
-	if((!x && !w) || !x->parent)
-	{
-		SP_DEBUG("not allowed");
-		return false;
-	}
-	Node dX, dW;
-	if(!w)
-	{
-		dW.parent = x->parent;
-		dW.red = false;
-		dW.minor = dW.major = NULL;
-		w = &dW;
-	}
-	
-	if(!x)
-	{
-		dX.parent = w->parent;
-		dX.red = false;
-		dX.minor = dX.major = NULL;
-		x = &dX;
-	}
-	
 	if(!x->red && !w->red)
 	{
-		SP_ASSERT(x->parent, "Impossible: this cannot be a root node");
-		SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
-		
 		bool wMnB = w->minor ? !w->minor->red : true;
 		bool wMjB = w->major ? !w->major->red : true;
 		
@@ -401,33 +367,29 @@ bool procedure_2(Node** _x, Node** _w, Node** head)
 				// x is not root, decide on case 1, 2, 3, 4..
 				SP_DEBUG("proc decision");
 				w = isMajor(x) ? x->parent->minor : x->parent->major;
-				if(procedure_1(&x, &w, head))
+				if(procedure_1(x, w, head))
 					return true;
-				if(procedure_2(&x, &w, head))
+				if(procedure_2(x, w, head))
 					return true;
-				if(procedure_3(&x, &w, head))
+				if(procedure_3(x, w, head))
 					return true;
-				return procedure_4(&x, &w, head);
+				return procedure_4(x, w, head);
 			}
 		}
 	}
 	return false;
 }
 
-bool procedure_3(Node** _x, Node** _w, Node** head)
+bool procedure_3(Node* x, Node* w, Node** head)
 {
 	// (w is black) and (isMajor(x) ? w's major is red and w's minor is black : w's minor is red and w's major is black) (hard check)..
-	
-	Node* x = *_x;
-	Node* w = *_w;
-	
 	bool maj = !isMajor(w);
 	bool wMjB = w->major ? !w->major->red : true;
 	bool wMnB = w->minor ? !w->minor->red : true;
 	
 	if(maj ? (!wMjB && wMnB) : (!wMnB && wMjB))
 	{
-		SP_ASSERT((*_x)->parent == (*_w)->parent, "Replacement and sibling expected to have equal parent");
+		SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
 		/*
 		 *	1. colour w's child black:
 		 *		if x is major, then colour w's major black..
@@ -440,7 +402,7 @@ bool procedure_3(Node** _x, Node** _w, Node** head)
 		 *	5. proceed to case 4..
 		 */
 	 
-
+		SP_DEBUG("procedure 3");
 		
 		/*
 		 *	1. colour w's child black:
@@ -463,19 +425,16 @@ bool procedure_3(Node** _x, Node** _w, Node** head)
 		// 4. set w to x's sibling..
 		w = maj ? (x->parent->minor) : (x->parent->major);
 		SP_ASSERT(w != x, "Sibling cannot be the same");
-		
+		SP_ASSERT(x, "Expected to have replacement");
 		// 5. proceed to case 4..
-		return procedure_4(_x, &w, head);
+		return procedure_4(x, w, head);
 	}
 	return false;
 }
 
-bool procedure_4(Node** _x, Node** _w, Node** head)
+bool procedure_4(Node* x, Node* w, Node** head)
 {
 	// (w is black) and (isMajor(x) ? w's major is red : w's minor is red) (soft check)..
-	
-	Node* x = *_x;
-	Node* w = *_w;
 	bool maj = !isMajor(w);
 	
 	bool wMjR = w->major ? w->major->red : false;
@@ -483,7 +442,7 @@ bool procedure_4(Node** _x, Node** _w, Node** head)
 	
 	if(maj ? wMnR : wMjR)
 	{
-		SP_ASSERT((*_x)->parent == (*_w)->parent, "Replacement and sibling expected to have equal parent");
+		SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
 		/*
 		 *	1. w's colour is x's parent's colour..
 		 *	2. x's parent is black..
@@ -494,7 +453,7 @@ bool procedure_4(Node** _x, Node** _w, Node** head)
 		 *		if x is major, rotate right..
 		 *		if x is minor, rotate left..
 		 */
-		
+		SP_DEBUG("procedure 4");
 		
 		// 1. w's colour is x's parent's colour..
 		w->red = x->parent->red;
@@ -525,7 +484,8 @@ bool nodeFixupRules_RBT(Node* x, Node* w, Node** head)
 	// x's parent is never NULL..
 	// due to SBT, x always has a sibling..
 	SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
-
+	
+	
 	if(x->red)
 	{
 		SP_DEBUG("proc 0");
@@ -542,10 +502,12 @@ bool nodeFixupRules_RBT(Node* x, Node* w, Node** head)
 		{ 
 			SP_DEBUG("proc 1");
 			//SP_DEBUG("procedure 1");
-			return procedure_1(&x, &w, head);
+			if(procedure_1(x, w, head))
+				return true;
 		}
 		else
 		{
+			/*
 			bool wMjB = w->major ? !w->major->red : true;
 			bool wMnB = w->minor ? !w->minor->red : true;
 			
@@ -571,9 +533,11 @@ bool nodeFixupRules_RBT(Node* x, Node* w, Node** head)
 			}
 			
 			SP_ASSERT(0, "Expected procedure");
+			*/
 		}
 	}
-	return false;
+	
+	return true;
 }
 
 
@@ -581,6 +545,9 @@ bool nodeFixupRules_RBT(Node* x, Node* w, Node** head)
 // colouring..
 void nodeFixup_RBT(bool rBefore, Node* r, Node* x, Node* w, Node** head)
 {	
+	if(!r)
+		return;
+	
 	if(!x && !w)
 	{
 		if(r && !r->parent)
@@ -594,6 +561,7 @@ void nodeFixup_RBT(bool rBefore, Node* r, Node* x, Node* w, Node** head)
 	Node dW;
 	if(!x)
 	{
+		// x is double black..
 		dX.parent = w->parent;
 		dX.minor = dX.major = NULL;
 		dX.red = false;
@@ -602,6 +570,7 @@ void nodeFixup_RBT(bool rBefore, Node* r, Node* x, Node* w, Node** head)
 	
 	if(!w)
 	{
+		// w is double black..
 		dW.parent = x->parent;
 		dW.minor = dW.major = NULL;
 		dW.red = false;
@@ -611,31 +580,36 @@ void nodeFixup_RBT(bool rBefore, Node* r, Node* x, Node* w, Node** head)
 	bool rAfter = r ? r->red : false;
 	
 	// 1. rule: deleted node is red, and replcament is red or NULL => return..
-	if(rBefore && (rAfter || !r))
+	if(rBefore && rAfter)
 	{
+		// R -> R
 		SP_DEBUG("color case 1");
 		return;
 	}
-	// 2. rule: deleted node is red and replacement is black and not NULL 
-	// => colour replacement red and proceed to appropriate case..
-	if(rBefore && !rAfter && r)
+	
+	// 2. rule: deleted node is black and replacement is red
+	// => colour replacement black and return..
+	if(!rBefore && rAfter)
 	{
+		// B -> R
 		SP_DEBUG("color case 2");
+		r->red = false;
+		return;
+	}
+	
+	
+	// 3. rule: deleted node is red and replacement is black and not NULL 
+	// => colour replacement red and proceed to appropriate case..
+	if(rBefore && !rAfter)
+	{
+		// R -> B
+		SP_DEBUG("color case 3");
 		r->red = true;
 		SP_ASSERT(nodeFixupRules_RBT(x, w, head), "Fix up failed");
 		return;
 	}
 	
-	// 3. rule: deleted node is black and replacement is red
-	// => colour replacement black and return..
-	if(!rBefore && rAfter)
-	{
-		SP_DEBUG("color case 3");
-		SP_ASSERT(r, "Expeceted replacement");
-		r->red = false;
-		return;
-	}
-	
+
 	// 4. rule: deleted node is black and replcaement is black..
 	if(!rBefore && !rAfter)
 	{
@@ -656,18 +630,21 @@ void nodeFixup_RBT(bool rBefore, Node* r, Node* x, Node* w, Node** head)
  */
 Node* rotateLeft(Node* n, Node** head)
 {
+	SP_ASSERT(n, "Expected rotation node");
     bool maj = isMajor(n);
     Node* parent = n->parent;
     Node* major = n->major;
-    Node* carry = n->major->minor;
+    Node* carry = major ? n->major->minor : NULL;
 
     n->parent = major;
-    n->major->minor = n;
+	if(n->major)
+		n->major->minor = n;
     if(carry)
        carry->parent = n;
     n->major = carry;
-
-    major->parent = parent;
+	
+	if(major)
+		major->parent = parent;
 
     if(parent)
     {
@@ -687,25 +664,28 @@ Node* rotateLeft(Node* n, Node** head)
 
 Node* rotateRight(Node* n, Node** head)
 {
+	SP_ASSERT(n, "Expected rotation node");
     bool maj = isMajor(n);
     Node* parent = n->parent;
     Node* minor = n->minor;
-    Node* carry = n->minor->major;
-
+    Node* carry = minor ? n->minor->major : NULL;
+	
     n->parent = minor;
-    n->minor->major = n;
+	if(n->minor)
+		n->minor->major = n;
+	
     if(carry)
        carry->parent = n;
     n->minor = carry;
-
-    minor->parent = parent;
+	if(minor)
+		minor->parent = parent;
 
     if(parent)
     {
-	if(maj)
-	    parent->major = minor;  //n was a subtree..
-	else
-	    parent->minor = minor;
+		if(maj)
+			parent->major = minor;  //n was a subtree..
+		else
+			parent->minor = minor;
     }
     else
     {

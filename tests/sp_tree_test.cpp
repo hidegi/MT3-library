@@ -31,17 +31,14 @@ bool verifyImpl_RBT(Node* rbt, int depth, const int reference)
 {
 	if(rbt)
 	{
-		if(!rbt->parent)
+		if(rbt->red)
 		{
-			if(rbt->red)
+			if(!rbt->parent)
 			{
 				SP_DEBUG("red root node");
 				return false;
 			}
-		}
-		else
-		{
-			if(rbt->red)
+			else
 			{
 				if(rbt->parent->red)
 				{
@@ -50,26 +47,39 @@ bool verifyImpl_RBT(Node* rbt, int depth, const int reference)
 				}
 			}
 		}
-		
-		if(!rbt->red)
+		else
 		{
 			++depth;
 		}
 		
-		bool a = verifyImpl_RBT(rbt->major, depth, reference);
-		bool b = verifyImpl_RBT(rbt->minor, depth, reference);
-		return a && b;
+		if(rbt->major || rbt->minor)
+		{
+			bool a = true, b = true;
+			if(rbt->major)
+			{
+				a = verifyImpl_RBT(rbt->major, depth, reference); 
+			}
+			if(verifyImpl_RBT(rbt->minor, depth, reference));
+			{
+				b = verifyImpl_RBT(rbt->minor, depth, reference); 
+			}
+			return a && b;
+		}
+		else
+		{
+			if(reference != depth)
+			{
+				SP_DEBUG("expected %d but got %d for %d", reference, depth, rbt->data);
+			}
+			return !rbt->red ? reference == depth : true;
+		}
 	}
-	else
-	{
-		++depth;
-	}
-	return depth == reference;
+	
+	return true;
 }
-
 bool verifyRBT(Node* rbt)
 {
-	int depth = calculateBlackDepth(rbt);
+	int depth = calculateBlackDepth(rbt) - 1;
 	return verifyImpl_RBT(rbt, 0, depth);
 }
 
@@ -91,6 +101,7 @@ constexpr int array_big_test_1[] =
 123, 666, 146, 572, 60, 255, 171, 236, 286, 74, 777, 372, 668, 44, 391, 548, 540, 869, 419, 328, 610, 62, 132, 320, 85, 281, 159, 186, 430, 152, 134, 724, 560, 842, 880, 477, 529, 169, 715, 516, 965, 470, 418, 40, 427, 693, 811, 652, 76, 101, 363, 49, 731, 721, 68, 597, 11, 685, 284, 109, 298, 549, 118, 367, 54, 230, 532, 308, 716, 735, 357, 420, 264, 649, 89, 857, 887, 7, 847, 776, 861, 849, 617, 83, 613, 596, 237, 561, 51, 67, 424, 86, 482, 585, 459, 437, 569, 997, 350, 246, 145, 769, 942, 165, 750, 577, 660, 46, 257, 771, 674, 645, 147, 9, 416, 3, 797, 88, 336, 533, 117, 486, 678, 19, 487, 104, 651, 746, 831, 288, 828, 940, 900, 550, 348, 852, 138, 547, 500, 149, 510, 481, 102, 24, 396, 75, 607, 916, 798, 509, 303, 506, 239, 566, 373, 700, 154, 840, 854, 14, 927, 962, 125, 20, 270, 402, 665, 414, 25, 435, 654, 722, 809, 555, 899, 743, 457, 148, 184, 753, 222, 658, 841, 81, 970, 64, 251, 266, 63, 208, 33, 614, 227, 542, 130, 851, 807, 768, 189, 442
 };
 
+constexpr int array_ex_rotation[] = {7, 493, 352, 244, 136, 499, 212, 482, 112, 167, 218, 495, 223, 181, 365, 353, 113, 264, 335, 265};
 void test_rbt_delete_1()
 {
 	Node* n = nodeAlloc(array_ex_1[0]);
@@ -781,10 +792,12 @@ void test_rbt_delete_random()
 		printf(", %lld", array[i]);
 		nodeAdd_RBT(n, &n, array[i]);
 	}
-	printf("\n");
+	printf("\nbefore:\n");
+	nodePrint(n);
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), {nodePrint(n);});
+	printf("\ndeletion:\n");
 	for(int i = length - 1; i >= 1; i--)
 	{
-		SP_DEBUG("deleting %d", array[i]);
 		nodeDelete_RBT(&n, array[i]);
 		SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), {nodePrint(n); nodeFree(n);});
 		
@@ -892,6 +905,77 @@ void test_rbt_delete_small_verification()
     nodeFree(n);
 }
 
+void test_rotation_left()
+{
+	Node* n = nodeAlloc(array_ex_rotation[0]);
+	const SPsize length = sizeof(array_ex_rotation) / sizeof(int);
+	for(int i = 1; i < length; i++)
+	{
+		nodeAdd_RBT(n, &n, array_ex_rotation[i]);
+	}
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
+	n = rotateLeft(n, &n);
+	n = rotateLeft(n, &n);
+	n = rotateLeft(n, &n);
+	n = rotateLeft(n, &n);
+	n = rotateLeft(n, &n);
+	SP_ASSERT_TRUE_WITH_ACTION(n->data == 493, nodeFree(n));
+	SP_ASSERT_TRUE_WITH_ACTION(n->minor->data == 352, nodeFree(n));
+    nodeFree(n);
+}
+
+void test_rotation_right()
+{
+	Node* n = nodeAlloc(array_ex_rotation[0]);
+	const SPsize length = sizeof(array_ex_rotation) / sizeof(int);
+	for(int i = 1; i < length; i++)
+	{
+		nodeAdd_RBT(n, &n, array_ex_rotation[i]);
+	}
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
+	n = rotateRight(n, &n);
+	n = rotateRight(n, &n);
+	n = rotateRight(n, &n);
+	n = rotateRight(n, &n);
+	n = rotateRight(n, &n);
+	SP_ASSERT_TRUE_WITH_ACTION(n->data == 112, nodeFree(n));
+	SP_ASSERT_TRUE_WITH_ACTION(n->major->data == 136, nodeFree(n));
+    nodeFree(n);
+}
+
+void test_verification_random()
+{
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dst(1,1000);
+
+	Node* n = nodeAlloc(123);
+	
+	int* array = new int[LENGTH];
+	array[0] = 123;
+	SPsize length = LENGTH;
+	SP_DEBUG("adding %d", array[0]);
+	for(int i = 1; i < length; i++)
+	{
+	    int num = dst(rng);
+	    while(containsNumber(num, array, LENGTH))
+	        num = dst(rng);
+		array[i] = num;
+		SP_DEBUG("adding %d", array[i]);
+		nodeAdd_RBT(n, &n, array[i]);
+		SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), 
+			{	
+				nodePrint(n);
+				nodeFree(n); 
+				delete [] array;
+			}
+		);
+	}
+	
+    nodeFree(n);
+	delete[] array;
+}
+
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
@@ -922,6 +1006,9 @@ int main(int argc, char** argv)
     //SP_TEST_ADD(test_bst_delete_random);
     
 	SP_TEST_ADD(test_rbt_delete_random);
+	//SP_TEST_ADD(test_verification_random);
+	//SP_TEST_ADD(test_rotation_left);
+	
 	//SP_TEST_ADD(test_rbt_delete_small_verification);
 	/*
     SP_TEST_ADD(test_bst_delete_no_children_no_parent);

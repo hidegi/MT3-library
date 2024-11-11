@@ -10,6 +10,8 @@ struct Node
     Node* minor;
 };
 
+Node* rotateLeft(Node* n, Node** head);
+Node* rotateRight(Node* n, Node** head);
 Node* nodeAlloc(unsigned long long value);
 void nodeFree(Node* n);
 Node* nodeFind(Node* head, unsigned long long value);
