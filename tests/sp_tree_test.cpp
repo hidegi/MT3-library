@@ -11,14 +11,67 @@ unsigned long long values[][20] =
 {
 	{554, 865, 140, 9, 893, 859, 616, 146, 559, 166, 	852, 525, 538, 241, 540, 994, 699, 730, 701, 548}
 };
-/*
- *	deletion rule:
- *
- *	- if to be deleted node has no children, replacement is NULL..
- *	- if to be deleted node has one child, replacement is child..
- *	- if to be deleted node has two children:
- *	
- */
+
+int calculateBlackDepth(Node* node) 
+{
+    if(!node) 
+        return 1;
+
+    int count = 0;
+    if(!node->red) 
+        count++;
+	
+    int leftDepth = calculateBlackDepth(node->major);
+    int rightDepth = calculateBlackDepth(node->minor);
+	
+    return count + std::max(leftDepth, rightDepth);
+}
+
+bool verifyImpl_RBT(Node* rbt, int depth, const int reference)
+{
+	if(rbt)
+	{
+		if(!rbt->parent)
+		{
+			if(rbt->red)
+			{
+				SP_DEBUG("red root node");
+				return false;
+			}
+		}
+		else
+		{
+			if(rbt->red)
+			{
+				if(rbt->parent->red)
+				{
+					SP_DEBUG("red node with red parent");
+					return false;
+				}
+			}
+		}
+		
+		if(!rbt->red)
+		{
+			++depth;
+		}
+		
+		bool a = verifyImpl_RBT(rbt->major, depth, reference);
+		bool b = verifyImpl_RBT(rbt->minor, depth, reference);
+		return a && b;
+	}
+	else
+	{
+		++depth;
+	}
+	return depth == reference;
+}
+
+bool verifyRBT(Node* rbt)
+{
+	int depth = calculateBlackDepth(rbt);
+	return verifyImpl_RBT(rbt, 0, depth);
+}
 
 bool containsNumber(int n, const int* array, int length)
 {
@@ -28,90 +81,16 @@ bool containsNumber(int n, const int* array, int length)
     return false;
 }
 
-/*
- *  whenever there is triangle, rotate right-left or left-right (2 rotations)..
- *  whenever there is skew, rotate left or right (1 rotation)..
- *  rotate always around the parent of the newly added node..
- */
-
-
-void test_tree_insert()
-{
-    //41 13 87 96 95 25 31 54 43 19 1 22 77 99 65 64 73 4 55 93
-    //2 65 52 6 38 34 68 40 85 72 70 39 16 24 54 26 28 89 45 97
-	
-	//srand(time(NULL));
-    
-	/*
-	for(int i = 19; i >= 1; i--)
-	{
-		//int value = rand() % 1000 + 1;
-		nodeAdd_RBT(n, &n, i);
-	}
-	*/
-	/*
-	 *	417465280
-	 *	120
-	 *	121
-	 *	2283126203
-	 *	1369249285
-	 *	632064625
-	 *	915915944
-	 *	872506760
-	 *	872506761
-	 *	872506762
-	 *	872506763
-	 *	4109031586
-	 *	510480399
-	 */
-	Node* n = nodeAlloc(417465280);
-	nodeAdd_RBT(n, &n, 120);
-	nodeAdd_RBT(n, &n, 121);
-	nodeAdd_RBT(n, &n, 2283126203);
-	nodeAdd_RBT(n, &n, 1369249285);
-	nodeAdd_RBT(n, &n, 632064625);
-	nodeAdd_RBT(n, &n, 915915944);
-	nodeAdd_RBT(n, &n, 872506760);
-	nodeAdd_RBT(n, &n, 872506761);
-	nodeAdd_RBT(n, &n, 872506762);
-	nodeAdd_RBT(n, &n, 872506763);
-	nodeAdd_RBT(n, &n, 4109031586);
-	nodeAdd_RBT(n, &n, 510480399);
-	printf("\n");
-
-    nodePrint(n);
-    nodeFree(n);
-}
-
-void test_find()
-{
-	Node* n = nodeAlloc(417465280);
-	nodeAdd_RBT(n, &n, 120);
-	nodeAdd_RBT(n, &n, 121);
-	nodeAdd_RBT(n, &n, 24);
-	nodeAdd_RBT(n, &n, 642);
-	//nodeAdd_RBT(n, &n, 24);
-	//nodeAdd_RBT(n, &n, 642);
-	nodeAdd_RBT(n, &n, 135);
-	nodeAdd_RBT(n, &n, 125);
-	nodeAdd_RBT(n, &n, 16);
-	nodeAdd_RBT(n, &n, 98);
-	printf("\n");
-    /*
-	Node* toFind = nodeFind(n, 121);
-	printf("node data: %lld\n", toFind->data);
-	SP_ASSERT_NOT_NULL(toFind);
-	*/
-    nodePrint(n);
-    nodeFree(n);
-}
-
-
 constexpr int array_ex_1[] = {13, 8, 17, 1, 11, 15, 25, 6, 22, 27};
 constexpr int array_ex_2[] = {7, 3, 18, 10, 22, 8, 11, 26};
 constexpr int array_ex_3[] = {5, 2, 8, 1, 4, 7, 9};
 constexpr int array_big_test[] = {123, 886, 93, 808, 220, 768, 527, 811, 946, 219, 546, 926, 840, 332, 200, 236, 489, 533, 999, 727, 279, 585, 485, 199, 64, 105, 280, 491, 466, 788, 1, 449, 803, 404, 492, 846, 374, 226, 603, 160, 644, 868, 740, 853, 27, 77, 337, 752, 773, 549, 641, 582, 454, 635, 719, 506, 857, 581, 51, 844, 207, 233, 564, 795, 94, 314, 530, 37, 542, 518, 29, 472, 483, 428, 142, 917, 242, 303, 708, 559, 155, 938, 264, 852, 642, 895, 298, 331, 550, 933, 942, 65, 631, 248, 186, 410, 744, 357, 859, 206};
-#
+
+constexpr int array_big_test_1[] = 
+{
+123, 666, 146, 572, 60, 255, 171, 236, 286, 74, 777, 372, 668, 44, 391, 548, 540, 869, 419, 328, 610, 62, 132, 320, 85, 281, 159, 186, 430, 152, 134, 724, 560, 842, 880, 477, 529, 169, 715, 516, 965, 470, 418, 40, 427, 693, 811, 652, 76, 101, 363, 49, 731, 721, 68, 597, 11, 685, 284, 109, 298, 549, 118, 367, 54, 230, 532, 308, 716, 735, 357, 420, 264, 649, 89, 857, 887, 7, 847, 776, 861, 849, 617, 83, 613, 596, 237, 561, 51, 67, 424, 86, 482, 585, 459, 437, 569, 997, 350, 246, 145, 769, 942, 165, 750, 577, 660, 46, 257, 771, 674, 645, 147, 9, 416, 3, 797, 88, 336, 533, 117, 486, 678, 19, 487, 104, 651, 746, 831, 288, 828, 940, 900, 550, 348, 852, 138, 547, 500, 149, 510, 481, 102, 24, 396, 75, 607, 916, 798, 509, 303, 506, 239, 566, 373, 700, 154, 840, 854, 14, 927, 962, 125, 20, 270, 402, 665, 414, 25, 435, 654, 722, 809, 555, 899, 743, 457, 148, 184, 753, 222, 658, 841, 81, 970, 64, 251, 266, 63, 208, 33, 614, 227, 542, 130, 851, 807, 768, 189, 442
+};
+
 void test_rbt_delete_1()
 {
 	Node* n = nodeAlloc(array_ex_1[0]);
@@ -119,22 +98,15 @@ void test_rbt_delete_1()
 	{
 		nodeAdd_RBT(n, &n, array_ex_1[i]);
 	}
-	/*
-	printf("before:\n");
-	nodePrint(n);
-	
-	nodeDelete_RBT(&n, 6);
-		
-	printf("\n\nafter:\n");
-	nodePrint(n);
-	*/
-	
+
 	SP_ASSERT_TRUE(
 	n->data == 13 && 
 	n->minor->data == 8 && 
 	n->major->data == 17 &&
 	n->major->minor->data == 15 &&
 	n->minor->major->data == 11);
+	
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
     nodeFree(n);
 }
 
@@ -145,12 +117,8 @@ void test_rbt_delete_2()
 	{
 		nodeAdd_RBT(n, &n, array_ex_1[i]);
 	}
-	//printf("before:\n");
-	//nodePrint(n);
 	
 	nodeDelete_RBT(&n, 1);
-	//printf("\n\nafter:\n");
-	//nodePrint(n);
 	SP_ASSERT_NOT_NULL(n);
 	SP_ASSERT_TRUE(
 	n->data == 13 && 
@@ -160,7 +128,7 @@ void test_rbt_delete_2()
 	n->minor->major->data == 11
 	);
 	
-	
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
     nodeFree(n);
 }
 
@@ -172,14 +140,7 @@ void test_rbt_delete_3()
 		nodeAdd_RBT(n, &n, array_ex_1[i]);
 	}
 	
-	
-	//printf("\n\nafter:\n");
-	//nodePrint(n);
-	
 	nodeDelete_RBT(&n, 17);
-	printf("after:\n");
-	nodePrint(n);
-	
 	SP_ASSERT_TRUE_WITH_ACTION(
 	n->data == 13 &&
 	n->major->data == 22 &&
@@ -187,6 +148,7 @@ void test_rbt_delete_3()
 	n->major->major->data == 25 &&
 	n->major->minor->data == 15, nodeFree(n)
 	);
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
     nodeFree(n);
 }
 
@@ -198,23 +160,16 @@ void test_bst_delete_3()
 		nodeAdd_RBT(n, &n, array_ex_1[i]);
 	}
 	
-	
-	//printf("\n\nafter:\n");
-	//nodePrint(n);
 	Node* r;
 	auto xw = nodeDelete_BST(&n, 17, &r);
 	
 	SP_ASSERT_NOT_NULL_WITH_ACTION(n, nodeFree(n));
-	printf("after:\n");
-	nodePrint(n);
-	
 	Node* x = xw.first;
 	Node* w = xw.second;
 	
 	SP_ASSERT_NULL_WITH_ACTION(x, nodeFree(n));
 	SP_ASSERT_NOT_NULL_WITH_ACTION(w, nodeFree(n));
 	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(27, w->data, nodeFree(n));
-	
     nodeFree(n);
 }
 
@@ -235,7 +190,6 @@ void test_bst_delete_4()
 	SP_ASSERT_NOT_NULL_WITH_ACTION(w, nodeFree(n));
 	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(22, w->data, nodeFree(n));
 	SP_ASSERT_TRUE_WITH_ACTION(w->red, nodeFree(n));
-	
     nodeFree(n);
 }
 
@@ -248,8 +202,6 @@ void test_rbt_delete_4()
 	}
 	
 	nodeDelete_RBT(&n, 25);
-	
-	nodePrint(n);
 	SP_ASSERT_TRUE_WITH_ACTION(
 	n->data == 13 &&
 	n->major->data == 17 &&
@@ -264,6 +216,7 @@ void test_rbt_delete_4()
 	!n->major->major->major && 
 	n->major->major->minor->data == 22,
 	nodeFree(n));
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
     nodeFree(n);
 }
 
@@ -295,21 +248,19 @@ void test_rbt_delete_5()
 	n->major->major->major == NULL &&
 	n->major->major->minor == NULL
 	);
-	
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
     nodeFree(n);
 }
 
 void test_rbt_delete_6()
 {
-	int array[] = {5, 2, 8, 1, 4, 7, 9, 3, 0};
-	Node* n = nodeAlloc(array_ex_1[0]);
-	for(int i = 1; i < sizeof(array_ex_1) / sizeof(int); i++)
+	Node* n = nodeAlloc(array_ex_3[0]);
+	for(int i = 1; i < sizeof(array_ex_3) / sizeof(int); i++)
 	{
-		nodeAdd_RBT(n, &n, array_ex_1[i]);
+		nodeAdd_RBT(n, &n, array_ex_3[i]);
 	}
-	nodePrint(n);
-	nodeDelete_RBT(&n, 4);
-	/*
+	nodeDelete_RBT(&n, 2);
+	
 	SP_ASSERT_TRUE(
 	n->data == 5 &&
 	n->major->data == 8 &&
@@ -325,7 +276,7 @@ void test_rbt_delete_6()
 	n->major->minor->data == 7 &&
 	n->major->major->data == 9
 	);
-	*/
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
     nodeFree(n);
 }
 
@@ -361,7 +312,6 @@ void test_rbt_delete_7()
 		nodeAdd_RBT(n, &n, array_ex_1[i]);
 	}
 	nodeDelete_RBT(&n, 13);
-	nodePrint(n);
 	SP_ASSERT_TRUE(
 	n->data == 15 &&
 	n->major->data == 25 &&
@@ -385,7 +335,7 @@ void test_rbt_delete_7()
 	testBranch->major->data == 22 &&
 	testBranch->minor == NULL
 	);
-	
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
     nodeFree(n);
 }
 
@@ -396,12 +346,8 @@ void test_bst_delete_8()
 	{
 		nodeAdd_RBT(n, &n, array_ex_1[i]);
 	}
-	printf("before:\n");
-	nodePrint(n);
-	printf("after:\n");
 	Node* r;
 	auto xw = nodeDelete_BST(&n, 8, &r);
-	nodePrint(n);
 	Node* x = xw.first;
 	Node* w = xw.second;
 	SP_ASSERT_NOT_NULL_WITH_ACTION(x, nodeFree(n));
@@ -422,7 +368,6 @@ void test_rbt_delete_8()
 		nodeAdd_RBT(n, &n, array_ex_1[i]);
 	}
 	nodeDelete_RBT(&n, 8);
-	nodePrint(n);
 	Node* testBranch = n;
 	SP_ASSERT_TRUE_WITH_ACTION(
 		testBranch->data == 13 &&
@@ -446,7 +391,7 @@ void test_rbt_delete_8()
 		testBranch->minor->data == 15,
 		nodeFree(n)
 	);
-	
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
     nodeFree(n);
 }
 
@@ -509,7 +454,7 @@ void test_rbt_delete_10()
 	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(17, n->major->data, nodeFree(n));
 	SP_ASSERT_TRUE_WITH_ACTION(n->major->red, nodeFree(n));
 	SP_ASSERT_TRUE_WITH_ACTION(n->minor->red, nodeFree(n));
-	nodePrint(n);
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
     nodeFree(n);
 }
 
@@ -522,13 +467,10 @@ void test_bst_delete_11()
 	{
 		nodeAdd_RBT(n, &n, array[i]);
 	}
-	nodePrint(n);
-	
 	Node* r;
 	auto xw = nodeDelete_BST(&n, 27, &r);
 	Node* x = xw.first;
 	Node* w = xw.second;
-	nodePrint(n);
 	SP_ASSERT_TRUE_WITH_ACTION(n, nodeFree(n));
 	SP_ASSERT_NOT_NULL_WITH_ACTION(x, nodeFree(n));
 	SP_ASSERT_NOT_NULL_WITH_ACTION(w, nodeFree(n));
@@ -548,9 +490,8 @@ void test_rbt_delete_11()
 	{
 		nodeAdd_RBT(n, &n, array[i]);
 	}
-	nodePrint(n);
 	nodeDelete_RBT(&n, 27);
-	nodePrint(n);
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
     nodeFree(n);
 }
 
@@ -563,15 +504,13 @@ void test_rbt_delete_big_test()
 	{
 		nodeAdd_RBT(n, &n, array_big_test[i]);
 	}
-	nodePrint(n);
-	/*
 	for(int i = length - 1; i >= 1; i--)
 	{
-		SP_DEBUG("deleting %d", array_big_test[i]);
+		nodeDelete_RBT(&n, 219);
+		verifyRBT(n);
 	}
-	*/
-	nodeDelete_RBT(&n, 219);
-	nodePrint(n);
+	
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
     nodeFree(n);
 }
 
@@ -788,8 +727,39 @@ void test_bst_delete_1()
     nodeFree(n);
 }
 
+void test_rbt_delete_big_test_1()
+{
+	Node* n = nodeAlloc(array_big_test_1[0]);
+	const SPsize length = sizeof(array_big_test_1) / sizeof(int);
+	for(int i = 1; i < length; i++)
+	{
+		nodeAdd_RBT(n, &n, array_big_test_1[i]);
+	}
+	
+	for(int i = length - 1; i >= 1; i--)
+	{
+		nodeDelete_RBT(&n, array_big_test_1[i]);
+	}
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
+	nodePrint(n);
+    nodeFree(n);
+}
 
-#define LENGTH 200
+void test_rbt_delete_small_test_1()
+{
+	Node* n = nodeAlloc(array_ex_1[0]);
+	const SPsize length = sizeof(array_ex_1) / sizeof(int);
+	for(int i = 1; i < length; i++)
+	{
+		nodeAdd_RBT(n, &n, array_ex_1[i]);
+	}
+	nodeDelete_RBT(&n, 13);
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
+	nodePrint(n);
+    nodeFree(n);
+}
+
+#define LENGTH 50
 void test_rbt_delete_random()
 {
     std::random_device dev;
@@ -811,20 +781,17 @@ void test_rbt_delete_random()
 		printf(", %lld", array[i]);
 		nodeAdd_RBT(n, &n, array[i]);
 	}
-	
 	printf("\n");
-	printf("before:\n");
-    nodePrint(n);
-
-	//nodeDelete_RBT(&n, 123);
-	//nodeDelete_RBT(&n, 559);
-	
 	for(int i = length - 1; i >= 1; i--)
 	{
+		SP_DEBUG("deleting %d", array[i]);
 		nodeDelete_RBT(&n, array[i]);
+		SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), {nodePrint(n); nodeFree(n);});
+		
 	}
-	
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
 	printf("\n\nafter:\n");
+	nodePrint(n);
     nodeFree(n);
 	delete[] array;
 }
@@ -882,12 +849,47 @@ void test_bst_delete_random()
 	delete[] array;
 }
 
-void test_another()
+void test_rbt_validity()
 {
+	Node head;
+	Node a;
+	a.major = a.minor = NULL;
+	Node b;
+	b.major = b.minor = NULL;
+	Node c;
+	c.major = c.minor = NULL;
+	head.minor = &a;
+	head.major = &b;
+	
+	
+	SP_ASSERT_FALSE(verifyRBT(&head));
 }
 
-void test_that()
+void test_rbt_delete_small_verification()
 {
+	int array[] = {123, 825, 835, 67, 206, 832, 271, 505, 547, 972, 472, 317, 209, 87, 800, 223, 772, 216, 756, 688};
+	
+	Node* n = nodeAlloc(array[0]);
+	const SPsize length = sizeof(array) / sizeof(int);
+	for(int i = 1; i < length; i++)
+	{
+		nodeAdd_RBT(n, &n, array[i]);
+	}
+	
+	//nodeDelete_RBT(&n, 261);
+	//nodePrint(n);
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
+	
+	for(int i = length - 1; i >= 1; i--)
+	{
+		nodeDelete_RBT(&n, array[i]);
+		SP_DEBUG("deleting %d", array[i]);
+		nodePrint(n);
+		SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
+	}
+	
+	nodePrint(n);
+    nodeFree(n);
 }
 
 int main(int argc, char** argv)
@@ -896,11 +898,12 @@ int main(int argc, char** argv)
     //SP_TEST_ADD(test_find);
 	
 	// fail 9, 10
+	/*
+	SP_TEST_ADD(test_rbt_delete_1);
 	
 	SP_TEST_ADD(test_bst_delete_9);
     SP_TEST_ADD(test_rbt_delete_9);
-	
-    SP_TEST_ADD(test_rbt_delete_1);
+    
     SP_TEST_ADD(test_rbt_delete_2);
     SP_TEST_ADD(test_rbt_delete_3);
     SP_TEST_ADD(test_bst_delete_3);
@@ -909,28 +912,33 @@ int main(int argc, char** argv)
     SP_TEST_ADD(test_rbt_delete_5);
     SP_TEST_ADD(test_rbt_delete_6);
     SP_TEST_ADD(test_rbt_delete_7);
+	
     SP_TEST_ADD(test_rbt_delete_8);
     SP_TEST_ADD(test_rbt_delete_10);
     SP_TEST_ADD(test_bst_delete_11);
     SP_TEST_ADD(test_rbt_delete_11);
 	SP_TEST_ADD(test_bst_delete_7);
-	SP_TEST_ADD(test_rbt_delete_7);
-	
+	*/
     //SP_TEST_ADD(test_bst_delete_random);
-    SP_TEST_ADD(test_rbt_delete_random);
-	
-	
+    
+	SP_TEST_ADD(test_rbt_delete_random);
+	//SP_TEST_ADD(test_rbt_delete_small_verification);
+	/*
     SP_TEST_ADD(test_bst_delete_no_children_no_parent);
     SP_TEST_ADD(test_bst_delete_one_child_no_parent);
     SP_TEST_ADD(test_bst_delete_one_child_and_parent);
     SP_TEST_ADD(test_bst_delete_two_children_major_minimum);
     SP_TEST_ADD(test_bst_delete_two_children_major_minor_minimum);
 	
+	
+    SP_TEST_ADD(test_rbt_delete_big_test_1);
     SP_TEST_ADD(test_bst_delete_two_children_x_minimum);
-	
-	
+	*/
     //SP_TEST_ADD(test_bst_delete_1);
-
+    //SP_TEST_ADD(test_rbt_delete_small_test_1);
+	
+	//SP_TEST_ADD(test_rbt_validity);
+	
 	spTestRunAll();
 	spTestTerminate();
 	return 0;

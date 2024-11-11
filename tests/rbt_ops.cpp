@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "rbt.h"
-#define MOT_HAVE_SBT_MAJOR_INCLINED
+#define MOT_HAVE_BST_MAJOR_INCLINED
 
 Node* rotateLeft(Node* n, Node** head);
 Node* rotateRight(Node* n, Node** head);
@@ -68,8 +68,8 @@ Node* nodeFindMember(Node* n)
 {
     if(isRoot(n->parent))
     {
-	printf("impossible state??");
-	return NULL;
+		printf("impossible state??");
+		return NULL;
     }
 
     return (isMajor(n->parent)) ? n->parent->parent->minor : n->parent->parent->major;
@@ -100,6 +100,9 @@ std::pair<Node*, Node*> nodeDeleteImpl_BST(Node* n, Node** head, Node** replacem
 	Node* w = NULL;
 	if(n)
 	{	
+		Node* r = NULL;
+		Node* p = n->parent;
+		
 		bool maj = isMajor(n);
 		bool rt  = isRoot(n);
 
@@ -107,142 +110,123 @@ std::pair<Node*, Node*> nodeDeleteImpl_BST(Node* n, Node** head, Node** replacem
 		{
 		    // case 1: no children..
 			// x is NULL, set sibling, if available..
-			if(n->parent)
+			if(p)
 			{
-				maj ? (n->parent->major = NULL) : (n->parent->minor = NULL);
-				w = maj ? (n->parent->minor) : (n->parent->major);
+				maj ? (p->major = NULL) : (p->minor = NULL);
+				w = maj ? (p->minor) : (p->major);
 			}
 			else
 			{
 				SP_ASSERT(rt, "Expected deleted node to be root");
-				*head = NULL;
 			}
-			*replacement = NULL;
 		}
 		else if((n->major && !n->minor) || (!n->major && n->minor))
 		{
 		    // case 2: one child..
-            Node* r = n->major ? n->major : n->minor;
+            r = n->major ? n->major : n->minor;
 			SP_ASSERT(r, "Expected to have replacement");
-			
-		    Node* p = n->parent;
             r->parent = p;
 			
             if(p)
 			{
-                (maj) ? (p->major = r) : (p->minor = r);
 				if(maj)
 				{
+					p->major = r;
 					x = p->major;
 					w = p->minor;
 				}
 				else
 				{
+					p->minor = r;
 					x = p->minor;
 					w = p->major;
 				}
 			}
-			else
-			{
-				*head = r;
-			}
-			
-			*replacement = r;
 		}
 		else
 		{
-			Node* p = n->parent;
-			Node* r = findMinorMost(n->major);
-				  w = r->parent ? (isMajor(r) ? r->parent->minor : r->parent->major) : NULL;
+			// case 3: two children..
+#ifndef MOT_HAVE_BST_MAJOR_INCLINED
+			r = findMinorMost(n->major);
+			w = r->parent ? (isMajor(r) ? r->parent->minor : r->parent->major) : NULL;
 			
 			SP_ASSERT(r, "Expected to have replacement");
 			SP_ASSERT(!r->minor, "Expected to have minor-most replacement (x)");
 			
 			Node* q = n->minor;
 			Node* m = n->major;
-			if(r == m)
+			
+			Node* a = r->parent;
+			Node* b = r->major;
+			
+			SP_ASSERT(!r->minor, "Expected to have no more minimums");
+			
+			// link p and r..
+			if(p)
+				maj ? (p->major = r) : (p->minor = r);
+			r->parent = p;
+			
+			// link q and r..
+			if(q)
+			   q->parent = r;
+			r->minor = q;
+			
+			if(r != m)
 			{
-				// bst delete case 3.1
-				SP_ASSERT(!r->minor, "Expected to have no more minimums");
-				// link p and r..
-				if(p)
-				   maj ? (p->major = r) : (p->minor = r);
-				r->parent = p;
-				x = r->major;
-				
-				// link q and r..
-				r->minor = q;
-				if(q)
-				   q->parent = r;
-				
-				
-				if(!n->parent)
-					*head = r;
-			}
-			else
-			{
-				Node* a = r->parent;
-				
 				SP_ASSERT(a, "Expected minimum to have parent");
-				Node* b = r->major;
+				// link m and r..
+				r->major = m;
+				m->parent = r;
 				
-				if(a == m)
-				{
-					// bst delete case 3.2
-					// link parent and r..
-					if(p)
-						maj ? (p->major = r) : (p->minor = r);
-					r->parent = n->parent;
-					
-					// link q and r..
-					if(q)
-					   q->parent = r;
-					r->minor = q;
-					
-					// link m and r..
-					r->major = m;
-					m->parent = r;
-					
-					// link m and b..
-					m->minor = b;
-					if(b)
-						b->parent = m;
-					
-					x = b;
-					
-					if(!n->parent)
-						*head = r;
-				}
-				else
-				{
-					// bst delete case 3.3
-					// link parent and r..
-					if(p)
-						maj ? (p->major = r) : (p->minor = r);
-					r->parent = n->parent;
-					
-					// link q and r..
-					r->minor = q;
-					if(q)
-					    q->parent = r;
-					
-					// link m and r..
-					r->major = m;
-					m->parent = r;
-					
-					// link a and b..
-					a->minor = b;
-					if(b)
-						b->parent = a;
-					x = b;
-					if(!n->parent)
-						*head = r;
-				}
+				// link a and b..
+				a->minor = b;
+				if(b)
+				   b->parent = a;
 			}
+#else
+			r = findMajorMost(n->minor);
+			w = r->parent ? (isMajor(r) ? r->parent->minor : r->parent->major) : NULL;
 			
-			*replacement = r;
+			SP_ASSERT(r, "Expected to have replacement");
+			SP_ASSERT(!r->major, "Expected to have minor-most replacement (x)");
+			
+			Node* q = n->major;
+			Node* m = n->minor;
+			
+			Node* a = r->parent;
+			Node* b = r->minor;
+			
+			SP_ASSERT(!r->major, "Expected to have no more minimums");
+			
+			// link p and r..
+			if(p)
+				maj ? (p->major = r) : (p->minor = r);
+			r->parent = p;
+			
+			// link q and r..
+			if(q)
+			   q->parent = r;
+			r->major = q;
+			
+			if(r != m)
+			{
+				SP_ASSERT(a, "Expected minimum to have parent");
+				// link m and r..
+				r->minor = m;
+				m->parent = r;
+				
+				// link a and b..
+				a->major = b;
+				if(b)
+				   b->parent = a;
+			}
+#endif
+			x = b;
 		}
-			
+		
+		*replacement = r;
+		if(!p)
+			*head = r;
 		delete n;
 	}
 	
@@ -309,14 +293,11 @@ bool procedure_1(Node** _x, Node** _w, Node** head)
 		 */
 		Node* p = maj ? rotateRight(x->parent, head) : rotateLeft(x->parent, head);
 		SP_ASSERT(p, "Expeceted to have replacement");
-		p = maj ? p->major : p->minor;
-		x = maj ? p->major : p->minor;
-		
-		
 		// 4. set w to x's sibling..
-		w = maj ? p->minor : p->major;
+		w = maj ? x->parent->minor : x->parent->major;
 		
 		//SP_ASSERT(w, "Expected to have sibling");
+		/*
 		Node n;
 		if(!x)
 		{
@@ -334,6 +315,7 @@ bool procedure_1(Node** _x, Node** _w, Node** head)
 			m.major = m.minor = NULL;
 			w = &m;
 		}
+		*/
 		
 		// 5. decide case 2, 3 or 4 from this state..
 		if(procedure_2(&x, &w, head))
@@ -352,11 +334,12 @@ bool procedure_2(Node** _x, Node** _w, Node** head)
 	// x is black and w is black..
 	Node* w = *_w;
 	Node* x = *_x;
-	if(!x && !w)
+	if((!x && !w) || !x->parent)
+	{
+		SP_DEBUG("not allowed");
 		return false;
-	
+	}
 	Node dX, dW;
-	
 	if(!w)
 	{
 		dW.parent = x->parent;
@@ -383,6 +366,7 @@ bool procedure_2(Node** _x, Node** _w, Node** head)
 		
 		if(wMnB && wMjB)
 		{
+			SP_DEBUG("procedure 2");
 			/*
 			 *	1. colour w red..
 			 *	2. set x to its parent..
@@ -390,18 +374,17 @@ bool procedure_2(Node** _x, Node** _w, Node** head)
 			 *		if x is black and root, return..
 			 *		if x is black and not root, decide on case 1, 2, 3, 4..
 			 */
-			
+			 
 			// 1. colour w red..
-			w->red = false;
+			w->red = true;
 			
 			// set x to its parent..
 			x = x->parent;
 			SP_ASSERT(x, "Replacement expected to have parent");
-			
-			bool xRed = x ? x->red : false;
-			
-			if(xRed)
+
+			if(x->red)
 			{
+				SP_DEBUG("proc case 1");
 				// x is red, colour x black (return)..
 				x->red = false;
 				return true;
@@ -409,10 +392,14 @@ bool procedure_2(Node** _x, Node** _w, Node** head)
 			else
 			{
 				if(isRoot(x))
+				{
+					SP_DEBUG("root found");
+					x->red = false;
 					return true;
-				
+				}
 				// x is black..
 				// x is not root, decide on case 1, 2, 3, 4..
+				SP_DEBUG("proc decision");
 				w = isMajor(x) ? x->parent->minor : x->parent->major;
 				if(procedure_1(&x, &w, head))
 					return true;
@@ -421,7 +408,6 @@ bool procedure_2(Node** _x, Node** _w, Node** head)
 				if(procedure_3(&x, &w, head))
 					return true;
 				return procedure_4(&x, &w, head);
-				
 			}
 		}
 	}
@@ -472,10 +458,10 @@ bool procedure_3(Node** _x, Node** _w, Node** head)
 		 *		if x is major, rotate left..
 		 *		if x is minor, rotate right..
 		 */
-		w = maj ? rotateLeft(w, head) : rotateRight(w, head);
+		maj ? rotateLeft(w, head) : rotateRight(w, head);
 		
 		// 4. set w to x's sibling..
-		//w = maj ? (w->minor) : (w->major);
+		w = maj ? (x->parent->minor) : (x->parent->major);
 		SP_ASSERT(w != x, "Sibling cannot be the same");
 		
 		// 5. proceed to case 4..
@@ -542,6 +528,7 @@ bool nodeFixupRules_RBT(Node* x, Node* w, Node** head)
 
 	if(x->red)
 	{
+		SP_DEBUG("proc 0");
 		// procedure 0
 		//SP_DEBUG("procedure 0");
 		return procedure_0(x);
@@ -553,6 +540,7 @@ bool nodeFixupRules_RBT(Node* x, Node* w, Node** head)
 		
 		if(w->red)
 		{ 
+			SP_DEBUG("proc 1");
 			//SP_DEBUG("procedure 1");
 			return procedure_1(&x, &w, head);
 		}
@@ -563,18 +551,21 @@ bool nodeFixupRules_RBT(Node* x, Node* w, Node** head)
 			
 			if(wMnB && wMjB)
 			{
+				SP_DEBUG("proc 2");
 				SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
 				return procedure_2(&x, &w, head);
 			}
 			
 			if(maj ? (!wMjB && wMnB) : (!wMnB && wMjB))
 			{
+				SP_DEBUG("proc 3");
 				//SP_DEBUG("procedure 3");
 				return procedure_3(&x, &w, head);
 			}
 			
 			if(maj ? !wMnB : !wMjB)
 			{
+				SP_DEBUG("case 4");
 				//SP_DEBUG("procedure 4");
 				return procedure_4(&x, &w, head);
 			}
@@ -592,10 +583,13 @@ void nodeFixup_RBT(bool rBefore, Node* r, Node* x, Node* w, Node** head)
 {	
 	if(!x && !w)
 	{
+		if(r && !r->parent)
+			r->red = false;
+		
 		// the deleted node had no children..
 		return;
 	}
-	
+
 	Node dX;
 	Node dW;
 	if(!x)
@@ -619,12 +613,14 @@ void nodeFixup_RBT(bool rBefore, Node* r, Node* x, Node* w, Node** head)
 	// 1. rule: deleted node is red, and replcament is red or NULL => return..
 	if(rBefore && (rAfter || !r))
 	{
+		SP_DEBUG("color case 1");
 		return;
 	}
 	// 2. rule: deleted node is red and replacement is black and not NULL 
 	// => colour replacement red and proceed to appropriate case..
 	if(rBefore && !rAfter && r)
 	{
+		SP_DEBUG("color case 2");
 		r->red = true;
 		SP_ASSERT(nodeFixupRules_RBT(x, w, head), "Fix up failed");
 		return;
@@ -634,6 +630,7 @@ void nodeFixup_RBT(bool rBefore, Node* r, Node* x, Node* w, Node** head)
 	// => colour replacement black and return..
 	if(!rBefore && rAfter)
 	{
+		SP_DEBUG("color case 3");
 		SP_ASSERT(r, "Expeceted replacement");
 		r->red = false;
 		return;
@@ -645,12 +642,18 @@ void nodeFixup_RBT(bool rBefore, Node* r, Node* x, Node* w, Node** head)
 		// if replacement is not root, then proceed to appropriate case..
 		if(x->parent)
 		{
+			SP_DEBUG("color case 4");
 			SP_ASSERT(nodeFixupRules_RBT(x, w, head), "Fix up failed");
 		}
-		return;
 	}
 }
 
+
+/*
+ *  whenever there is triangle, rotate right-left or left-right (2 rotations)..
+ *  whenever there is skew, rotate left or right (1 rotation)..
+ *  rotate always around the parent of the newly added node..
+ */
 Node* rotateLeft(Node* n, Node** head)
 {
     bool maj = isMajor(n);
@@ -750,7 +753,6 @@ void fixViolations(Node* node, Node** head)
 				// RR rotation..
 				if(isMinor(parent) && isMinor(node))
 				{
-					//printf("RR %d\n", node->data);
 					Node* next = rotateRight(node->parent->parent, head);
 
 					next->red = !next->red;
@@ -777,7 +779,6 @@ void fixViolations(Node* node, Node** head)
 				// RL-rotation..
 				if(isMajor(parent) && isMinor(node))
 				{
-					//printf("RL %d\n", node->data);
 					/*
 					printf("grandparent: %d, parent: %d, child: %d\n", node->parent->parent->data, node->parent->data, node->data);
 					printf("parent minor: %lld\n", parent->minor->data);
@@ -788,7 +789,6 @@ void fixViolations(Node* node, Node** head)
 					next->red = !next->red;
 					next->minor->red = !node->minor->red;
 
-					//printf("RL ok\n");
 					fixViolations(next, head);
 					return;
 				}
@@ -796,7 +796,6 @@ void fixViolations(Node* node, Node** head)
 				// LL-rotation
 				if(isMajor(parent) && isMajor(node))
 				{
-					//printf("LL %d\n", node->data);
 					Node* next = rotateLeft(node->parent->parent, head);
 					next->red = !next->red;
 					next->minor->red = !next->minor->red;
@@ -857,7 +856,6 @@ void nodeDelete_RBT(Node** head, unsigned long long value)
 	if(n)
 	{
         bool aRed = n->red;
-		bool bRed = false;
 		Node* replacement = NULL;
         auto xw = nodeDeleteImpl_BST(n, head, &replacement);
 		
@@ -869,8 +867,7 @@ void nodeDelete_RBT(Node** head, unsigned long long value)
 		{
 			SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
 		}
-		//printf("intermediate form: (red before: %s, red after: %s) x: %c, w: %c\n", aRed ? "true" : "false", bRed ? "true" : "false", x ? ((x->red) ? 'R' : 'B') : 'B', w ? ((w->red) ? 'R' : 'B') : 'B');
-		//if(*head) nodePrint(*head);
+
 		nodeFixup_RBT(aRed, replacement, x, w, head);
 	}
 }
