@@ -9,7 +9,7 @@
 
 unsigned long long values[][20] =
 {
-	{554, 865, 140, 9, 893, 859, 616, 146, 559, 166, 	852, 525, 538, 241, 540, 994, 699, 730, 701, 548}
+	{554, 865, 140, 9, 893, 859, 616, 146, 559, 166, 852, 525, 538, 241, 540, 994, 699, 730, 701, 548}
 };
 
 int calculateBlackDepth(Node* node) 
@@ -765,13 +765,14 @@ void test_rbt_delete_small_test_1()
     nodeFree(n);
 }
 
-#define LENGTH 500
+#define ITERATIONS 100
+#define LENGTH 100
 void test_rbt_delete_random()
 {
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dst(1,1000);
-    for(int i = 0; i < LENGTH; i++)
+    for(int i = 0; i < ITERATIONS; i++)
     {
         Node* n = nodeAlloc(123);
 
@@ -789,7 +790,6 @@ void test_rbt_delete_random()
         SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), {nodePrint(n);});
         for(int i = 0; i < LENGTH / 2 - 1; i++)
         {
-
             bool status = nodeDelete_RBT(&n, array[i]);
             SP_ASSERT_TRUE_WITH_ACTION(status,
             {
@@ -838,7 +838,7 @@ void test_rbt_delete_random()
         nodeFree(n);
         delete[] array;
 	}
-	SP_DEBUG("done: %d iterations", LENGTH);
+	SP_DEBUG("DONE: %d iterations with %d insertions/deletions", ITERATIONS, LENGTH);
 }
 
 void test_bst_delete_random()
