@@ -59,7 +59,7 @@ bool verifyImpl_RBT(Node* rbt, int depth, const int reference)
 			{
 				a = verifyImpl_RBT(rbt->major, depth, reference); 
 			}
-			if(verifyImpl_RBT(rbt->minor, depth, reference));
+			if(rbt->minor)
 			{
 				b = verifyImpl_RBT(rbt->minor, depth, reference); 
 			}
@@ -67,10 +67,6 @@ bool verifyImpl_RBT(Node* rbt, int depth, const int reference)
 		}
 		else
 		{
-			if(reference != depth)
-			{
-				SP_DEBUG("expected %d but got %d for %d", reference, depth, rbt->data);
-			}
 			return !rbt->red ? reference == depth : true;
 		}
 	}
@@ -487,8 +483,7 @@ void test_bst_delete_11()
 	SP_ASSERT_NOT_NULL_WITH_ACTION(w, nodeFree(n));
 	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(22, w->data, nodeFree(n));
 	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(28, x->data, nodeFree(n));
-	
-	
+
     nodeFree(n);
 }
 
@@ -770,43 +765,80 @@ void test_rbt_delete_small_test_1()
     nodeFree(n);
 }
 
-#define LENGTH 50
+#define LENGTH 500
 void test_rbt_delete_random()
 {
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dst(1,1000);
+    for(int i = 0; i < LENGTH; i++)
+    {
+        Node* n = nodeAlloc(123);
 
-	Node* n = nodeAlloc(123);
-	
-	int* array = new int[LENGTH];
-	array[0] = 123;
-	SPsize length = LENGTH;
-	printf("123");
-	for(int i = 1; i < length; i++)
-	{
-	    int num = dst(rng);
-	    while(containsNumber(num, array, LENGTH))
-	        num = dst(rng);
-		array[i] = num;
-		printf(", %lld", array[i]);
-		nodeAdd_RBT(n, &n, array[i]);
+        int* array = new int[LENGTH];
+        array[0] = 123;
+        SPsize length = LENGTH;
+        for(int i = 1; i < length; i++)
+        {
+            int num = dst(rng);
+            while(containsNumber(num, array, LENGTH))
+                num = dst(rng);
+            array[i] = num;
+            nodeAdd_RBT(n, &n, array[i]);
+        }
+        SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), {nodePrint(n);});
+        for(int i = 0; i < LENGTH / 2 - 1; i++)
+        {
+
+            bool status = nodeDelete_RBT(&n, array[i]);
+            SP_ASSERT_TRUE_WITH_ACTION(status,
+            {
+                SP_DEBUG("deletion failed for %d", array[i]);
+                delete [] array;
+                nodeFree(n);
+            });
+            SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n),
+            {
+                SP_DEBUG("imbalanced tree for %d", array[i]);
+                printf("data set:\n");
+                for(int i = 0; i < LENGTH; i++)
+                {
+                    printf("%d ", array[i]);
+                }
+                printf("\n");
+                nodePrint(n);
+                delete [] array;
+                nodeFree(n);
+            });
+        }
+        for(int i = LENGTH - 1; i >= LENGTH / 2; i--)
+        {
+            bool status = nodeDelete_RBT(&n, array[i]);
+            SP_ASSERT_TRUE_WITH_ACTION(status,
+            {
+                SP_DEBUG("deletion failed for %d", array[i]);
+                delete [] array;
+                nodeFree(n);
+            });
+            SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n),
+            {
+                SP_DEBUG("imbalanced tree for %d", array[i]);
+                printf("data set:\n");
+                for(int i = 0; i < LENGTH; i++)
+                {
+                    printf("%d ", array[i]);
+                }
+                printf("\n");
+                nodePrint(n);
+                delete [] array;
+                nodeFree(n);
+            });
+        }
+        SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
+        nodeFree(n);
+        delete[] array;
 	}
-	printf("\nbefore:\n");
-	nodePrint(n);
-	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), {nodePrint(n);});
-	printf("\ndeletion:\n");
-	for(int i = length - 1; i >= 1; i--)
-	{
-		nodeDelete_RBT(&n, array[i]);
-		SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), {nodePrint(n); nodeFree(n);});
-		
-	}
-	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
-	printf("\n\nafter:\n");
-	nodePrint(n);
-    nodeFree(n);
-	delete[] array;
+	SP_DEBUG("done: %d iterations", LENGTH);
 }
 
 void test_bst_delete_random()
@@ -814,52 +846,55 @@ void test_bst_delete_random()
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dst(1,1000);
+    for(int i = 0; i < 100; i++)
+    {
+        Node* n = nodeAlloc(123);
 
-	Node* n = nodeAlloc(123);
-	
-	int* array = new int[LENGTH];
-	array[0] = 123;
-	SPsize length = LENGTH;
-	printf("123");
-	for(int i = 1; i < length; i++)
-	{
-	    int num = dst(rng);
-	    while(containsNumber(num, array, LENGTH))
-	        num = dst(rng);
-		array[i] = num;
-		printf(", %lld", array[i]);
-		nodeAdd_RBT(n, &n, array[i]);
-	}
-	
-	printf("\n");
-	printf("before:\n");
-    nodePrint(n);
+        int* array = new int[LENGTH];
+        array[0] = 123;
+        SPsize length = LENGTH;
+        for(int i = 1; i < length; i++)
+        {
+            int num = dst(rng);
+            while(containsNumber(num, array, LENGTH))
+                num = dst(rng);
+            array[i] = num;
+            nodeAdd_RBT(n, &n, array[i]);
+        }
+        /*
+        printf("\n");
+        printf("before:\n");
+        nodePrint(n);
+        */
+        //nodeDelete_RBT(&n, 123);
+        Node* r;
+        nodeDelete_BST(&n, 559, &r);
 
-	//nodeDelete_RBT(&n, 123);
-	Node* r;
-	nodeDelete_BST(&n, 559, &r);
-	
-	for(int i = length - 1; i >= 1; i--)
-	{
-		auto xw = nodeDelete_BST(&n, array[i], &r);
-		Node* x = xw.first;
-		Node* w = xw.second;
-		
-		if(x && w)
-		{
-			SP_ASSERT_TRUE_WITH_ACTION(x->parent == w->parent, 
-				{	
-					nodeFree(n); 
-					delete [] array;
-				}
-			);
-		}
+        for(int i = length - 1; i >= 1; i--)
+        {
+            auto xw = nodeDelete_BST(&n, array[i], &r);
+            Node* x = xw.first;
+            Node* w = xw.second;
+
+            if(x && w)
+            {
+                SP_ASSERT_TRUE_WITH_ACTION(x->parent == w->parent,
+                    {
+                        printf("data set:\n");
+                        for(int i = 0; i < LENGTH; i++)
+                        {
+                            printf("%d ", array[i]);
+                        }
+                        printf("\n");
+                        nodeFree(n);
+                        delete [] array;
+                    }
+                );
+            }
+        }
+        nodeFree(n);
+        delete[] array;
 	}
-	
-	printf("\n\nafter:\n");
-	nodePrint(n);
-    nodeFree(n);
-	delete[] array;
 }
 
 void test_rbt_validity()
@@ -943,6 +978,43 @@ void test_rotation_right()
     nodeFree(n);
 }
 
+void test_delete_arbitrary()
+{
+    int array[] = {123, 242, 866, 925, 443, 365, 787, 662, 773, 651};
+	Node* n = nodeAlloc(array[0]);
+	const SPsize length = sizeof(array) / sizeof(int);
+	for(int i = 1; i < length; i++)
+	{
+		nodeAdd_RBT(n, &n, array[i]);
+	}
+    nodePrint(n);
+    SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n),
+	{
+            SP_WARNING("imbalance at build");
+
+            nodeFree(n);
+	});
+
+	SP_DEBUG("deletion:");
+    for(int i = 0; i < length; i++)
+	{
+	    SP_DEBUG("deleting %d", array[i]);
+		SP_ASSERT_TRUE_WITH_ACTION(nodeDelete_RBT(&n, array[i]),
+		{
+		    SP_WARNING("error while deleting %d", array[i]);
+		    nodeFree(n);
+		});
+		nodePrint(n);
+		SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n),
+		{
+            SP_WARNING("rbt-violation after deleting %d", array[i]);
+            nodeFree(n);
+		});
+	}
+	SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
+    nodeFree(n);
+}
+
 void test_verification_random()
 {
     std::random_device dev;
@@ -964,7 +1036,7 @@ void test_verification_random()
 		SP_DEBUG("adding %d", array[i]);
 		nodeAdd_RBT(n, &n, array[i]);
 		SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), 
-			{	
+			{
 				nodePrint(n);
 				nodeFree(n); 
 				delete [] array;
@@ -982,7 +1054,7 @@ int main(int argc, char** argv)
     //SP_TEST_ADD(test_find);
 	
 	// fail 9, 10
-	/*
+    /*
 	SP_TEST_ADD(test_rbt_delete_1);
 	
 	SP_TEST_ADD(test_bst_delete_9);
@@ -1002,25 +1074,27 @@ int main(int argc, char** argv)
     SP_TEST_ADD(test_bst_delete_11);
     SP_TEST_ADD(test_rbt_delete_11);
 	SP_TEST_ADD(test_bst_delete_7);
-	*/
+    */
     //SP_TEST_ADD(test_bst_delete_random);
-    
-	SP_TEST_ADD(test_rbt_delete_random);
+    //SP_TEST_ADD(test_delete_arbitrary);
+
+	//SP_TEST_ADD(test_delete_arbitrary);
 	//SP_TEST_ADD(test_verification_random);
 	//SP_TEST_ADD(test_rotation_left);
 	
 	//SP_TEST_ADD(test_rbt_delete_small_verification);
-	/*
+	SP_TEST_ADD(test_rbt_delete_random);
+    /*
     SP_TEST_ADD(test_bst_delete_no_children_no_parent);
     SP_TEST_ADD(test_bst_delete_one_child_no_parent);
     SP_TEST_ADD(test_bst_delete_one_child_and_parent);
     SP_TEST_ADD(test_bst_delete_two_children_major_minimum);
     SP_TEST_ADD(test_bst_delete_two_children_major_minor_minimum);
-	
+
 	
     SP_TEST_ADD(test_rbt_delete_big_test_1);
     SP_TEST_ADD(test_bst_delete_two_children_x_minimum);
-	*/
+    */
     //SP_TEST_ADD(test_bst_delete_1);
     //SP_TEST_ADD(test_rbt_delete_small_test_1);
 	
