@@ -101,8 +101,6 @@ static SPbool _mot_transplant_proc_2(MOT_node* x, MOT_node* w, MOT_tree* head);
 static SPbool _mot_transplant_proc_3(MOT_node* x, MOT_node* w, MOT_tree* head);
 static SPbool _mot_transplant_proc_4(MOT_node* x, MOT_node* w, MOT_tree* head);
 
-
-
 static int _mot_is_little_endian()
 {
 	SPuint16 t = 0x0001;
@@ -1358,9 +1356,11 @@ static void _mot_delete_bst_impl(MOT_node* n, MOT_tree* head, MOT_node** _r, MOT
 			r->major = q;
 			if(r != m)
 			{
+				// link m and r..
 				r->minor = m;
 				m->parent = r;
 				
+				// link a and b..
 				a->major = b;
 				if(b)
 				   b->parent = a;

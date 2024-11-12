@@ -183,7 +183,7 @@ void test_tree_deletion_medium()
 }
 
 #define ITERATIONS 100
-#define LENGTH 100
+#define LENGTH 200
 
 void test_tree_search()
 {
@@ -324,7 +324,7 @@ int main(int argc, char** argv)
 	//SP_TEST_ADD(test_insertion);
 	//SP_TEST_ADD(test_null_tree);
 	SP_TEST_ADD(test_tree_random_integers);
-	//SP_TEST_ADD(test_random_index);
+	SP_TEST_ADD(test_random_index);
 
 	spTestRunAll();
 	spTestTerminate();
