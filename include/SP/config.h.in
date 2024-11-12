@@ -20,13 +20,13 @@
 #include "SP/config/compiler.h"
 
 #ifndef SP_STATIC_BUILD
-    #if defined(SP_PLATFORM_WINDOWS)
-        #define SP_API __declspec(dllexport)
-    #else
-        #define SP_API __attribute__((visibility("default")))
-    #endif
+	#if defined(SP_PLATFORM_WINDOWS)
+		#define SP_API __declspec(dllexport)
+	#else
+		#define SP_API __attribute__((visibility("default")))
+	#endif
 #else
-    #define SP_API
+	#define SP_API
 #endif
 
 #ifdef SP_PLATFORM_WINDOWS

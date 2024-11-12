@@ -2,11 +2,11 @@
 
 namespace sp
 {
-    namespace detail
-    {
-        void ThreadImpl::run(Thread* user)
-        {
-            user->run();
-        }
-    }
+	namespace detail
+	{
+		void ThreadImpl::run(Thread* user)
+		{
+			user->run();
+		}
+	}
 }

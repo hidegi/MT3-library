@@ -1,292 +1,22 @@
 #include "SP/test/unit.h"
 #include "SP/utils/io.h"
 #include "SP/sparse/mot.h"
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <random>
 
-/*
-void test_serialization_trivial()
+bool containsNumber(int n, const int* array, int length)
 {
-	MOT_tree tree = motAllocTree("head");
-	SP_ASSERT_NOT_NULL(tree);
-
-	motInsertInt(tree, "x", 1);
-	motInsertInt(tree, "y", 2);
-	motInsertInt(tree, "fjiaw", 300);
-	motInsertInt(tree, "motex", 220);
-	motInsertInt(tree, "value", 30);
-	motInsertInt(tree, "nmg", -14543);
-	motInsertShort(tree, "nmg0", -14543);
-	motInsertByte(tree, "nmg1", true);
-	motInsertByte(tree, "nmg2", false);
-	motInsertLong(tree, "nmg3", 495845);
-	motInsertDouble(tree, "byte_array", 1.998E+58);
-	motInsertFloat(tree, "byte_array1", 0.00001f);
-
-	motPrintTree(tree);
-	motFreeTree(tree);
+    for(int i = 0; i < length; i++)
+        if(array[i] == n)
+            return true;
+    return false;
 }
-
-void test_insert_generic_array()
-{
-	MOT_tree tree = motAllocTree("head");
-	SP_ASSERT_NOT_NULL(tree);
-
-
-	SPshort* shorts = (SPshort*) motAllocChunk(sizeof(SPshort) * 10);
-	for(int i = 0; i < 10; i++)
-		shorts[i] = 1666 + i;
-	motInsertArray(tree, "shorts", MOT_TAG_SHORT, 10, shorts);
-	SP_ASSERT_NOT_NULL(motSearch(tree, "shorts"));
-
-	SPfloat* floats = (SPfloat*) motAllocChunk(sizeof(SPfloat) * 10);
-	for(int i = 0; i < 10; i++)
-		floats[i]= 3.45 * 10.f * i;
-	motInsertArray(tree, "floats", MOT_TAG_FLOAT, 10, floats);
-	SP_ASSERT_NOT_NULL(motSearch(tree, "floats"));
-
-	SPdouble* doubles= (SPdouble*) motAllocChunk(sizeof(SPdouble) * 10);
-	for(int i = 0; i < 10; i++)
-		doubles[i]= 0.3f * i * i + 1.4 * i + 5.2;
-
-	motInsertArray(tree, "doubles", MOT_TAG_DOUBLE, 10, doubles);
-	SP_ASSERT_NOT_NULL(motSearch(tree, "doubles"));
-
-	motInsertLong(tree, "constant", 999);
-	motInsertInt(tree, "inter", 888);
-	motInsertShort(tree, "shortser", 777);
-	motInsertByte(tree, "baite", 55);
-	motInsertFloat(tree, "floater", 1111.45f);
-	motInsertDouble(tree, "doubleman", 435.344);
-	motInsertString(tree, "hda", "hidegious hidegi was here..");
-	printf("\n");
-	motPrintTree(tree);
-	motFreeTree(tree);
-	free(shorts);
-	free(floats);
-	free(doubles);
-
-
-}
-void test_if_all_available()
-{
-    MOT_tree tree = motAllocTree("head");
-	SP_ASSERT_NOT_NULL(tree);
-
-	motInsertInt(tree, "x", 1);
-	motInsertInt(tree, "y", 2);
-	motInsertInt(tree, "fjiaw", 300);
-	motInsertInt(tree, "motex", 220);
-	motInsertInt(tree, "value", 30);
-	motInsertInt(tree, "nmg", -14543);
-	motInsertShort(tree, "nmg0", -14543);
-	motInsertByte(tree, "nmg1", true);
-	motInsertByte(tree, "nmg2", false);
-	motInsertLong(tree, "nmg3", 495845);
-	motInsertDouble(tree, "byte_array", 1.998E+58);
-	motInsertFloat(tree, "byte_array1", 0.00001f);
-
-	SP_ASSERT_NOT_NULL(motSearch(tree, "x"));
-	SP_ASSERT_NULL(motSearch(tree, "hda1"));
-	SP_ASSERT_NOT_NULL(motSearch(tree, "byte_array"));
-	SP_ASSERT_NOT_NULL(motSearch(tree, "head"));
-	MOT_tree child = motAllocTree("z");
-
-	motInsertShort(child, "nmg0", -14543);
-	motInsertByte(child, "nmg1", true);
-	motInsertByte(child, "nmg2", false);
-	motInsertLong(child, "nmg3", 495845);
-	motInsertDouble(child, "byte_array", 1.998E+58);
-	motInsertFloat(child, "byte_array1", 0.00001f);
-	motInsertString(child, "name", "Hello World!!");
-	motInsertTree(tree, child);
-
-	motPrintTree(tree);
-	motFreeTree(tree);
-}
-
-void test_tree_insert()
-{
-	MOT_tree tree = motAllocTree("head");
-	SP_ASSERT_NOT_NULL(tree);
-
-    motInsertInt(tree, "x", 1);
-    motInsertInt(tree, "yre", 2);
-    motInsertInt(tree, "zv", 3);
-
-    MOT_tree child1 = motAllocTree("a");
-    motInsertTree(tree, child1);
-
-    MOT_tree child2 = motAllocTree("b");
-    motInsertTree(tree, child2);
-
-    MOT_tree child3 = motAllocTree("c");
-
-    motPrintTree(tree);
-	motFreeTree(tree);
-}
-
-void printByteArrayInBinary(const unsigned char *byteArray, size_t size) {
-    for (size_t i = 0; i < size; i++) {
-        unsigned char byte = byteArray[i];
-        // Print the byte in binary
-        for (int j = 7; j >= 0; j--) {
-            // Use bitwise AND and right shift to get each bit
-            printf("%d", (byte >> j) & 1);
-        }
-        printf("\n"); // New line after each byte
-    }
-}
-
-void test_write_binary()
-{
-	MOT_tree tree = motAllocTree("head");
-	SP_ASSERT_NOT_NULL(tree);
-
-	motInsertByte(tree, "x", 1);
-	motInsertByte(tree, "y", 2);
-	motInsertByte(tree, "header", 3);
-	motInsertByte(tree, "headerer", 4);
-	motInsertByte(tree, "fjiaw", 5);
-	motInsertByte(tree, "fjiaw2", 46);
-	motInsertLong(tree, "fjiaw3", 4565);
-	motInsertFloat(tree, "sun", 45.34);
-	motInsertString(tree, "hda", "hidegi was here..");
-
-	SPshort* shorts = (SPshort*) motAllocChunk(sizeof(SPshort) * 10);
-	for(int i = 0; i < 10; i++)
-	    shorts[i] = 1666 + i;
-    motInsertArray(tree, "shorts", MOT_TAG_SHORT, 10, shorts);
-    SP_ASSERT_NOT_NULL(motSearch(tree, "shorts"));
-
-    SPfloat* floats = (SPfloat*) motAllocChunk(sizeof(SPfloat) * 10);
-    for(int i = 0; i < 10; i++)
-        floats[i]= 3.45 * 10.f * i;
-    motInsertArray(tree, "floats", MOT_TAG_FLOAT, 10, floats);
-    SP_ASSERT_NOT_NULL(motSearch(tree, "floats"));
-
-    SPdouble* doubles= (SPdouble*) motAllocChunk(sizeof(SPdouble) * 10);
-    for(int i = 0; i < 10; i++)
-        doubles[i]= 0.3f * i * i + 1.4 * i + 5.2;
-    motInsertArray(tree, "doubles", MOT_TAG_DOUBLE, 10, doubles);
-	SP_ASSERT_NOT_NULL(motSearch(tree, "doubles"));
-
-    SPbyte* bytes = (SPbyte*) motAllocChunk(sizeof(SPbyte) * 20);
-    for(int i = 0; i < 20; i++)
-        bytes[i] = 5 * i;
-    motInsertArray(tree, "bytes", MOT_TAG_BYTE, 20, bytes);
-	SP_ASSERT_NOT_NULL(motSearch(tree, "bytes"));
-
-	const char* strings[] =
-	{
-		"hidegi",
-		"motex",
-		"betelgus"
-	}; //12 bytes
-	motInsertArray(tree, "names", (MOT_tag) (MOT_TAG_STRING | MOT_TAG_ARRAY), 3, (const SPchar**)strings);
-
-	SPbuffer buffer = motWriteBinary(tree);
-
-	printf("expected:\n");
-	motPrintTree(tree);
-    printf("\n");
-	MOT_tree output = motReadBinary(buffer);
-	printf("actual:\n");
-	SP_ASSERT_NOT_NULL(output);
-	motPrintTree(output);
-
-	free(doubles);
-	free(floats);
-	free(shorts);
-	free(bytes);
-	//write data..
-	SP_ASSERT_TRUE(sp::writeData("output.mot", buffer.data, buffer.length));
-
-	SP_DEBUG("%lld bytes written to output.mot", buffer.length);
-	spBufferFree(&buffer);
-
-}
-
-void test_string_array()
-{
-	MOT_tree tree = motAllocTree("head");
-	SP_ASSERT_NOT_NULL(tree);
-	SPbyte* bytes = (SPbyte*) motAllocChunk(sizeof(SPbyte) * 20);
-    for(int i = 0; i < 20; i++)
-        bytes[i] = 5 * i;
-    motInsertArray(tree, "bytes", MOT_TAG_BYTE, 20, bytes);
-	SP_ASSERT_NOT_NULL(motSearch(tree, "bytes"));
-
-	motInsertInt(tree, "x", 1);
-	const char* strings[] =
-	{
-		"hd",
-		"hd"
-	}; //12 bytes
-	motInsertArray(tree, "names", MOT_TAG_STRING, 2, (const SPchar**)strings);
-
-	SPbuffer buffer = motWriteBinary(tree);
-
-
-	MOT_tree output = motReadBinary(buffer);
-	SP_ASSERT_NOT_NULL(output);
-	motPrintTree(output);
-	spBufferFree(&buffer);
-	motFreeTree(output);
-	motFreeTree(tree);
-	free(bytes);
-}
-
-void test_root_insert()
-{
-	MOT_tree parent = motAllocTree("parent");
-	SP_ASSERT_NOT_NULL(parent);
-
-	MOT_tree child = motAllocTree("child");
-	SP_ASSERT_NOT_NULL(child);
-	motInsertByte(child, "byte", 2);
-	motInsertTree(parent, child);
-	motInsertByte(parent, "byte", 1);
-
-	SPbuffer buffer = motWriteBinary(parent);
-	MOT_tree output = motReadBinary(buffer);
-	SP_ASSERT_NOT_NULL(output);
-
-	printf("expected:\n");
-	motPrintTree(parent);
-	printf("actual:\n");
-	motPrintTree(output);
-	motFreeTree(parent);
-	motFreeTree(output);
-	SP_DEBUG("%lld bytes", buffer.length);
-	spBufferFree(&buffer);
-}
-
-void test_deletion_trivial()
-{
-	MOT_tree tree = motAllocTree("head");
-	SP_ASSERT_NOT_NULL(tree);
-
-	motInsertInt(tree, "x", 1);
-	motInsertInt(tree, "y", 2);
-	motInsertInt(tree, "fjiaw", 300);
-	motInsertInt(tree, "motex", 220);
-	motInsertInt(tree, "value", 30);
-	motInsertInt(tree, "nmg", -14543);
-	motInsertShort(tree, "nmg0", -14543);
-	motInsertByte(tree, "nmg1", true);
-	motInsertByte(tree, "nmg2", false);
-	motInsertLong(tree, "nmg3", 495845);
-	motInsertDouble(tree, "byte_array", 1.998E+58);
-	motInsertFloat(tree, "byte_array1", 0.00001f);
-
-    //SP_ASSERT_TRUE(motDelete(tree, "fjiaw"));
-	motPrintTree(tree);
-	motFreeTree(tree);
-}
-*/
 
 void test_insertion()
 {
-
 	MOT_tree tree = motAllocTree();
 	motInsertString(&tree, "x", "x");
 	motInsertString(&tree, "y", "y");
@@ -344,8 +74,9 @@ void test_empty_tree()
     motInsertString(&tree, "z", "z");
     motInsertString(&tree, "w", "w");
     motInsertInt(&tree, "hda", 34);
-
+	
     SP_ASSERT_NOT_NULL(tree);
+	SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), motFreeTree(tree));
     motPrintTree(tree);
     motFreeTree(tree);
 }
@@ -394,6 +125,196 @@ void test_sub_tree()
     spBufferFree(&buffer);
 }
 
+
+void test_tree_deletion()
+{
+    MOT_tree tree = motAllocTree();
+    motInsertString(&tree, "x", "x");
+    motInsertString(&tree, "y", "y");
+    motInsertString(&tree, "z", "z");
+    motInsertString(&tree, "w", "w");
+    motInsertInt(&tree, "hda", 34);
+	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&tree, "w"), motFreeTree(tree));
+	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&tree, "y"), motFreeTree(tree));
+	
+    SP_ASSERT_NOT_NULL_WITH_ACTION(tree, {motPrintTree(tree); motFreeTree(tree);});
+	SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), motFreeTree(tree));
+    motPrintTree(tree);
+    motFreeTree(tree);
+}
+
+void test_tree_deletion_medium()
+{
+    const char* names[] =
+    {
+        "hidegi",
+        "motex",
+        "betelgus",
+        "fjiaw"
+    };
+    MOT_tree child = NULL;
+    motInsertString(&child, "x", "sub_x");
+    motInsertString(&child, "y", "sub_y");
+    motInsertString(&child, "z", "sub_z");
+    motInsertString(&child, "w", "sub_w");
+
+    int array[] = {1, 3, 2, 1, 5, 2};
+    //motInsertArray(&child, "names", MOT_TAG_INT, 6, array);
+    motInsertArray(&child, "names", MOT_TAG_STRING, 4, names);
+    MOT_tree parent = NULL;
+    motInsertTree(&parent, "sub tree", child);
+
+    motInsertInt(&parent, "i", 1);
+    motInsertInt(&parent, "j", 2);
+
+    motInsertInt(&parent, "kk", 6);
+    motInsertInt(&parent, "ii", 6);
+    motInsertArray(&parent, "names", MOT_TAG_STRING, 4, names);
+    motInsertInt(&parent, "suberr", 135);
+	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "ii"), motFreeTree(parent));
+	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "j"), motFreeTree(parent));
+	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "names"), motFreeTree(parent));
+	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "sub tree"), motFreeTree(parent));
+	
+    SP_ASSERT_NOT_NULL_WITH_ACTION(parent, {motPrintTree(parent); motFreeTree(parent);});
+	SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(parent), motFreeTree(parent));
+    motPrintTree(parent);
+    motFreeTree(parent);
+}
+
+#define ITERATIONS 100
+#define LENGTH 200
+
+void test_tree_search()
+{
+	std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dst(1,1000);
+	MOT_tree tree = NULL;
+	
+	int* array = new int[LENGTH];
+	for(int i = 0; i < LENGTH; i++)
+    {
+		int num; 
+		do
+		{
+			num = dst(rng);
+		}
+		while(containsNumber(num, array, LENGTH));
+		array[i] = num;
+		motInsertInt(&tree, std::to_string(array[i]).c_str(), array[i]);
+	}
+	
+	for(int i = 0; i < LENGTH; i++)
+    {
+		SP_ASSERT_NOT_NULL_WITH_ACTION(motSearch(tree, std::to_string(array[i]).c_str()), motFreeTree(tree));
+	}
+	
+	motFreeTree(tree);
+	delete[] array;
+}
+
+SPindex getRandomIndex(bool array[], SPsize length) {
+	SPindex index = -1;
+	SPindex used[length] = {};
+	SPsize indexCount = 0;
+	
+	for(SPsize i = 0; i < length; i++)
+	{
+		if(!array[i])
+			used[indexCount++] = i;
+	}
+	
+	if(indexCount == 0)
+		return -1;
+	index = used[std::rand() % (indexCount)];
+	array[index] = true;
+    return index;
+}
+
+void test_random_index()
+{
+	constexpr int length = 100;
+	bool array[length] = {};
+	memset(array, false, sizeof(bool) * length);
+	
+	SPindex index = -1;
+	SPsize checksum = static_cast<SPsize>((length) * (length - 1) / 2.0);
+	SPsize s = 0;
+	do
+	{
+		index = getRandomIndex(array, length);
+		if(index != -1)
+		{
+			s += index;
+		}
+	}
+	while(index != -1);
+	
+	SP_ASSERT_INTEGER_EQUAL(checksum, s);
+}
+
+void test_tree_random_integers()
+{
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dst(1,1000);
+	
+    for(int i = 0; i < ITERATIONS; i++)
+    {
+        MOT_tree tree = NULL;
+		
+		bool cache[LENGTH] = {false};
+		memset(cache, false, sizeof(bool) * LENGTH);
+        int* array = new int[LENGTH];
+        for(int i = 0; i < LENGTH; i++)
+        {
+            int num; 
+			do
+			{
+				num = dst(rng);
+			}
+            while(containsNumber(num, array, LENGTH));
+                
+            array[i] = num;
+            motInsertInt(&tree, std::to_string(array[i]).c_str(), array[i]);
+        }
+		
+		
+        SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), {motFreeTree(tree);});
+		
+		SPsize index = -1; 
+		do
+		{
+			index = getRandomIndex(cache, LENGTH);
+			
+			if(index != -1)
+			{
+				bool status = motDelete(&tree, std::to_string(array[index]).c_str());
+				SP_ASSERT_TRUE_WITH_ACTION(status,
+				{
+					SP_DEBUG("failed to delete %d", array[index]);
+					motPrintTree(tree);
+					delete [] array;
+					motFreeTree(tree);
+				});
+				
+				SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree),
+				{
+					SP_DEBUG("imbalanced tree for %d", array[index]);
+					delete [] array;
+					motFreeTree(tree);
+				});
+			}
+			
+		} while(index != -1);
+		
+        SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), motFreeTree(tree));
+        motFreeTree(tree);
+        delete[] array;
+	}
+	SP_DEBUG("DONE: %d iteration(s) with %d insertion(s)/deletion(s)", ITERATIONS, LENGTH);
+}
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
@@ -402,7 +323,8 @@ int main(int argc, char** argv)
 	//SP_TEST_ADD(test_if_all_available);
 	//SP_TEST_ADD(test_insertion);
 	//SP_TEST_ADD(test_null_tree);
-	SP_TEST_ADD(test_sub_tree);
+	SP_TEST_ADD(test_tree_random_integers);
+	SP_TEST_ADD(test_random_index);
 
 	spTestRunAll();
 	spTestTerminate();

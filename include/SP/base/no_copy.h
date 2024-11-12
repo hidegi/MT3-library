@@ -3,14 +3,14 @@
 
 namespace sp
 {
-    class NonCopyable
-    {
-        public:
-            NonCopyable(){}
-           ~NonCopyable(){}
-            NonCopyable(const NonCopyable&) = delete;
-            NonCopyable& operator=(const NonCopyable&) = delete;
-    };
+	class NonCopyable
+	{
+		public:
+			NonCopyable(){}
+		   ~NonCopyable(){}
+			NonCopyable(const NonCopyable&) = delete;
+			NonCopyable& operator=(const NonCopyable&) = delete;
+	};
 }
 
 #endif // NO_COPY_H_INCLUDED
