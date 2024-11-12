@@ -765,6 +765,7 @@ void test_rbt_delete_small_test_1()
     nodeFree(n);
 }
 
+//#define PRINT_STEPS
 #define ITERATIONS 100
 #define LENGTH 100
 void test_rbt_delete_random()
@@ -779,17 +780,35 @@ void test_rbt_delete_random()
         int* array = new int[LENGTH];
         array[0] = 123;
         SPsize length = LENGTH;
+#ifdef PRINT_STEPS
+			printf("123 ");
+#endif
         for(int i = 1; i < length; i++)
         {
+
             int num = dst(rng);
             while(containsNumber(num, array, LENGTH))
                 num = dst(rng);
+#ifdef PRINT_STEPS
+			printf("%d ", num);
+#endif
             array[i] = num;
             nodeAdd_RBT(n, &n, array[i]);
         }
+		
+#ifdef PRINT_STEPS
+		printf("\n");
+#endif
         SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), {nodePrint(n);});
+#ifdef PRINT_STEPS
+		printf("start:\n");
+		nodePrint(n);
+#endif
         for(int i = 0; i < LENGTH / 2 - 1; i++)
         {
+#ifdef PRINT_STEPS
+			printf("deleting %d\n", array[i]);
+#endif
             bool status = nodeDelete_RBT(&n, array[i]);
             SP_ASSERT_TRUE_WITH_ACTION(status,
             {
@@ -810,9 +829,16 @@ void test_rbt_delete_random()
                 delete [] array;
                 nodeFree(n);
             });
+#ifdef PRINT_STEPS
+			nodePrint(n);
+			printf("\n");
+#endif
         }
         for(int i = LENGTH - 1; i >= LENGTH / 2; i--)
         {
+#ifdef PRINT_STEPS
+			printf("deleting %d\n", array[i]);
+#endif
             bool status = nodeDelete_RBT(&n, array[i]);
             SP_ASSERT_TRUE_WITH_ACTION(status,
             {
@@ -833,12 +859,21 @@ void test_rbt_delete_random()
                 delete [] array;
                 nodeFree(n);
             });
+#ifdef PRINT_STEPS
+			nodePrint(n);
+			printf("\n");
+#endif
         }
         SP_ASSERT_TRUE_WITH_ACTION(verifyRBT(n), nodeFree(n));
+#ifdef PRINT_STEPS
+			printf("end:\n");
+			nodePrint(n);
+			printf("\n");
+#endif
         nodeFree(n);
         delete[] array;
 	}
-	SP_DEBUG("DONE: %d iterations with %d insertions/deletions", ITERATIONS, LENGTH);
+	SP_DEBUG("DONE: %d iteration(s) with %d insertion(s)/deletion(s)", ITERATIONS, LENGTH);
 }
 
 void test_bst_delete_random()

@@ -2,66 +2,6 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <zlib.h>
-
-/*
- *------------------------------------------------------------------------------------------------------------------
- *   writing rule
- *------------------------------------------------------------------------------------------------------------------
- *  for all nodes:
- *  1. write current tag..
- *  2. write weight..
- *  3. write data (explained below)..
- *  4. for major and minor repeat step 1 if not NULL, otherwise write MOT_TAG_NULL as tag respectively..
- *
- *  for root nodes:
- *  skip step 3..
- *
- *  for scalar nodes:
- *  write data..
- *  (you neither need length nor stride, since type is known by tag)..
- *
- *  for number array nodes:
- *  write length..
- *  write data..
- *  (stride is known by tag, counts for byte, short, int long, float double and string)..
- *
- *  for string array nodes:
- *  write length (how many strings)..
- *  write length (string length)..
- *  write data (char data)..
- *  write null (end)..
- *  due to this, the number types have to be known, therefore more concrete tags needed..
-*/
-
-/*
- *------------------------------------------------------------------------------------------------------------------
- *   reading rule
- *------------------------------------------------------------------------------------------------------------------
- *  for all nodes:
- *  1. read tag..
- *  2. read weight..
- *  3. read data..
- *  4. for major and minor, repeat step 1 (if not 0 as tag, respectively)..
- *
- *  for branch nodes:
- *  skip step 3..
- *
- *  for scalar nodes:
- *  read n bytes (length known by tag, counts for byte, short, int, long, float, double)..
- *
- *  for number array nodes:
- *  read m × n bytes, where m is the length of the array and n is the stride..
- *  (stride known by tag, counts for byte, short, int, long, float, double and string)..
- *
- *  for string array nodes:
- *  read array length..
- *  read string length..
- *  read n bytes..
- *  repeat step 1 until NULL is found..
- *
- *  reading stops when a tag of 0 is found..
-*/
-
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch"
@@ -115,6 +55,7 @@
 	} while(0)
 
 #define MOT_COPY_TO_PAYLOAD(tagName) SP_READ_GENERIC(&node->payload.tagName, sizeof(node->payload.tagName), _spSwappedMemscan, goto sp_error)
+#define MOT_MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #define ne2be _mot_big_endian_to_native_endian
 #define be2ne _mot_big_endian_to_native_endian
@@ -144,6 +85,23 @@ struct MOT_node
 	struct MOT_node* major;
 	struct MOT_node* minor;
 };
+typedef struct MOT_node MOT_node;
+
+static void _mot_fix_rbt_violations(MOT_node* node, MOT_tree* head);
+static MOT_node* _mot_rotate_left(MOT_node* n, MOT_tree* head);
+static MOT_node* _mot_rotate_right(MOT_node* n, MOT_tree* head);
+static void _mot_delete_bst_impl(MOT_node* n, MOT_tree* head, MOT_node** x, MOT_node** w, MOT_node** r);
+static SPbool _mot_is_major(const MOT_node* node);
+static SPbool _mot_is_root(const MOT_node* node);
+static SPbool _mot_fix_up_rbt(SPbool rBefore, MOT_node* r, MOT_node* x, MOT_node* w, MOT_tree* head);
+static SPbool _mot_transplant_rbt(MOT_node* x, MOT_node* w, MOT_tree* head);
+static SPbool _mot_transplant_proc_0(MOT_node* x);
+static SPbool _mot_transplant_proc_1(MOT_node* x, MOT_node* w, MOT_tree* head);
+static SPbool _mot_transplant_proc_2(MOT_node* x, MOT_node* w, MOT_tree* head);
+static SPbool _mot_transplant_proc_3(MOT_node* x, MOT_node* w, MOT_tree* head);
+static SPbool _mot_transplant_proc_4(MOT_node* x, MOT_node* w, MOT_tree* head);
+
+
 
 static int _mot_is_little_endian()
 {
@@ -213,7 +171,7 @@ static SPbuffer _mot_compress(const void* memory, SPsize length)
 	{
 		if(spBufferReserve(&buffer, buffer.length + CHUNK_SIZE) != MOT_ERR_NONE)
 		{
-			SP_DEBUG("Failed to reserve buffer");
+			SP_WARNING("Failed to reserve buffer");
 			spBufferFree(&buffer);
 			return SP_BUFFER_INIT;
 		}
@@ -260,7 +218,7 @@ static SPbuffer _mot_decompress(const void* memory, SPsize length)
 	{
 		if(spBufferReserve(&buffer, buffer.length + CHUNK_SIZE))
 		{
-			SP_DEBUG("Failed to reserve buffer");
+			SP_WARNING("Failed to reserve buffer");
 			spBufferFree(&buffer);
 			return SP_BUFFER_INIT;
 		}
@@ -292,141 +250,11 @@ static SPbuffer _mot_decompress(const void* memory, SPsize length)
 	inflateEnd(&stream);
 	return buffer;
 }
-static SPbool _mot_is_major(const struct MOT_node* node)
-{
-	return (node && node->parent) ? (node->parent->major == node) : SP_FALSE;
-}
 
-static SPbool _mot_is_root(const struct MOT_node* node)
+static MOT_node* _mot_alloc_node(MOT_tag tag, SPhash name, SPsize length, const SPbyte* value)
 {
-	return (node && !node->parent);
-}
-
-static struct MOT_node* _mot_find_member(struct MOT_node* node)
-{
-	SP_ASSERT(!_mot_is_root(node->parent), "Oopsie, this should not have happened");
-	return _mot_is_major(node->parent) ? node->parent->parent->minor : node->parent->parent->major;
-}
-
-static struct MOT_node* _mot_rotate_left(struct MOT_node* n, struct MOT_node** head)
-{
-	SPbool isMajor = _mot_is_major(n);
-	struct MOT_node* p = n->parent;
-	struct MOT_node* m = n->major;
-	struct MOT_node* c = n->major->minor;
-	
-	n->parent = m;
-	n->major->minor = n;
-	if(c)
-	   c->parent = n;
-   
-	n->major = c;
-	m->parent = p;
-	
-	p ? (isMajor ? (p->major = m) : (p->minor = m)) : (*head = m);
-	return m;
-}
-
-static struct MOT_node* _mot_rotate_right(struct MOT_node* n, struct MOT_node** head)
-{
-	SPbool isMajor = _mot_is_major(n);
-	struct MOT_node* p = n->parent;
-	struct MOT_node* m = n->minor;
-	struct MOT_node* c = n->minor->major;
-	
-	n->parent = m;
-	n->minor->major = n;
-	if(c)
-	   c->parent = n;
-   
-	n->minor = c;
-	m->parent = p;
-	
-	p ? (isMajor ? (p->major = m) : (p->minor = m)) : (*head = m);
-	return m;
-}
-
-static void _mot_fix_rbt_violations(struct MOT_node* node, struct MOT_node** head)
-{
-	if(node)
-	{
-		if(node->red && node->parent->red)
-		{
-			struct MOT_node* m = _mot_find_member(node);
-			struct MOT_node* p = node->parent;
-			struct MOT_node* g = p->parent;
-			struct MOT_node* r = NULL;
-			
-			SPbool isRed = m != NULL ? m->red : SP_FALSE;
-			
-			if(isRed)
-			{
-				// color switch..
-				p->red = !p->red;
-				g->red = g->parent ? !g->red : SP_FALSE;
-				m->red = !m->red;
-				r = g;
-			}
-			else
-			{
-				/*
-				 *  child-parent combinations:
-				 *
-				 *  major = true..
-				 *  minor = false
-				 *
-				 *  P   C | rotation
-				 * -------|----------
-				 *  0   0 |	R
-				 *  0   1 |	LR
-				 *  1   0 |	RL
-				 *  1   1 |	L
-				 *
-				 *	for skews, rotate once..
-				 *	for triangles, rotate twice..
-				 */
-				 SPbool pMajor = _mot_is_major(p);
-				 SPbool nMajor = _mot_is_major(node);
-				 
-				 if(!pMajor && !nMajor)
-				 {
-					// R-rotation..
-					 r = _mot_rotate_right(node->parent->parent, head);
-				 }
-				 else if(!pMajor && nMajor)
-				 {
-					// LR-rotation..
-					r = _mot_rotate_left(node->parent, head);
-						_mot_rotate_right(node->parent, head);
-				 }
-				 else if(pMajor && !nMajor)
-				 {
-					// RL-rotation..
-					r = _mot_rotate_right(node->parent, head);
-						_mot_rotate_left(node->parent, head);
-				 }
-				 else
-				 {
-					// L-rotation..
-					r = _mot_rotate_left(node->parent->parent, head);
-				 }
-				 r->red = !r->red;
-				 pMajor ? (r->minor->red = !r->minor->red) : (r->major->red = !r->major->red);
-			}
-			_mot_fix_rbt_violations(r, head);
-		}
-	}
-}
-
-static void _mot_delete_node(MOT_tree, SPhash number)
-{
-    
-}
-
-static struct MOT_node* _mot_alloc_node(MOT_tag tag, SPhash name, SPsize length, const SPbyte* value)
-{
-	struct MOT_node* node = NULL;
-	MOT_CHECKED_CALLOC(node, 1, sizeof(struct MOT_node), return NULL);
+	MOT_node* node = NULL;
+	MOT_CHECKED_CALLOC(node, 1, sizeof(MOT_node), return NULL);
 	node->tag = tag;
 	node->weight = name;
 	node->length = length;
@@ -444,6 +272,24 @@ static struct MOT_node* _mot_alloc_node(MOT_tag tag, SPhash name, SPsize length,
 	}
 
 	return node;
+}
+
+// very dangerous, can cause disruption!!
+static void _mot_delete_node(MOT_node* n)
+{
+	if(n)
+	{
+		if(n->tag != MOT_TAG_ROOT)
+		{
+			free(n->payload.data);
+		}
+		else
+		{
+			motFreeTree(n->payload.head);
+		}
+		
+		free(n);
+	}
 }
 
 static SPsize _mot_length_of(MOT_tag tag)
@@ -501,8 +347,8 @@ void _mot_print_binary(const unsigned char *byteArray, size_t size, int level)
 
 MOT_tree motAllocTree()
 {
-	struct MOT_node* root = NULL;
-	MOT_CHECKED_CALLOC(root, 1, sizeof(struct MOT_node), return NULL);
+	MOT_node* root = NULL;
+	MOT_CHECKED_CALLOC(root, 1, sizeof(MOT_node), return NULL);
 
 	root->length = 0LL;
 	root->weight = 0LL;
@@ -546,7 +392,7 @@ static MOT_tree _mot_search_for(MOT_tree tree, SPhash hash)
 
 MOT_tree motSearch(MOT_tree tree, const char* name)
 {
-	long long hash = _mot_sdbm(name);
+	SPhash hash = _mot_sdbm(name);
 	return _mot_search_for(tree, hash);
 }
 
@@ -578,12 +424,12 @@ static MOT_tree _mot_insert_bytes(MOT_tree* head, MOT_tree node, SPhash weight, 
 
 		if(weight == node->weight)
 	{
-		SP_DEBUG("Name has already been given to a node");
+		SP_WARNING("Name has already been given to a node");
 		return NULL;
 	}
 
-	SPbool isMajor = (weight > node->weight);
-	MOT_tree primary  = isMajor ? node->major : node->minor;
+	SPbool maj = (weight > node->weight);
+	MOT_tree primary  = maj ? node->major : node->minor;
 
 	if(primary)
 		_mot_insert_bytes(head, primary, weight, tag, length, value);
@@ -592,7 +438,7 @@ static MOT_tree _mot_insert_bytes(MOT_tree* head, MOT_tree node, SPhash weight, 
 		primary = _mot_alloc_node(tag, weight, length, value);
 		primary->parent = node;
 		primary->red = SP_TRUE;
-		isMajor ? (node->major = primary) : (node->minor = primary);
+		maj ? (node->major = primary) : (node->minor = primary);
 		_mot_fix_rbt_violations(primary, head);
 	}
 	return primary;
@@ -625,12 +471,12 @@ static MOT_tree _mot_insert_root(MOT_tree* head, MOT_tree node, SPhash weight, M
 
 	if(value->weight == node->weight)
 	{
-		SP_DEBUG("Name has already been given to a node");
+		SP_WARNING("Name has already been given to a node");
 		return NULL;
 	}
 
-	SPbool isMajor = (value->weight > node->weight);
-	MOT_tree primary  = isMajor ? node->major : node->minor;
+	SPbool maj = (value->weight > node->weight);
+	MOT_tree primary  = maj ? node->major : node->minor;
 
 	if(primary)
 		_mot_insert_root(head, primary, weight, value);
@@ -640,7 +486,7 @@ static MOT_tree _mot_insert_root(MOT_tree* head, MOT_tree node, SPhash weight, M
 		primary->parent = node;
 		primary->payload.head = value;
 		primary->red = SP_TRUE;
-		isMajor ? (node->major = primary) : (node->minor = primary);
+		maj ? (node->major = primary) : (node->minor = primary);
 		_mot_fix_rbt_violations(primary, head);
 	}
 
@@ -1050,6 +896,35 @@ static void _mot_write_binary(const MOT_tree tree, SPbuffer* buffer, int level)
 	_mot_write_binary(tree->minor, buffer, level + 1);
 }
 
+/*
+ *------------------------------------------------------------------------------------------------------------------
+ *   writing rule
+ *------------------------------------------------------------------------------------------------------------------
+ *  for all nodes:
+ *  1. write current tag..
+ *  2. write weight..
+ *  3. write data (explained below)..
+ *  4. for major and minor repeat step 1 if not NULL, otherwise write MOT_TAG_NULL as tag respectively..
+ *
+ *  for root nodes:
+ *  skip step 3..
+ *
+ *  for scalar nodes:
+ *  write data..
+ *  (you neither need length nor stride, since type is known by tag)..
+ *
+ *  for number array nodes:
+ *  write length..
+ *  write data..
+ *  (stride is known by tag, counts for byte, short, int long, float double and string)..
+ *
+ *  for string array nodes:
+ *  write length (how many strings)..
+ *  write length (string length)..
+ *  write data (char data)..
+ *  write null (end)..
+ *  due to this, the number types have to be known, therefore more concrete tags needed..
+*/
 SPbuffer motWriteBinary(const MOT_tree tree)
 {
 	SPbuffer buffer = SP_BUFFER_INIT;
@@ -1076,7 +951,7 @@ static MOT_tree _mot_read_binary(const SPubyte** memory, SPsize* length)
 		return NULL;
 
 	MOT_tree tree;
-	MOT_CHECKED_CALLOC(tree, 1, sizeof(struct MOT_node), return NULL);
+	MOT_CHECKED_CALLOC(tree, 1, sizeof(MOT_node), return NULL);
 	MOT_READ_GENERIC(&tree->weight, sizeof(SPlong), _mot_swapped_memcpy, return NULL);
 	tree->red = redness;
 	tree->tag = tag;
@@ -1149,6 +1024,35 @@ static MOT_tree _mot_read_binary(const SPubyte** memory, SPsize* length)
 	return tree;
 }
 
+/*
+ *------------------------------------------------------------------------------------------------------------------
+ *   reading rule
+ *------------------------------------------------------------------------------------------------------------------
+ *  for all nodes:
+ *  1. read tag..
+ *  2. read weight..
+ *  3. read data..
+ *  4. for major and minor, repeat step 1 (if not 0 as tag, respectively)..
+ *
+ *  for branch nodes:
+ *  skip step 3..
+ *
+ *  for scalar nodes:
+ *  read n bytes (length known by tag, counts for byte, short, int, long, float, double)..
+ *
+ *  for number array nodes:
+ *  read m × n bytes, where m is the length of the array and n is the stride..
+ *  (stride known by tag, counts for byte, short, int, long, float, double and string)..
+ *
+ *  for string array nodes:
+ *  read array length..
+ *  read string length..
+ *  read n bytes..
+ *  repeat step 1 until NULL is found..
+ *
+ *  reading stops when a tag of 0 is found..
+*/
+
 MOT_tree motReadBinary(SPbuffer buffer)
 {
 	SPbuffer decompressed = _mot_decompress(buffer.data, buffer.length);
@@ -1156,6 +1060,571 @@ MOT_tree motReadBinary(SPbuffer buffer)
 	SPsize length = decompressed.length;
 	
 	return _mot_read_binary(memory, &length);
+}
+
+/*<==========================================================>*
+ *  tree operations
+ *<==========================================================>*/
+
+static MOT_node* _mot_find_max(MOT_node* n)
+{
+	return n ? (!n->major ? n : _mot_find_max(n->major)) : NULL;
+}
+
+static MOT_node* _mot_find_min(MOT_node* n)
+{
+	return n ? (!n->minor ? n : _mot_find_min(n->minor)) : NULL;
+}
+
+static SPbool _mot_is_major(const MOT_node* node)
+{
+	return (node && node->parent) ? (node->parent->major == node) : SP_FALSE;
+}
+
+static SPbool _mot_is_root(const MOT_node* node)
+{
+	return (node && !node->parent);
+}
+
+static MOT_node* _mot_find_member(MOT_node* node)
+{
+	SP_ASSERT(!_mot_is_root(node->parent), "Oopsie, this should not have happened");
+	return _mot_is_major(node->parent) ? node->parent->parent->minor : node->parent->parent->major;
+}
+
+static SPsize _mot_calculate_black_depth(const MOT_node* rbt)
+{
+	if(!rbt)
+		return 1;
+	
+	SPsize count = 0;
+	if(!rbt->red)
+		count++;
+	SPsize majorDepth = _mot_calculate_black_depth(rbt->major);
+	SPsize minorDepth = _mot_calculate_black_depth(rbt->minor);
+	return count + MOT_MAX(minorDepth, majorDepth);
+}
+
+static SPbool _mot_verify_rbt_impl(const MOT_node* rbt, SPsize depth, SPsize ref)
+{
+	if(rbt)
+	{
+		if(rbt->red)
+		{
+			if(!rbt->parent)
+				return SP_FALSE;
+			else
+			{
+				if(rbt->parent->red)
+					return SP_FALSE;
+			}
+		}
+		else
+			++depth;
+		
+		if(rbt->major || rbt->minor)
+		{
+			return _mot_verify_rbt_impl(rbt->major, depth, ref) && _mot_verify_rbt_impl(rbt->minor, depth, ref);
+		}
+		else
+		{
+			return !rbt->red ? (ref == depth) : SP_TRUE;
+		}
+	}
+	return SP_TRUE;
+}
+
+SPbool motVerifyRBT(MOT_node* rbt)
+{
+	SPsize depth = _mot_calculate_black_depth(rbt) - 1;
+	return _mot_verify_rbt_impl(rbt, 0, depth);
+}
+
+static void _mot_fix_rbt_violations(MOT_node* node, MOT_tree* head)
+{
+	if(node)
+	{
+		if(node->red && node->parent->red)
+		{
+			MOT_node* m = _mot_find_member(node);
+			MOT_node* p = node->parent;
+			MOT_node* g = p->parent;
+			MOT_node* r = NULL;
+			
+			SPbool isRed = m != NULL ? m->red : SP_FALSE;
+			
+			if(isRed)
+			{
+				// color switch..
+				p->red = !p->red;
+				g->red = g->parent ? !g->red : SP_FALSE;
+				m->red = !m->red;
+				r = g;
+			}
+			else
+			{
+				/*
+				 *  child-parent combinations:
+				 *
+				 *  major = true..
+				 *  minor = false
+				 *
+				 *  P   C | rotation
+				 * -------|----------
+				 *  0   0 |	R
+				 *  0   1 |	LR
+				 *  1   0 |	RL
+				 *  1   1 |	L
+				 *
+				 *	for skews, rotate once..
+				 *	for triangles, rotate twice..
+				 */
+				 SPbool pMajor = _mot_is_major(p);
+				 SPbool nMajor = _mot_is_major(node);
+				 
+				 if(!pMajor && !nMajor)
+				 {
+					// R-rotation..
+					 r = _mot_rotate_right(node->parent->parent, head);
+				 }
+				 else if(!pMajor && nMajor)
+				 {
+					// LR-rotation..
+					r = _mot_rotate_left(node->parent, head);
+						_mot_rotate_right(node->parent, head);
+				 }
+				 else if(pMajor && !nMajor)
+				 {
+					// RL-rotation..
+					r = _mot_rotate_right(node->parent, head);
+						_mot_rotate_left(node->parent, head);
+				 }
+				 else
+				 {
+					// L-rotation..
+					r = _mot_rotate_left(node->parent->parent, head);
+				 }
+				 r->red = !r->red;
+				 pMajor ? (r->minor->red = !r->minor->red) : (r->major->red = !r->major->red);
+			}
+			_mot_fix_rbt_violations(r, head);
+		}
+	}
+}
+
+static MOT_node* _mot_rotate_left(MOT_node* n, MOT_tree* head)
+{
+	SP_ASSERT(n, "Expected rotation node");
+	SPbool maj = _mot_is_major(n);
+	MOT_node* p = n->parent;
+	MOT_node* m = n->major;
+	MOT_node* c = m ? n->major->minor : NULL;
+	
+	n->parent = m;
+	n->major->minor = n;
+	
+	if(c)
+	   c->parent = n;
+	n->major = c;
+	
+	if(m)
+	   m->parent = p;
+	
+	p ? (maj ? (p->major = m) : (p->minor = m)) : (*head = m);
+	return m;
+}
+
+static MOT_node* _mot_rotate_right(MOT_node* n, MOT_tree* head)
+{
+	SP_ASSERT(n, "Expected rotation node");
+	SPbool maj = _mot_is_major(n);
+	MOT_node* p = n->parent;
+	MOT_node* m = n->minor;
+	MOT_node* c = m ? n->minor->major : NULL;
+	
+	n->parent = m;
+	n->minor->major = n;
+	
+	if(c)
+	   c->parent = n;
+	n->minor = c;
+	
+	if(m)
+	   m->parent = p;
+	
+	p ? (maj ? (p->major = m) : (p->minor = m)) : (*head = m);
+	return m;
+}
+
+static void _mot_delete_bst_impl(MOT_node* n, MOT_tree* head, MOT_node** _r, MOT_node** _x, MOT_node** _w)
+{
+	if(n)
+	{
+		MOT_node* x = NULL;
+		MOT_node* w = NULL;
+		MOT_node* r = NULL;
+		MOT_node* p = n->parent;
+		
+		SPbool maj = _mot_is_major(n);
+		SPbool root = _mot_is_root(n);
+		
+		if(!n->major && !n->minor)
+		{
+			if(p)
+			{
+				maj ? (p->major = NULL) : (p->minor = NULL);
+				w = maj ? (p->minor) : (p->major);
+			}
+			else
+			{
+				SP_ASSERT(root, "Fatal, expected deleted node to be root");
+			}
+		}
+		else if((n->major && !n->minor) || (!n->major && n->minor))
+		{
+			r = n->major ? n->major : n->minor;
+			SP_ASSERT(r, "Fatal, expected to have replacement");
+			r->parent = p;
+			
+			if(maj)
+			{
+				if(p)
+				   p->major = r;
+				x = r->major;
+				w = r->minor;
+			}
+			else
+			{
+				if(p)
+				   p->minor = r;
+				x = r->minor;
+				w = r->major;
+			}
+		}
+		else
+		{
+#ifndef MOT_HAVE_BST_MAJOR_INCLINED
+			r = _mot_find_min(n->major);
+			w = r->parent ? (_mot_is_major(r) ? r->parent->minor : r->parent->major) : NULL;
+			
+			SP_ASSERT(r, "Expected to have replacement");
+			SP_ASSERT(!r->minor, "Expected to have minimum replacement");
+			MOT_node *q = n->minor;
+			MOT_node *m = n->major;
+			MOT_node *a = r->parent;
+			MOT_node *b = r->major;
+			
+			SP_ASSERT(!r->minor, "Expected to have no more minimum");
+			
+			if(p)
+			   maj ? (p->major = r) : (p->minor = r);
+			r->parent = p;
+		   
+			if(q)
+			   q->parent = r;
+			r->minor = q;
+		  
+			if(r != m)
+			{
+				SP_ASSERT(a, "Expected minimum to have parent");
+				
+				// link m and r..
+				r->major = m;
+				m->parent = r;
+				
+				// link a and b..
+				a->minor = b;
+				if(b)
+				   b->parent = a;
+			}
+#else
+			r = _mot_find_max(n->minor);
+			w = r->parent ? (_mot_is_major(r) ? r->parent->minor : r->parent->major) : NULL;
+			SP_ASSERT(r, "Expected to have replacement");
+			SP_ASSERT(!r->major, "Expected to maximum replacement");
+			
+			MOT_node *q = n->major;
+			MOT_node *m = n->minor;
+			MOT_node *a = r->parent;
+			MOT_node *b = r->minor;
+			
+			SP_ASSERT(!r->major, "Expected to have no more maxima");
+			if(p)
+				maj ? (p->major = r) : (p->minor = r);
+			r->parent = p;
+			
+			if(q)
+			   q->parent = r;
+			r->major = q;
+			if(r != m)
+			{
+				r->minor = m;
+				m->parent = r;
+				
+				a->major = b;
+				if(b)
+				   b->parent = a;
+			}
+#endif
+			x = b;
+		}
+		
+		*_r = r;
+		*_x = x;
+		*_w = w;
+		
+		if(!p)
+		   *head = r;
+	   
+		_mot_delete_node(n);
+	}
+}
+
+SPbool motDelete(MOT_tree* tree, const SPchar* name)
+{
+	MOT_node* n = motSearch(*tree, name);
+	if(n)
+	{
+		SPbool red = n->red;
+		MOT_node* r = NULL;
+		MOT_node* x = NULL;
+		MOT_node* w = NULL;
+		_mot_delete_bst_impl(n, tree, &r, &x, &w);
+		
+		if(x && w)
+		{
+			if(x->parent != w->parent)
+			{
+				SP_WARNING("Replacement and sibling expected to have equal parent");
+				return SP_FALSE;
+			}
+		}
+		return _mot_fix_up_rbt(red, r, x, w, tree);
+	}
+	return SP_FALSE;
+}
+
+static SPbool _mot_fix_up_rbt(SPbool redBefore, MOT_node* r, MOT_node* x, MOT_node* w, MOT_tree* head)
+{
+	SPbool redAfter = r ? r->red : SP_FALSE;
+	if(redBefore && redAfter)
+	{
+		return SP_TRUE;
+	}
+	
+	if(!redBefore && redAfter)
+	{
+		if(r)
+		   r->red = SP_FALSE;
+	   return SP_TRUE;
+	}
+	
+	if(redBefore && !redAfter)
+	{
+		if(r)
+		   r->red = SP_TRUE;
+	}
+	
+	if(_mot_is_root(x))
+		return SP_TRUE;
+	
+	return _mot_transplant_rbt(x, w, head);
+}
+
+static SPbool _mot_transplant_rbt(MOT_node* x, MOT_node* w, MOT_tree* head)
+{
+	SPbool xRed = x ? x->red : SP_FALSE;
+	if(xRed)
+	{
+		return _mot_transplant_proc_0(x);
+	}
+	else
+	{
+		if(!w)
+		{
+			// following cases would expect w to have children..
+	        // since double black cannot have children, return here..
+			return SP_TRUE;
+		}
+		
+		SPbool maj = !_mot_is_major(w);
+		if(w->red)
+		{
+			// x is black and w is red..
+			return _mot_transplant_proc_1(x, w, head);
+		}
+		else
+		{
+			SPbool wMjB = w->major ? !w->major->red : SP_TRUE;
+			SPbool wMnB = w->minor ? !w->minor->red : SP_TRUE;
+			
+			if(wMjB && wMnB)
+			{
+				return _mot_transplant_proc_2(x, w, head);
+			}
+			
+			SPbool c = maj ? (!wMjB && wMnB) : (!wMnB && wMjB);
+			if(c)
+			{
+				return _mot_transplant_proc_3(x, w, head);
+			}
+			
+			c = maj ? !wMnB : !wMjB;
+			if(c)
+			{
+				return _mot_transplant_proc_4(x, w, head);
+			}
+		}
+	}
+	
+	return SP_FALSE;
+}
+
+SPbool _mot_transplant_proc_0(MOT_node* x)
+{
+	if(x->red)
+	{
+		x->red = SP_FALSE;
+		return SP_TRUE;
+	}
+	
+	return SP_FALSE;
+}
+
+SPbool _mot_transplant_proc_1(MOT_node* x, MOT_node* w, MOT_tree* head)
+{
+	if(w)
+	{
+		SPbool xBlack = x ? !x->red : SP_TRUE;
+		SPbool maj = !_mot_is_major(w);
+		if(xBlack && w->red)
+		{
+			// only x could be double black, w must be red..
+			SP_ASSERT(w->parent, "Replacement expected to have parent");
+            SP_ASSERT(maj ? w->parent->minor == w : w->parent->major == w, "Linking error");
+			if(x)
+            {
+                SP_ASSERT(w->parent == x->parent, "Replacement and sibling expected to have equal parent");
+            }
+			
+			w->red = SP_FALSE;
+			w->parent->red = SP_TRUE;
+			MOT_node* m = maj ? w->major : w->minor;
+			MOT_node* p = maj ? _mot_rotate_right(w->parent, head) : _mot_rotate_left(w->parent, head);
+			SP_ASSERT(p, "Expeceted to have rotation replacement");
+            SP_ASSERT(p == w, "Rotation error");
+			p = maj ? p->major : p->minor;
+			SP_ASSERT(p, "Expected to have parent");
+			x = maj ? p->major : p->minor;
+			w = maj ? p->minor : p->major;
+			SP_ASSERT(m == w, "Rotation error");
+			return _mot_transplant_rbt(x, w, head);
+		}
+	}
+	return SP_FALSE;
+}
+
+SPbool _mot_transplant_proc_2(MOT_node* x, MOT_node* w, MOT_tree* head)
+{
+	if(w)
+	{
+		// x is black and w is black..
+		// x could be double black, w cannot be double black..
+		SPbool xBlack = x ? !x->red : SP_TRUE;
+		if(xBlack && !w->red)
+		{
+			// only x could be double black..
+			SPbool maj = !_mot_is_major(w);
+			SPbool wMnB = w->minor ? !w->minor->red : SP_TRUE;
+			SPbool wMjB = w->major ? !w->major->red : SP_TRUE;
+			if(wMnB && wMjB)
+			{
+				w->red = SP_TRUE;
+				x = w->parent;
+				if(_mot_is_root(x))
+				{
+					x->red = SP_FALSE;
+					return SP_TRUE;
+				}
+				maj = _mot_is_major(x);
+				w = maj ? x->parent->minor : x->parent->major;
+				SP_ASSERT(x, "Replacement expected to have parent");
+				if(x->red)
+				{
+					x->red = SP_FALSE;
+					return SP_TRUE;
+				}
+				else
+				{
+					w = maj ? w->parent->minor : w->parent->major;
+					x = maj ? w->parent->major : w->parent->minor;
+					return _mot_transplant_rbt(x, w, head);
+				}
+			}
+		}
+	}
+	return SP_FALSE;
+}
+
+SPbool _mot_transplant_proc_3(MOT_node* x, MOT_node* w, MOT_tree* head)
+{
+	if(w)
+	{
+		SPbool xBlack = x ? !x->red : SP_TRUE;
+		SPbool wMjB = w->major ? !w->major->red : SP_TRUE;
+		SPbool wMnB = w->minor ? !w->minor->red : SP_TRUE;
+		SPbool maj = !_mot_is_major(w);
+		SPbool c = maj ? (!wMjB && wMnB) : (wMjB && !wMnB);
+		
+		if(xBlack && c)
+		{
+			if(x)
+			{
+				SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
+			}
+			maj = !_mot_is_major(w);
+			SP_ASSERT(maj ? w->major : w->minor, "Expected sibling's child");
+			maj ? (w->major->red = SP_FALSE) : (w->minor->red = SP_FALSE);
+			w->red = SP_TRUE;
+			w = maj ? _mot_rotate_left(w, head) : _mot_rotate_right(w, head);
+			SP_ASSERT(w, "Expected sibling");
+            SP_ASSERT(w->parent, "Expected parent");
+			x = maj ? w->parent->major : w->parent->minor;
+			SP_ASSERT(w != x, "Sibling and replacement cannot be the same");
+			return _mot_transplant_proc_4(x, w, head);
+		}
+	}
+	return SP_FALSE;
+}
+
+SPbool _mot_transplant_proc_4(MOT_node* x, MOT_node* w, MOT_tree* head)
+{
+	if(w)
+	{
+		// x can be double black..
+		// w cannot be double black..
+		SPbool wMjR = w->major ? w->major->red : SP_FALSE;
+		SPbool wMnR = w->minor ? w->minor->red : SP_FALSE;
+		SPbool xBlack = x ? !x->red : SP_TRUE;
+		SPbool maj = !_mot_is_major(w);
+		SPbool c = maj ? wMnR : wMjR;
+		
+		if(xBlack && c)
+		{
+			if(x)
+            {
+                SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
+            }
+			SP_ASSERT(w->parent, "Expected to have parent");
+			w->red = w->parent->red;
+			w->parent->red = SP_FALSE;
+			SP_ASSERT(maj ? w->minor : w->major, "Expected sibling child");
+			maj ? (w->minor->red = SP_FALSE) : (w->major->red = SP_FALSE);
+			maj ? _mot_rotate_right(w->parent, head) : _mot_rotate_left(w->parent, head);
+			return SP_TRUE;
+		}
+	}
+	return SP_FALSE;
 }
 
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)

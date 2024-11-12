@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "rbt.h"
-//#define MOT_HAVE_BST_MAJOR_INCLINED
+#define MOT_HAVE_BST_MAJOR_INCLINED
 
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
 #pragma GCC diagnostic push
@@ -646,10 +646,10 @@ Node* rotateLeft(Node* n, Node** head)
 
     if(parent)
     {
-	if(maj)
-	    parent->major = major;  //n was a subtree..
-	else
-	    parent->minor = major;
+		if(maj)
+			parent->major = major;  //n was a subtree..
+		else
+			parent->minor = major;
     }
     else
     {

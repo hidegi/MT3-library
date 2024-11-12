@@ -90,18 +90,21 @@ SP_API void motInsertArray(MOT_tree* tree, const SPchar* name, MOT_tag tag, SPsi
 SP_API void motInsertStringArray(MOT_tree* tree, const SPchar* name, SPsize length, const SPchar** value);
 
 SP_API MOT_tree motSearch(MOT_tree tree, const char* name);
-SP_API SPbool motDelete(MOT_tree tree, const SPchar* name);
+SP_API SPbool motDelete(MOT_tree* tree, const SPchar* name);
 
 SP_API SPbuffer motWriteBinary(const MOT_tree tree);
 SP_API MOT_tree motReadBinary(SPbuffer buffer);
+
 
 /*<==========================================================>*
  *  freeing
  *<==========================================================>*/
 SP_API void motFreeTree(MOT_tree tree);
 
-
-//typedef MOTnode MOThead;
+/*<==========================================================>*
+ *  check if the tree is a valid RB-tree
+ *<==========================================================>*/
+SP_API SPbool motVerifyRBT(const MOT_tree rbt);
 
 #ifdef __cplusplus
 }
