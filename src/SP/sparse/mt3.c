@@ -51,7 +51,6 @@
 	} while(0)
 
 #define MT3_MAX(a, b) ((a) > (b) ? (a) : (b))
-
 #define ne2be _mt3_big_endian_to_native_endian
 #define be2ne _mt3_big_endian_to_native_endian
 
