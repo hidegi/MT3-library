@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "rbt.h"
-#define MOT_HAVE_BST_MAJOR_INCLINED
+#define MT3_HAVE_BST_MAJOR_INCLINED
 
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
 #pragma GCC diagnostic push
@@ -157,7 +157,7 @@ std::pair<Node*, Node*> nodeDeleteImpl_BST(Node* n, Node** head, Node** replacem
 		else
 		{
 			// case 3: two children..
-#ifndef MOT_HAVE_BST_MAJOR_INCLINED
+#ifndef MT3_HAVE_BST_MAJOR_INCLINED
 			r = findMinorMost(n->major);
 			w = r->parent ? (isMajor(r) ? r->parent->minor : r->parent->major) : NULL;
 			

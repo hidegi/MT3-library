@@ -1,4 +1,4 @@
-#include "SP/sparse/mot.h"
+#include "SP/sparse/mt3.h"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <stdio.h>
@@ -19,18 +19,18 @@ class MotFixture : public testing::Test
     protected:
         void SetUp() override
         {
-            tree = motAllocTree();
+            tree = mt3_AllocTree();
             std::cout << ">>>" << __PRETTY_FUNCTION__ << " has been run" << std::endl;
         }
 
         void TearDown() override
         {
-            motFreeTree(&tree);
+            mt3_FreeTree(&tree);
             std::cout << ">>>" << __PRETTY_FUNCTION__ << " has been run" << std::endl;
         }
 
     public:
-        MOT_tree tree;
+        MT3_tree tree;
 };
 
 static bool containsNumber(int n, const int* array, int length)
@@ -68,23 +68,23 @@ static SPindex getRandomIndex(bool array[], SPsize length) {
 TEST_F(MotFixture, test_insertion)
 {
     //act..
-	motInsertString(&tree, "x", "x");
-	motInsertString(&tree, "y", "y");
-	motInsertString(&tree, "fjiaw", "fjiaw");
-	motInsertString(&tree, "motex", "motex");
-	motInsertString(&tree, "value", "value");
+	mt3_InsertString(&tree, "x", "x");
+	mt3_InsertString(&tree, "y", "y");
+	mt3_InsertString(&tree, "fjiaw", "fjiaw");
+	mt3_InsertString(&tree, "mt3_ex", "mt3_ex");
+	mt3_InsertString(&tree, "value", "value");
 
-	motInsertString(&tree, "nmg", "nmg");
-	motInsertString(&tree, "nmg0", "nmg0");
-	motInsertString(&tree, "nmg1", "nmg1");
-	motInsertString(&tree, "nmg2", "nmg2");
-	motInsertString(&tree, "nmg3", "nmg3");
-	motInsertString(&tree, "byte_array", "byte_array");
-	motInsertString(&tree, "byte_array1", "byte_array1");
+	mt3_InsertString(&tree, "nmg", "nmg");
+	mt3_InsertString(&tree, "nmg0", "nmg0");
+	mt3_InsertString(&tree, "nmg1", "nmg1");
+	mt3_InsertString(&tree, "nmg2", "nmg2");
+	mt3_InsertString(&tree, "nmg3", "nmg3");
+	mt3_InsertString(&tree, "byte_array", "byte_array");
+	mt3_InsertString(&tree, "byte_array1", "byte_array1");
 
     //assert..
-    ASSERT_TRUE(motVerifyRBT(tree));
-    ASSERT_EQ(MOT_STATUS_OK, motGetLastError());
+    ASSERT_TRUE(mt3_VerifyRBT(tree));
+    ASSERT_EQ(MT3_STATUS_OK, mt3_GetLastError());
 }
 
 #define ITERATIONS 100
@@ -97,7 +97,7 @@ TEST_F(MotFixture, test_tree_random_integers)
 
     for(int i = 0; i < ITERATIONS; i++)
     {
-        MOT_tree tree = NULL;
+        MT3_tree tree = NULL;
 
 		bool cache[LENGTH] = {false};
 		memset(cache, false, sizeof(bool) * LENGTH);
@@ -112,10 +112,10 @@ TEST_F(MotFixture, test_tree_random_integers)
             while(containsNumber(num, array, LENGTH));
 
             array[i] = num;
-            motInsertInt(&tree, std::to_string(array[i]).c_str(), array[i]);
+            mt3_InsertInt(&tree, std::to_string(array[i]).c_str(), array[i]);
         }
 
-        ASSERT_TRUE(motVerifyRBT(tree)) << "Imbalanced tree";
+        ASSERT_TRUE(mt3_VerifyRBT(tree)) << "Imbalanced tree";
 
 		SPsize index = -1;
 		do
@@ -123,17 +123,17 @@ TEST_F(MotFixture, test_tree_random_integers)
 			index = getRandomIndex(cache, LENGTH);
 			if(index != -1)
 			{
-				ASSERT_TRUE(motDelete(&tree, std::to_string(array[index]).c_str())) << "Deletion failed";
-				ASSERT_TRUE(motVerifyRBT(tree)) << "Imbalanced tree";
+				ASSERT_TRUE(mt3_Delete(&tree, std::to_string(array[index]).c_str())) << "Deletion failed";
+				ASSERT_TRUE(mt3_VerifyRBT(tree)) << "Imbalanced tree";
 			}
 
 		} while(index != -1);
 
-        ASSERT_TRUE(motVerifyRBT(tree)) << "Imbalanced tree";
-        motFreeTree(&tree);
+        ASSERT_TRUE(mt3_VerifyRBT(tree)) << "Imbalanced tree";
+        mt3_FreeTree(&tree);
         delete[] array;
 	}
-	ASSERT_EQ(MOT_STATUS_OK, motGetLastError());
+	ASSERT_EQ(MT3_STATUS_OK, mt3_GetLastError());
 }
 
 int main(int argc, char** argv)
