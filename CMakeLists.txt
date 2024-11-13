@@ -76,11 +76,12 @@ sp_set_option(SP_BUILD_TESTS ON BOOL "Build tests")
 
 
 
-include_directories(${CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES} ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/tests)
+include_directories(${CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES} ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/tests ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 add_subdirectory(src)
 
-if(SP_BUILD_TESTS)
+if(SP_BUILD_TESTS)	
+	enable_testing()
 	add_subdirectory(tests)
 endif()
 

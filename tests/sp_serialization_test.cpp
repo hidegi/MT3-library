@@ -43,14 +43,14 @@ void test_insertion()
     printf("actual:\n");
     motPrintTree(output);
 
-    motFreeTree(tree);
-    motFreeTree(output);
+    motFreeTree(&tree);
+    motFreeTree(&output);
 
     SP_DEBUG("%lld bytes", buffer.length);
 
     spBufferFree(&buffer);
-    motFreeTree(tree);
-    motFreeTree(output);
+    motFreeTree(&tree);
+    motFreeTree(&output);
 }
 
 void test_null_tree()
@@ -63,7 +63,7 @@ void test_null_tree()
 
     SP_ASSERT_NOT_NULL(tree);
     motPrintTree(tree);
-    motFreeTree(tree);
+    motFreeTree(&tree);
 }
 
 void test_empty_tree()
@@ -76,9 +76,9 @@ void test_empty_tree()
     motInsertInt(&tree, "hda", 34);
 	
     SP_ASSERT_NOT_NULL(tree);
-	SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), motFreeTree(tree));
+	SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), motFreeTree(&tree));
     motPrintTree(tree);
-    motFreeTree(tree);
+    motFreeTree(&tree);
 }
 
 void test_sub_tree()
@@ -120,8 +120,8 @@ void test_sub_tree()
     motPrintTree(output);
 
     printf("(%lld bytes)\n\n", buffer.length);
-    motFreeTree(parent);
-    motFreeTree(output);
+    motFreeTree(&parent);
+    motFreeTree(&output);
     spBufferFree(&buffer);
 }
 
@@ -134,13 +134,13 @@ void test_tree_deletion()
     motInsertString(&tree, "z", "z");
     motInsertString(&tree, "w", "w");
     motInsertInt(&tree, "hda", 34);
-	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&tree, "w"), motFreeTree(tree));
-	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&tree, "y"), motFreeTree(tree));
+	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&tree, "w"), motFreeTree(&tree));
+	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&tree, "y"), motFreeTree(&tree));
 	
-    SP_ASSERT_NOT_NULL_WITH_ACTION(tree, {motPrintTree(tree); motFreeTree(tree);});
-	SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), motFreeTree(tree));
+    SP_ASSERT_NOT_NULL_WITH_ACTION(tree, {motPrintTree(tree); motFreeTree(&tree);});
+	SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), motFreeTree(&tree));
     motPrintTree(tree);
-    motFreeTree(tree);
+    motFreeTree(&tree);
 }
 
 void test_tree_deletion_medium()
@@ -171,15 +171,15 @@ void test_tree_deletion_medium()
     motInsertInt(&parent, "ii", 6);
     motInsertArray(&parent, "names", MOT_TAG_STRING, 4, names);
     motInsertInt(&parent, "suberr", 135);
-	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "ii"), motFreeTree(parent));
-	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "j"), motFreeTree(parent));
-	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "names"), motFreeTree(parent));
-	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "sub tree"), motFreeTree(parent));
+	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "ii"), motFreeTree(&parent));
+	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "j"), motFreeTree(&parent));
+	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "names"), motFreeTree(&parent));
+	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "sub tree"), motFreeTree(&parent));
 	
-    SP_ASSERT_NOT_NULL_WITH_ACTION(parent, {motPrintTree(parent); motFreeTree(parent);});
-	SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(parent), motFreeTree(parent));
+    SP_ASSERT_NOT_NULL_WITH_ACTION(parent, {motPrintTree(parent); motFreeTree(&parent);});
+	SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(parent), motFreeTree(&parent));
     motPrintTree(parent);
-    motFreeTree(parent);
+    motFreeTree(&parent);
 }
 
 #define ITERATIONS 100
@@ -207,16 +207,16 @@ void test_tree_search()
 	
 	for(int i = 0; i < LENGTH; i++)
     {
-		SP_ASSERT_NOT_NULL_WITH_ACTION(motSearch(tree, std::to_string(array[i]).c_str()), motFreeTree(tree));
+		SP_ASSERT_NOT_NULL_WITH_ACTION(motSearch(tree, std::to_string(array[i]).c_str()), motFreeTree(&tree));
 	}
 	
-	motFreeTree(tree);
+	motFreeTree(&tree);
 	delete[] array;
 }
 
 SPindex getRandomIndex(bool array[], SPsize length) {
 	SPindex index = -1;
-	SPindex used[length] = {};
+	SPindex* used = new SPindex[length];
 	SPsize indexCount = 0;
 	
 	for(SPsize i = 0; i < length; i++)
@@ -226,9 +226,15 @@ SPindex getRandomIndex(bool array[], SPsize length) {
 	}
 	
 	if(indexCount == 0)
+	{
+	    delete [] used;
 		return -1;
+    }
+
 	index = used[std::rand() % (indexCount)];
 	array[index] = true;
+	delete [] used;
+
     return index;
 }
 
@@ -281,7 +287,7 @@ void test_tree_random_integers()
         }
 		
 		
-        SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), {motFreeTree(tree);});
+        SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), {motFreeTree(&tree);});
 		
 		SPsize index = -1; 
 		do
@@ -296,21 +302,21 @@ void test_tree_random_integers()
 					SP_DEBUG("failed to delete %d", array[index]);
 					motPrintTree(tree);
 					delete [] array;
-					motFreeTree(tree);
+					motFreeTree(&tree);
 				});
 				
 				SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree),
 				{
 					SP_DEBUG("imbalanced tree for %d", array[index]);
 					delete [] array;
-					motFreeTree(tree);
+					motFreeTree(&tree);
 				});
 			}
 			
 		} while(index != -1);
 		
-        SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), motFreeTree(tree));
-        motFreeTree(tree);
+        SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), motFreeTree(&tree));
+        motFreeTree(&tree);
         delete[] array;
 	}
 	SP_DEBUG("DONE: %d iteration(s) with %d insertion(s)/deletion(s)", ITERATIONS, LENGTH);

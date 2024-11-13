@@ -53,11 +53,13 @@ typedef enum
 
 typedef enum
 {
-	MOT_ERR_NONE,
-	MOT_ERR_IO,
-	MOT_ERR_MEM,
-	MOT_ERR_GEN,
-	MOT_ERR_COMP
+	MOT_STATUS_OK = 0,
+	MOT_STATUS_NO_MEMORY,
+	MOT_STATUS_COMPRESSION_ERROR,
+	MOT_STATUS_DECOMPRESSION_ERROR,
+    MOT_STATUS_INVALID_NAME,
+    MOT_STATUS_INVALID_VALUE,
+    MOT_STATUS_INVALID_TAG
 } MOT_status;
 
 struct MOT_node;
@@ -89,7 +91,7 @@ SP_API void motInsertTree(MOT_tree* tree, const SPchar* name, MOT_tree value);
 SP_API void motInsertArray(MOT_tree* tree, const SPchar* name, MOT_tag tag, SPsize length, const void* value);
 SP_API void motInsertStringArray(MOT_tree* tree, const SPchar* name, SPsize length, const SPchar** value);
 
-SP_API MOT_tree motSearch(MOT_tree tree, const char* name);
+SP_API MOT_tree motSearch(const MOT_tree tree, const char* name);
 SP_API SPbool motDelete(MOT_tree* tree, const SPchar* name);
 
 SP_API SPbuffer motWriteBinary(const MOT_tree tree);
@@ -99,12 +101,18 @@ SP_API MOT_tree motReadBinary(SPbuffer buffer);
 /*<==========================================================>*
  *  freeing
  *<==========================================================>*/
-SP_API void motFreeTree(MOT_tree tree);
+SP_API void motFreeTree(MOT_tree* tree);
 
 /*<==========================================================>*
  *  check if the tree is a valid RB-tree
  *<==========================================================>*/
 SP_API SPbool motVerifyRBT(const MOT_tree rbt);
+
+/*<==========================================================>*
+ *  error signaling
+ *<==========================================================>*/
+SP_API MOT_status motGetLastError();
+SP_API const char* motGetErrorInfo(MOT_status status);
 
 #ifdef __cplusplus
 }

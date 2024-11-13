@@ -12,46 +12,42 @@
 	{												\
 		if(!((ptr) = calloc(n, size)))				\
 		{											\
-			errno = MOT_ERR_MEM;					\
+			errno = MOT_STATUS_NO_MEMORY;			\
 			on_error;								\
 		}											\
 	} while(0)
 
-#define MOT_CHECKED_APPEND(b, ptr, len)				\
+#define MOT_CHECK_INPUT(_name)				        \
+	SPhash hash = 0;								\
 	do												\
 	{												\
-	if(spBufferAppend((b), (ptr), (len)))			\
-	return MOT_ERR_MEM;					            \
+	    if(!tree)                                   \
+	    {                                           \
+	        errno = MOT_STATUS_INVALID_VALUE;       \
+	        return;                                 \
+	    }                                           \
+	    if(!_name)                                  \
+	    {                                           \
+	        errno = MOT_STATUS_INVALID_NAME;        \
+	        return;                                 \
+	    }                                           \
+		hash = _mot_sdbm((_name));				    \
+		if(hash == 0)                               \
+		{                                           \
+		    errno = MOT_STATUS_INVALID_NAME;        \
+		    return;                                 \
+		}                                           \
 	} while(0)
 
-#define MOT_DUMP_NUM(type, x)						\
+#define MOT_READ_GENERIC(dst, n, scanner, fail)     \
 	do												\
 	{												\
-		type temp = x;								\
-		ne2be(&temp, sizeof temp);					\
-		MOT_CHECKED_APPEND(b, &temp, sizeof temp);	\
-	} while(0)
-
-
-#define MOT_CHECK_INPUT(_name)								\
-	SPhash hash = 0;										\
-	do														\
-	{														\
-		SP_ASSERT(tree, "Cannot Insert data to empty tree");\
-		SP_ASSERT((_name), "Node must have a name");		\
-		hash = _mot_sdbm((_name));							\
-		SP_ASSERT(hash != 0, "Name cannot be empty");		\
-	} while(0)
-
-#define MOT_READ_GENERIC(dst, n, scanner, on_failure)	\
-	do													\
-	{													\
-		if(*length < (n))								\
-		{												\
-			on_failure;									\
-		}												\
-		*memory = scanner((dst), *memory, (n));			\
-		*length -= n;									\
+		if(*length < (n))							\
+		{											\
+			fail;									\
+		}											\
+		*memory = scanner((dst), *memory, (n));		\
+		*length -= n;								\
 	} while(0)
 
 #define MOT_COPY_TO_PAYLOAD(tagName) SP_READ_GENERIC(&node->payload.tagName, sizeof(node->payload.tagName), _spSwappedMemscan, goto sp_error)
@@ -151,25 +147,29 @@ static SPbuffer _mot_compress(const void* memory, SPsize length)
 		.avail_in = length
 	};
 
-	int windowbits = 15;
 	if(deflateInit2(
 		&stream,
 		Z_DEFAULT_COMPRESSION,
 		Z_DEFLATED,
-		windowbits,
+		15,
 		8,
 		Z_DEFAULT_STRATEGY) != Z_OK)
 	{
-		SP_WARNING("Failed to initialize zlib");
+	    errno = MOT_STATUS_COMPRESSION_ERROR;
 		return SP_BUFFER_INIT;
 	}
 
-	SP_ASSERT(stream.avail_in == length, "Available input does not match length");
+    if(stream.avail_in != length)
+    {
+        errno = MOT_STATUS_COMPRESSION_ERROR;
+        return buffer;
+    }
+
 	do
 	{
-		if(spBufferReserve(&buffer, buffer.length + CHUNK_SIZE) != MOT_ERR_NONE)
+		if(spBufferReserve(&buffer, buffer.length + CHUNK_SIZE) != MOT_STATUS_OK)
 		{
-			SP_WARNING("Failed to reserve buffer");
+			errno = MOT_STATUS_NO_MEMORY;
 			spBufferFree(&buffer);
 			return SP_BUFFER_INIT;
 		}
@@ -179,7 +179,7 @@ static SPbuffer _mot_compress(const void* memory, SPsize length)
 
 		if(deflate(&stream, Z_FINISH) == Z_STREAM_ERROR)
 		{
-			SP_WARNING("Failed to write data");
+			errno = MOT_STATUS_COMPRESSION_ERROR;
 			spBufferFree(&buffer);
 			return SP_BUFFER_INIT;
 		}
@@ -207,7 +207,7 @@ static SPbuffer _mot_decompress(const void* memory, SPsize length)
 
 	if(inflateInit2(&stream, 47) != Z_OK)
 	{
-		SP_WARNING("Failed to initialize zlib");
+	    errno = MOT_STATUS_DECOMPRESSION_ERROR;
 		return SP_BUFFER_INIT;
 	}
 
@@ -216,7 +216,7 @@ static SPbuffer _mot_decompress(const void* memory, SPsize length)
 	{
 		if(spBufferReserve(&buffer, buffer.length + CHUNK_SIZE))
 		{
-			SP_WARNING("Failed to reserve buffer");
+		    errno = MOT_STATUS_NO_MEMORY;
 			spBufferFree(&buffer);
 			return SP_BUFFER_INIT;
 		}
@@ -230,7 +230,7 @@ static SPbuffer _mot_decompress(const void* memory, SPsize length)
 			case Z_DATA_ERROR:
 			case Z_NEED_DICT:
 			{
-				SP_WARNING("Error while decompressing");
+				errno = MOT_STATUS_DECOMPRESSION_ERROR;
 				spBufferFree(&buffer);
 				return SP_BUFFER_INIT;
 			}
@@ -241,7 +241,7 @@ static SPbuffer _mot_decompress(const void* memory, SPsize length)
 
 	if(zlib_ret != Z_STREAM_END)
 	{
-		SP_WARNING("Error while decompressing");
+		errno = MOT_STATUS_DECOMPRESSION_ERROR;
 		return SP_BUFFER_INIT;
 	}
 
@@ -283,7 +283,7 @@ static void _mot_delete_node(MOT_node* n)
 		}
 		else
 		{
-			motFreeTree(n->payload.head);
+			motFreeTree(&n->payload.head);
 		}
 		
 		free(n);
@@ -355,7 +355,7 @@ MOT_tree motAllocTree()
 	return root;
 }
 
-void motFreeTree(MOT_tree tree)
+void _mot_free_tree_impl(MOT_tree tree)
 {
 	if(tree)
 	{
@@ -363,12 +363,17 @@ void motFreeTree(MOT_tree tree)
 			free(tree->payload.data);
 		else
 		{
-			motFreeTree(tree->payload.head);
+			_mot_free_tree_impl(tree->payload.head);
 		}
-		motFreeTree(tree->major);
-		motFreeTree(tree->minor);
+		_mot_free_tree_impl(tree->major);
+		_mot_free_tree_impl(tree->minor);
 		free(tree);
 	}
+}
+void motFreeTree(MOT_tree* tree)
+{
+    _mot_free_tree_impl(*tree);
+    *tree = NULL;
 }
 
 static MOT_tree _mot_search_for(MOT_tree tree, SPhash hash)
@@ -388,7 +393,7 @@ static MOT_tree _mot_search_for(MOT_tree tree, SPhash hash)
 	return NULL;
 }
 
-MOT_tree motSearch(MOT_tree tree, const char* name)
+MOT_tree motSearch(const MOT_tree tree, const char* name)
 {
 	SPhash hash = _mot_sdbm(name);
 	return _mot_search_for(tree, hash);
@@ -420,9 +425,9 @@ static MOT_tree _mot_insert_bytes(MOT_tree* head, MOT_tree node, SPhash weight, 
 		return *head;
 	}
 
-		if(weight == node->weight)
+	if(weight == node->weight)
 	{
-		SP_WARNING("Name has already been given to a node");
+		errno = MOT_STATUS_INVALID_NAME;
 		return NULL;
 	}
 
@@ -469,7 +474,7 @@ static MOT_tree _mot_insert_root(MOT_tree* head, MOT_tree node, SPhash weight, M
 
 	if(value->weight == node->weight)
 	{
-		SP_WARNING("Name has already been given to a node");
+		errno = MOT_STATUS_INVALID_NAME;
 		return NULL;
 	}
 
@@ -494,7 +499,12 @@ static MOT_tree _mot_insert_root(MOT_tree* head, MOT_tree node, SPhash weight, M
 void motInsertTree(MOT_tree* tree, const SPchar* name, MOT_tree value)
 {
 	MOT_CHECK_INPUT(name);
-	SP_ASSERT(value && value->tag != MOT_TAG_NULL, "Cannot insert empty tree");
+	if(value && value->tag == MOT_TAG_NULL)
+	{
+	    errno = MOT_STATUS_INVALID_VALUE;
+	    return;
+	}
+
 	_mot_insert_root(tree, *tree, hash, value);
 }
 
@@ -548,19 +558,23 @@ void motInsertArray(MOT_tree* tree, const SPchar* name, MOT_tag tag, SPsize leng
 	MOT_tag scalar = tag & ~MOT_TAG_ARRAY;
 	if(scalar == MOT_TAG_ROOT)
 	{
-		SP_WARNING("Tag \"MOT_TAG_ROOT\" and \"MOT_TAG_ARRAY\" are mutually exclusive");
+		errno = MOT_STATUS_INVALID_TAG;
 		return;
 	}
-
+    if(scalar > MOT_TAG_STRING)
+    {
+        errno = MOT_STATUS_INVALID_TAG;
+        return;
+    }
 	if(scalar == MOT_TAG_NULL)
 	{
-		SP_WARNING("Expected type");
+		errno = MOT_STATUS_INVALID_TAG;
 		return;
 	}
 
 	if(!(data && length > 0))
 	{
-		SP_WARNING("Cannot feed with empty array");
+		errno = MOT_STATUS_INVALID_VALUE;
 		return;
 	}
 
@@ -928,7 +942,7 @@ SPbuffer motWriteBinary(const MOT_tree tree)
 	SPbuffer buffer = SP_BUFFER_INIT;
 	if(!tree)
 	{
-		SP_WARNING("Cannot serialize empty tree");
+		errno = MOT_STATUS_INVALID_VALUE;
 		return buffer;
 	}
 	_mot_write_binary(tree, &buffer, 0);
@@ -1015,7 +1029,7 @@ static MOT_tree _mot_read_binary(const SPubyte** memory, SPsize* length)
 	tree->minor = _mot_read_binary(memory, length);
 
 	if(tree->major)
-	tree->major->parent = tree;
+	    tree->major->parent = tree;
 	if(tree->minor)
 		tree->minor->parent = tree;
 
@@ -1058,6 +1072,28 @@ MOT_tree motReadBinary(SPbuffer buffer)
 	SPsize length = decompressed.length;
 	
 	return _mot_read_binary(memory, &length);
+}
+
+/*<==========================================================>*
+ *  error signaling
+ *<==========================================================>*/
+MOT_status motGetLastError()
+{
+    return errno;
+}
+
+const char* motGetErrorInfo(MOT_status status)
+{
+    switch(status)
+    {
+        case MOT_STATUS_NO_MEMORY: return "Your local machine has failed to allocate memory";
+        case MOT_STATUS_COMPRESSION_ERROR: return "Error while compressing data";
+        case MOT_STATUS_DECOMPRESSION_ERROR: return "Error while decompressing data";
+        case MOT_STATUS_INVALID_NAME: return "Given name was either empty, NULL, or already assigned to a node";
+        case MOT_STATUS_INVALID_VALUE: return "Given value was invalid";
+        case MOT_STATUS_INVALID_TAG: return "Given tag was invalid";
+    }
+    return "No errors";
 }
 
 /*<==========================================================>*
@@ -1393,11 +1429,7 @@ SPbool motDelete(MOT_tree* tree, const SPchar* name)
 		
 		if(x && w)
 		{
-			if(x->parent != w->parent)
-			{
-				SP_WARNING("Replacement and sibling expected to have equal parent");
-				return SP_FALSE;
-			}
+			SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
 		}
 		return _mot_fix_up_rbt(red, r, x, w, tree);
 	}
