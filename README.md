@@ -3,8 +3,8 @@
 </p>
 
 # The MT3-library (SP 1994)
-MT3 (short for MoTree) is an open format that encodes an arbitrary structure into\
-binary (similar to Mojang's NBT format)..
+MT3 (short for MoTree) is an open format that encodes an arbitrary structure to binary..\
+(similar to Mojang's NBT format)..
 
 ## Specification
 The MT3-format only knows two fundamental types of data: binary-trees and byte-sequences..\
