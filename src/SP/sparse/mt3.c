@@ -7,47 +7,47 @@
 #pragma GCC diagnostic ignored "-Wswitch"
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
-#define MT3_CHECKED_CALLOC(ptr, n, size, on_error)	\
-	do						\
-	{						\
-		if(!((ptr) = calloc(n, size)))		\
-		{					\
-			errno = MT3_STATUS_NO_MEMORY;	\
-			on_error;			\
-		}					\
+#define MT3_CHECKED_CALLOC(ptr, n, size, on_error)		\
+	do							\
+	{							\
+		if(!((ptr) = calloc(n, size)))			\
+		{						\
+			errno = MT3_STATUS_NO_MEMORY;		\
+			on_error;				\
+		}						\
 	} while(0)
 
-#define MT3_CHECK_INPUT(_name)				\
-	SPhash hash = 0;				\
-	do						\
-	{						\
-	    if(!tree)                                   \
-	    {                                           \
-	        errno = MT3_STATUS_INVALID_VALUE;       \
-	        return;                                 \
-	    }                                           \
-	    if(!_name)                                  \
-	    {                                           \
-	        errno = MT3_STATUS_INVALID_NAME;        \
-	        return;                                 \
-	    }                                           \
-		hash = _mt3_sdbm((_name));		\
-		if(hash == 0)                           \
-		{                                       \
-		    errno = MT3_STATUS_INVALID_NAME;    \
-		    return;                             \
-		}                                       \
+#define MT3_CHECK_INPUT(_name)					\
+	SPhash hash = 0;					\
+	do							\
+	{							\
+	    	if(!tree)                                   	\
+	    	{                                           	\
+	        	errno = MT3_STATUS_INVALID_VALUE;	\
+	       		return;                                 \
+	    	}                                           	\
+	    	if(!_name)                                  	\
+	    	{                                           	\
+	        	errno = MT3_STATUS_INVALID_NAME;	\
+	        	return;                         	\
+		}                                       	\
+		hash = _mt3_sdbm((_name));			\	
+		if(hash == 0)                           	\
+		{                                       	\
+		    errno = MT3_STATUS_INVALID_NAME;    	\
+		    return;                             	\
+		}                                       	\
 	} while(0)
 
-#define MT3_READ_GENERIC(dst, n, scanner, fail)     	\
-	do						\
-	{						\
-		if(*length < (n))			\
-		{					\
-			fail;				\
-		}					\
-		*memory = scanner((dst), *memory, (n));	\
-		*length -= n;				\
+#define MT3_READ_GENERIC(dst, n, scanner, fail)     		\
+	do							\
+	{							\
+		if(*length < (n))				\
+		{						\
+			fail;					\
+		}						\
+		*memory = scanner((dst), *memory, (n));		\
+		*length -= n;					\
 	} while(0)
 
 #define MT3_COPY_TO_PAYLOAD(tagName) SP_READ_GENERIC(&node->payload.tagName, sizeof(node->payload.tagName), _spSwappedMemscan, goto sp_error)
