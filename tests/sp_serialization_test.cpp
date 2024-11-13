@@ -21,7 +21,7 @@ void test_insertion()
 	mt3_InsertString(&tree, "x", "x");
 	mt3_InsertString(&tree, "y", "y");
 	mt3_InsertString(&tree, "fjiaw", "fjiaw");
-	mt3_InsertString(&tree, "mt3_ex", "mt3_ex");
+	mt3_InsertString(&tree, "motex", "motex");
 	mt3_InsertString(&tree, "value", "value");
 
 	mt3_InsertString(&tree, "nmg", "nmg");
@@ -86,7 +86,7 @@ void test_sub_tree()
     const char* names[] =
     {
         "hidegi",
-        "mt3_ex",
+        "motex",
         "betelgus",
         "fjiaw"
     };
@@ -148,7 +148,7 @@ void test_tree_deletion_medium()
     const char* names[] =
     {
         "hidegi",
-        "mt3_ex",
+        "motex",
         "betelgus",
         "fjiaw"
     };

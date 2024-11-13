@@ -71,7 +71,7 @@ TEST_F(MotFixture, test_insertion)
 	mt3_InsertString(&tree, "x", "x");
 	mt3_InsertString(&tree, "y", "y");
 	mt3_InsertString(&tree, "fjiaw", "fjiaw");
-	mt3_InsertString(&tree, "mt3_ex", "mt3_ex");
+	mt3_InsertString(&tree, "motex", "motex");
 	mt3_InsertString(&tree, "value", "value");
 
 	mt3_InsertString(&tree, "nmg", "nmg");
