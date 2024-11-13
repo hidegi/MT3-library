@@ -16,8 +16,8 @@ typedef struct SPbuffer
 } SPbuffer;
 
 SP_API void spBufferFree(SPbuffer* b);
-SP_API int spBufferReserve(SPbuffer* b, SPsize reserved);
-SP_API int spBufferAppend(SPbuffer* b, const void* data, SPsize n);
+SP_API SPint spBufferReserve(SPbuffer* b, SPsize reserved);
+SP_API SPint spBufferAppend(SPbuffer* b, const void* data, SPsize n);
 
 #ifdef __cplusplus
 }
