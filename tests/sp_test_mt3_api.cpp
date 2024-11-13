@@ -6,14 +6,14 @@
 #include <time.h>
 #include <random>
 
-class MotFixture : public testing::Test
+class MT3fixture : public testing::Test
 {
     public:
-        MotFixture()
+        MT3fixture()
         {
         }
 
-       ~MotFixture()
+       ~MT3fixture()
         {
         }
     protected:
@@ -65,7 +65,7 @@ static SPindex getRandomIndex(bool array[], SPsize length) {
     return index;
 }
 
-TEST_F(MotFixture, test_insertion)
+TEST_F(MT3fixture, test_insertion)
 {
     //act..
 	mt3_InsertString(&tree, "x", "x");
@@ -89,7 +89,7 @@ TEST_F(MotFixture, test_insertion)
 
 #define ITERATIONS 100
 #define LENGTH 200
-TEST_F(MotFixture, test_tree_random_integers)
+TEST_F(MT3fixture, test_tree_random_integers)
 {
     std::random_device dev;
     std::mt19937 rng(dev());

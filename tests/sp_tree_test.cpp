@@ -6,7 +6,6 @@
 #include <time.h>
 #include <random>
 
-
 unsigned long long values[][20] =
 {
 	{554, 865, 140, 9, 893, 859, 616, 146, 559, 166, 852, 525, 538, 241, 540, 994, 699, 730, 701, 548}
