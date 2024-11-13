@@ -8,19 +8,19 @@
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
 #define MOT_CHECKED_CALLOC(ptr, n, size, on_error)	\
-	do												\
-	{												\
-		if(!((ptr) = calloc(n, size)))				\
-		{											\
-			errno = MOT_STATUS_NO_MEMORY;			\
-			on_error;								\
-		}											\
+	do						\
+	{						\
+		if(!((ptr) = calloc(n, size)))		\
+		{					\
+			errno = MOT_STATUS_NO_MEMORY;	\
+			on_error;			\
+		}					\
 	} while(0)
 
-#define MOT_CHECK_INPUT(_name)				        \
-	SPhash hash = 0;								\
-	do												\
-	{												\
+#define MOT_CHECK_INPUT(_name)				\
+	SPhash hash = 0;				\
+	do						\
+	{						\
 	    if(!tree)                                   \
 	    {                                           \
 	        errno = MOT_STATUS_INVALID_VALUE;       \
@@ -31,23 +31,23 @@
 	        errno = MOT_STATUS_INVALID_NAME;        \
 	        return;                                 \
 	    }                                           \
-		hash = _mot_sdbm((_name));				    \
-		if(hash == 0)                               \
-		{                                           \
-		    errno = MOT_STATUS_INVALID_NAME;        \
-		    return;                                 \
-		}                                           \
+		hash = _mot_sdbm((_name));		\
+		if(hash == 0)                           \
+		{                                       \
+		    errno = MOT_STATUS_INVALID_NAME;    \
+		    return;                             \
+		}                                       \
 	} while(0)
 
-#define MOT_READ_GENERIC(dst, n, scanner, fail)     \
-	do												\
-	{												\
-		if(*length < (n))							\
-		{											\
-			fail;									\
-		}											\
-		*memory = scanner((dst), *memory, (n));		\
-		*length -= n;								\
+#define MOT_READ_GENERIC(dst, n, scanner, fail)     	\
+	do						\
+	{						\
+		if(*length < (n))			\
+		{					\
+			fail;				\
+		}					\
+		*memory = scanner((dst), *memory, (n));	\
+		*length -= n;				\
 	} while(0)
 
 #define MOT_COPY_TO_PAYLOAD(tagName) SP_READ_GENERIC(&node->payload.tagName, sizeof(node->payload.tagName), _spSwappedMemscan, goto sp_error)
