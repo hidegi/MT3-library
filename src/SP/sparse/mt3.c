@@ -50,7 +50,6 @@
 		*length -= n;					\
 	} while(0)
 
-#define MT3_COPY_TO_PAYLOAD(tagName) SP_READ_GENERIC(&node->payload.tagName, sizeof(node->payload.tagName), _spSwappedMemscan, goto sp_error)
 #define MT3_MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #define ne2be _mt3_big_endian_to_native_endian
