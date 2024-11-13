@@ -1,6 +1,6 @@
 #include "SP/test/unit.h"
 #include "SP/utils/io.h"
-#include "SP/sparse/mot.h"
+#include "SP/sparse/mt3.h"
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,68 +17,68 @@ bool containsNumber(int n, const int* array, int length)
 
 void test_insertion()
 {
-	MOT_tree tree = motAllocTree();
-	motInsertString(&tree, "x", "x");
-	motInsertString(&tree, "y", "y");
-	motInsertString(&tree, "fjiaw", "fjiaw");
-	motInsertString(&tree, "motex", "motex");
-	motInsertString(&tree, "value", "value");
+	MT3_tree tree = mt3_AllocTree();
+	mt3_InsertString(&tree, "x", "x");
+	mt3_InsertString(&tree, "y", "y");
+	mt3_InsertString(&tree, "fjiaw", "fjiaw");
+	mt3_InsertString(&tree, "mt3_ex", "mt3_ex");
+	mt3_InsertString(&tree, "value", "value");
 
-	motInsertString(&tree, "nmg", "nmg");
-	motInsertString(&tree, "nmg0", "nmg0");
-	motInsertString(&tree, "nmg1", "nmg1");
-	motInsertString(&tree, "nmg2", "nmg2");
-	motInsertString(&tree, "nmg3", "nmg3");
-	motInsertString(&tree, "byte_array", "byte_array");
-	motInsertString(&tree, "byte_array1", "byte_array1");
+	mt3_InsertString(&tree, "nmg", "nmg");
+	mt3_InsertString(&tree, "nmg0", "nmg0");
+	mt3_InsertString(&tree, "nmg1", "nmg1");
+	mt3_InsertString(&tree, "nmg2", "nmg2");
+	mt3_InsertString(&tree, "nmg3", "nmg3");
+	mt3_InsertString(&tree, "byte_array", "byte_array");
+	mt3_InsertString(&tree, "byte_array1", "byte_array1");
 
-	SPbuffer buffer = motWriteBinary(tree);
-	MOT_tree output = motReadBinary(buffer);
+	SPbuffer buffer = mt3_WriteBinary(tree);
+	MT3_tree output = mt3_ReadBinary(buffer);
 	SP_ASSERT_NOT_NULL(output);
 
 
     printf("expected:\n");
-    motPrintTree(tree);
+    mt3_PrintTree(tree);
 
     printf("actual:\n");
-    motPrintTree(output);
+    mt3_PrintTree(output);
 
-    motFreeTree(&tree);
-    motFreeTree(&output);
+    mt3_FreeTree(&tree);
+    mt3_FreeTree(&output);
 
     SP_DEBUG("%lld bytes", buffer.length);
 
     spBufferFree(&buffer);
-    motFreeTree(&tree);
-    motFreeTree(&output);
+    mt3_FreeTree(&tree);
+    mt3_FreeTree(&output);
 }
 
 void test_null_tree()
 {
-    MOT_tree tree = NULL;
-    motInsertString(&tree, "x", "x");
-    motInsertString(&tree, "y", "y");
-    motInsertString(&tree, "z", "z");
-    motInsertString(&tree, "w", "w");
+    MT3_tree tree = NULL;
+    mt3_InsertString(&tree, "x", "x");
+    mt3_InsertString(&tree, "y", "y");
+    mt3_InsertString(&tree, "z", "z");
+    mt3_InsertString(&tree, "w", "w");
 
     SP_ASSERT_NOT_NULL(tree);
-    motPrintTree(tree);
-    motFreeTree(&tree);
+    mt3_PrintTree(tree);
+    mt3_FreeTree(&tree);
 }
 
 void test_empty_tree()
 {
-    MOT_tree tree = motAllocTree();
-    motInsertString(&tree, "x", "x");
-    motInsertString(&tree, "y", "y");
-    motInsertString(&tree, "z", "z");
-    motInsertString(&tree, "w", "w");
-    motInsertInt(&tree, "hda", 34);
+    MT3_tree tree = mt3_AllocTree();
+    mt3_InsertString(&tree, "x", "x");
+    mt3_InsertString(&tree, "y", "y");
+    mt3_InsertString(&tree, "z", "z");
+    mt3_InsertString(&tree, "w", "w");
+    mt3_InsertInt(&tree, "hda", 34);
 	
     SP_ASSERT_NOT_NULL(tree);
-	SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), motFreeTree(&tree));
-    motPrintTree(tree);
-    motFreeTree(&tree);
+	SP_ASSERT_TRUE_WITH_ACTION(mt3_VerifyRBT(tree), mt3_FreeTree(&tree));
+    mt3_PrintTree(tree);
+    mt3_FreeTree(&tree);
 }
 
 void test_sub_tree()
@@ -86,61 +86,61 @@ void test_sub_tree()
     const char* names[] =
     {
         "hidegi",
-        "motex",
+        "mt3_ex",
         "betelgus",
         "fjiaw"
     };
-    MOT_tree child = NULL;
-    motInsertString(&child, "x", "sub_x");
-    motInsertString(&child, "y", "sub_y");
-    motInsertString(&child, "z", "sub_z");
-    motInsertString(&child, "w", "sub_w");
+    MT3_tree child = NULL;
+    mt3_InsertString(&child, "x", "sub_x");
+    mt3_InsertString(&child, "y", "sub_y");
+    mt3_InsertString(&child, "z", "sub_z");
+    mt3_InsertString(&child, "w", "sub_w");
 
     int array[] = {1, 3, 2, 1, 5, 2};
-    //motInsertArray(&child, "names", MOT_TAG_INT, 6, array);
-    motInsertArray(&child, "names", MOT_TAG_STRING, 4, names);
-    MOT_tree parent = NULL;
-    motInsertTree(&parent, "sub tree", child);
+    //mt3_InsertArray(&child, "names", MT3_TAG_INT, 6, array);
+    mt3_InsertArray(&child, "names", MT3_TAG_STRING, 4, names);
+    MT3_tree parent = NULL;
+    mt3_InsertTree(&parent, "sub tree", child);
 
-    motInsertInt(&parent, "i", 1);
-    motInsertInt(&parent, "j", 2);
+    mt3_InsertInt(&parent, "i", 1);
+    mt3_InsertInt(&parent, "j", 2);
 
-    motInsertInt(&parent, "kk", 6);
-    motInsertInt(&parent, "ii", 6);
-    motInsertArray(&parent, "names", MOT_TAG_STRING, 4, names);
-    motInsertInt(&parent, "suberr", 135);
+    mt3_InsertInt(&parent, "kk", 6);
+    mt3_InsertInt(&parent, "ii", 6);
+    mt3_InsertArray(&parent, "names", MT3_TAG_STRING, 4, names);
+    mt3_InsertInt(&parent, "suberr", 135);
 
-    SPbuffer buffer = motWriteBinary(parent);
-    MOT_tree output = motReadBinary(buffer);
+    SPbuffer buffer = mt3_WriteBinary(parent);
+    MT3_tree output = mt3_ReadBinary(buffer);
 
     printf("expected:\n");
-    motPrintTree(parent);
+    mt3_PrintTree(parent);
 
     printf("actual:\n");
-    motPrintTree(output);
+    mt3_PrintTree(output);
 
     printf("(%lld bytes)\n\n", buffer.length);
-    motFreeTree(&parent);
-    motFreeTree(&output);
+    mt3_FreeTree(&parent);
+    mt3_FreeTree(&output);
     spBufferFree(&buffer);
 }
 
 
 void test_tree_deletion()
 {
-    MOT_tree tree = motAllocTree();
-    motInsertString(&tree, "x", "x");
-    motInsertString(&tree, "y", "y");
-    motInsertString(&tree, "z", "z");
-    motInsertString(&tree, "w", "w");
-    motInsertInt(&tree, "hda", 34);
-	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&tree, "w"), motFreeTree(&tree));
-	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&tree, "y"), motFreeTree(&tree));
+    MT3_tree tree = mt3_AllocTree();
+    mt3_InsertString(&tree, "x", "x");
+    mt3_InsertString(&tree, "y", "y");
+    mt3_InsertString(&tree, "z", "z");
+    mt3_InsertString(&tree, "w", "w");
+    mt3_InsertInt(&tree, "hda", 34);
+	SP_ASSERT_TRUE_WITH_ACTION(mt3_Delete(&tree, "w"), mt3_FreeTree(&tree));
+	SP_ASSERT_TRUE_WITH_ACTION(mt3_Delete(&tree, "y"), mt3_FreeTree(&tree));
 	
-    SP_ASSERT_NOT_NULL_WITH_ACTION(tree, {motPrintTree(tree); motFreeTree(&tree);});
-	SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), motFreeTree(&tree));
-    motPrintTree(tree);
-    motFreeTree(&tree);
+    SP_ASSERT_NOT_NULL_WITH_ACTION(tree, {mt3_PrintTree(tree); mt3_FreeTree(&tree);});
+	SP_ASSERT_TRUE_WITH_ACTION(mt3_VerifyRBT(tree), mt3_FreeTree(&tree));
+    mt3_PrintTree(tree);
+    mt3_FreeTree(&tree);
 }
 
 void test_tree_deletion_medium()
@@ -148,38 +148,38 @@ void test_tree_deletion_medium()
     const char* names[] =
     {
         "hidegi",
-        "motex",
+        "mt3_ex",
         "betelgus",
         "fjiaw"
     };
-    MOT_tree child = NULL;
-    motInsertString(&child, "x", "sub_x");
-    motInsertString(&child, "y", "sub_y");
-    motInsertString(&child, "z", "sub_z");
-    motInsertString(&child, "w", "sub_w");
+    MT3_tree child = NULL;
+    mt3_InsertString(&child, "x", "sub_x");
+    mt3_InsertString(&child, "y", "sub_y");
+    mt3_InsertString(&child, "z", "sub_z");
+    mt3_InsertString(&child, "w", "sub_w");
 
     int array[] = {1, 3, 2, 1, 5, 2};
-    //motInsertArray(&child, "names", MOT_TAG_INT, 6, array);
-    motInsertArray(&child, "names", MOT_TAG_STRING, 4, names);
-    MOT_tree parent = NULL;
-    motInsertTree(&parent, "sub tree", child);
+    //mt3_InsertArray(&child, "names", MT3_TAG_INT, 6, array);
+    mt3_InsertArray(&child, "names", MT3_TAG_STRING, 4, names);
+    MT3_tree parent = NULL;
+    mt3_InsertTree(&parent, "sub tree", child);
 
-    motInsertInt(&parent, "i", 1);
-    motInsertInt(&parent, "j", 2);
+    mt3_InsertInt(&parent, "i", 1);
+    mt3_InsertInt(&parent, "j", 2);
 
-    motInsertInt(&parent, "kk", 6);
-    motInsertInt(&parent, "ii", 6);
-    motInsertArray(&parent, "names", MOT_TAG_STRING, 4, names);
-    motInsertInt(&parent, "suberr", 135);
-	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "ii"), motFreeTree(&parent));
-	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "j"), motFreeTree(&parent));
-	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "names"), motFreeTree(&parent));
-	SP_ASSERT_TRUE_WITH_ACTION(motDelete(&parent, "sub tree"), motFreeTree(&parent));
+    mt3_InsertInt(&parent, "kk", 6);
+    mt3_InsertInt(&parent, "ii", 6);
+    mt3_InsertArray(&parent, "names", MT3_TAG_STRING, 4, names);
+    mt3_InsertInt(&parent, "suberr", 135);
+	SP_ASSERT_TRUE_WITH_ACTION(mt3_Delete(&parent, "ii"), mt3_FreeTree(&parent));
+	SP_ASSERT_TRUE_WITH_ACTION(mt3_Delete(&parent, "j"), mt3_FreeTree(&parent));
+	SP_ASSERT_TRUE_WITH_ACTION(mt3_Delete(&parent, "names"), mt3_FreeTree(&parent));
+	SP_ASSERT_TRUE_WITH_ACTION(mt3_Delete(&parent, "sub tree"), mt3_FreeTree(&parent));
 	
-    SP_ASSERT_NOT_NULL_WITH_ACTION(parent, {motPrintTree(parent); motFreeTree(&parent);});
-	SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(parent), motFreeTree(&parent));
-    motPrintTree(parent);
-    motFreeTree(&parent);
+    SP_ASSERT_NOT_NULL_WITH_ACTION(parent, {mt3_PrintTree(parent); mt3_FreeTree(&parent);});
+	SP_ASSERT_TRUE_WITH_ACTION(mt3_VerifyRBT(parent), mt3_FreeTree(&parent));
+    mt3_PrintTree(parent);
+    mt3_FreeTree(&parent);
 }
 
 #define ITERATIONS 100
@@ -190,7 +190,7 @@ void test_tree_search()
 	std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dst(1,1000);
-	MOT_tree tree = NULL;
+	MT3_tree tree = NULL;
 	
 	int* array = new int[LENGTH];
 	for(int i = 0; i < LENGTH; i++)
@@ -202,15 +202,15 @@ void test_tree_search()
 		}
 		while(containsNumber(num, array, LENGTH));
 		array[i] = num;
-		motInsertInt(&tree, std::to_string(array[i]).c_str(), array[i]);
+		mt3_InsertInt(&tree, std::to_string(array[i]).c_str(), array[i]);
 	}
 	
 	for(int i = 0; i < LENGTH; i++)
     {
-		SP_ASSERT_NOT_NULL_WITH_ACTION(motSearch(tree, std::to_string(array[i]).c_str()), motFreeTree(&tree));
+		SP_ASSERT_NOT_NULL_WITH_ACTION(mt3_Search(tree, std::to_string(array[i]).c_str()), mt3_FreeTree(&tree));
 	}
 	
-	motFreeTree(&tree);
+	mt3_FreeTree(&tree);
 	delete[] array;
 }
 
@@ -268,7 +268,7 @@ void test_tree_random_integers()
 	
     for(int i = 0; i < ITERATIONS; i++)
     {
-        MOT_tree tree = NULL;
+        MT3_tree tree = NULL;
 		
 		bool cache[LENGTH] = {false};
 		memset(cache, false, sizeof(bool) * LENGTH);
@@ -283,11 +283,11 @@ void test_tree_random_integers()
             while(containsNumber(num, array, LENGTH));
                 
             array[i] = num;
-            motInsertInt(&tree, std::to_string(array[i]).c_str(), array[i]);
+            mt3_InsertInt(&tree, std::to_string(array[i]).c_str(), array[i]);
         }
 		
 		
-        SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), {motFreeTree(&tree);});
+        SP_ASSERT_TRUE_WITH_ACTION(mt3_VerifyRBT(tree), {mt3_FreeTree(&tree);});
 		
 		SPsize index = -1; 
 		do
@@ -296,27 +296,27 @@ void test_tree_random_integers()
 			
 			if(index != -1)
 			{
-				bool status = motDelete(&tree, std::to_string(array[index]).c_str());
+				bool status = mt3_Delete(&tree, std::to_string(array[index]).c_str());
 				SP_ASSERT_TRUE_WITH_ACTION(status,
 				{
 					SP_DEBUG("failed to delete %d", array[index]);
-					motPrintTree(tree);
+					mt3_PrintTree(tree);
 					delete [] array;
-					motFreeTree(&tree);
+					mt3_FreeTree(&tree);
 				});
 				
-				SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree),
+				SP_ASSERT_TRUE_WITH_ACTION(mt3_VerifyRBT(tree),
 				{
 					SP_DEBUG("imbalanced tree for %d", array[index]);
 					delete [] array;
-					motFreeTree(&tree);
+					mt3_FreeTree(&tree);
 				});
 			}
 			
 		} while(index != -1);
 		
-        SP_ASSERT_TRUE_WITH_ACTION(motVerifyRBT(tree), motFreeTree(&tree));
-        motFreeTree(&tree);
+        SP_ASSERT_TRUE_WITH_ACTION(mt3_VerifyRBT(tree), mt3_FreeTree(&tree));
+        mt3_FreeTree(&tree);
         delete[] array;
 	}
 	SP_DEBUG("DONE: %d iteration(s) with %d insertion(s)/deletion(s)", ITERATIONS, LENGTH);
