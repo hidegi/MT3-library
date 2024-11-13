@@ -31,7 +31,7 @@
 	        	errno = MT3_STATUS_INVALID_NAME;	\
 	        	return;                         	\
 		}                                       	\
-		hash = _mt3_sdbm((_name));			\	
+		hash = _mt3_sdbm((_name));			\
 		if(hash == 0)                           	\
 		{                                       	\
 		    errno = MT3_STATUS_INVALID_NAME;    	\
