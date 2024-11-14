@@ -10,7 +10,7 @@ MT3 introduces an open format, the so called Binary Tree Object (BTO), of which'
 are explained overleaf..
 
 ## BTO Specification
-The BTO-format has knowledge of following data types:\
+The BTO-format has knowledge of following data types:
 | Data type | tag | range | size in bytes |
 | :---: | :---: | :---: | :---: |
 | null | 0 | N/A | 0 |
