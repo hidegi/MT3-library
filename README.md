@@ -10,6 +10,7 @@ MT3 introduces an open format, the so called Binary Tree Object (BTO), of which'
 are explained overleaf..
 
 ## BTO Specification
+All numeric values are always of a signed type..\
 The BTO-format has knowledge of following data types:
 | Data type | Tag | Range | Size in Bytes |
 | :---: | :---: | :---: | :---: |
@@ -22,10 +23,8 @@ The BTO-format has knowledge of following data types:
 | float | 6 | -1.2E-38 to +3.4E+38 | 4 | 
 | double | 7 | -2.3E-308 to +1.7E+308 | 8 |
 | string | 8 | N/A | n |
+The tag-byte tells exactly what type of data a node in a BTO stores..
 
-All numeric values are always of a signed type..\
-The tag-byte tells exactly what type of data a node in a BTO stores..\
-\
 Consequently, all data types can be comprised as an array, where the first bit in the tag-value (1 for array, 0 for plain type)\
 tells whether or not some node stores an array of some type..\
 An array of root-objects will store a list of trees as a double-linked list of binary-trees, rather than a binary-tree of binary-trees..
