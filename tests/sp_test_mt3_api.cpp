@@ -41,7 +41,8 @@ static bool containsNumber(int n, const int* array, int length)
     return false;
 }
 
-static SPindex getRandomIndex(bool array[], SPsize length) {
+static SPindex getRandomIndex(bool array[], SPsize length)
+{
 	SPindex index = -1;
 	SPindex* used = new SPindex[length];
 	SPsize indexCount = 0;
@@ -65,6 +66,7 @@ static SPindex getRandomIndex(bool array[], SPsize length) {
     return index;
 }
 
+//arrange
 TEST_F(MT3fixture, test_insertion)
 {
     //act..

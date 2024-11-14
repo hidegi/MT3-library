@@ -1,8 +1,5 @@
 #include "SP/utils/io.h"
 #include "SP/cnc/thread.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb/stb_image.h"
 #include <iostream>
 #include <fstream>
 namespace
@@ -12,23 +9,6 @@ namespace
 namespace sp
 {
 	//file loaders must be performed with exclusive access..
-	SPubyte* loadImage(const char* path, int& w, int& h, int& c, int requested)
-	{
-		sp::Lock lock(resourceGuard);
-		int width;
-		int height;
-		int channels;
-		width = height = channels = 0;
-		SPubyte* buffer = reinterpret_cast<SPubyte*>(stbi_load(path, &width, &height, &channels, requested));
-		if(buffer)
-		{
-			w = width;
-			h = height;
-			c = requested;
-		}
-		return buffer;
-	}
-
 	SPubyte* loadData(const char* path)
 	{
 		size_t dummy;
