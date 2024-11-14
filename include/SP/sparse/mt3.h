@@ -37,15 +37,17 @@ typedef enum
 {
 	MT3_STATUS_OK = 0,
 	MT3_STATUS_NO_MEMORY,
-	MT3_STATUS_COMPRESSION_ERROR,
-	MT3_STATUS_DECOMPRESSION_ERROR,
-    MT3_STATUS_INVALID_NAME,
-    MT3_STATUS_INVALID_VALUE,
-    MT3_STATUS_INVALID_TAG
+	MOT_STATUS_WRITE_ERROR,
+	MT3_STATUS_READ_ERROR,
+    MT3_STATUS_BAD_NAME,
+    MT3_STATUS_BAD_VALUE,
+    MT3_STATUS_BAD_TAG,
+	MT3_STATUS_TYPE_ERROR
 } MT3_status;
 
 struct MT3_node;
 typedef struct MT3_node* MT3_tree;
+typedef struct MT3_node MT3_node;
 
 /*<==========================================================>*
  *  debug
@@ -70,9 +72,14 @@ SP_API void mt3_InsertDouble(MT3_tree* tree, const SPchar* name, SPdouble value)
 SP_API void mt3_InsertString(MT3_tree* tree, const SPchar* name, const SPchar* value);
 SP_API void mt3_InsertTree(MT3_tree* tree, const SPchar* name, MT3_tree value);
 SP_API void mt3_InsertArray(MT3_tree* tree, const SPchar* name, MT3_tag tag, SPsize length, const void* value);
+SP_API void mt3_InsertListNode(MT3_tree* tree, const SPchar* name, MT3_node* value);
 
-SP_API MT3_tree mt3_Search(const MT3_tree tree, const char* name);
+//SP_API const void* mt3_GetData(const SPchar* name);
+//SP_API SPbool mt3_SetData(const SP
+
+SP_API MT3_node* mt3_Search(const MT3_tree tree, const char* name);
 SP_API SPbool mt3_Delete(MT3_tree* tree, const SPchar* name);
+SP_API MT3_tree mt3_CopyTree(const MT3_tree);
 
 SP_API SPbuffer mt3_WriteBinary(const MT3_tree tree);
 SP_API MT3_tree mt3_ReadBinary(SPbuffer buffer);
