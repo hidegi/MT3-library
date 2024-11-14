@@ -55,9 +55,14 @@ if(WIN32)
 	endif()
 endif()
 
+if(UNIX AND NOT APPLE)
+	set(SP_PLATFORM_LINUX 1)
+endif()
+
 if(APPLE)
 	set(SP_PLATFORM_MACOS 1)
 endif()
+
 
 sp_set_option(SP_OUTPUT_DEBUG OFF BOOL "Print the read and write procedures")
 
