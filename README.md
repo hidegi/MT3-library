@@ -23,6 +23,7 @@ The BTO-format has knowledge of following data types:
 | float | 6 | -1.2E-38 to +3.4E+38 | 4 | 
 | double | 7 | -2.3E-308 to +1.7E+308 | 8 |
 | string | 8 | N/A | n |
+
 The tag-byte tells exactly what type of data a node in a BTO stores..
 
 Consequently, all data types can be comprised as an array, where the first bit in the tag-value (1 for array, 0 for plain type)\
