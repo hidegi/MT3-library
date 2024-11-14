@@ -11,7 +11,7 @@ are explained overleaf..
 
 ## BTO Specification
 The BTO-format has knowledge of following data types:
-| Data type | tag | range | size in bytes |
+| Data type | Tag | Range | Size in Bytes |
 | :---: | :---: | :---: | :---: |
 | null | 0 | N/A | 0 |
 | root | 1 | N/A | n |
