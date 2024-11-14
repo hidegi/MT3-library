@@ -3,19 +3,39 @@
 </p>
 
 # The MT3-library (SP 1994)
-MT3 (short for MoTree) is an open format that encodes an arbitrary structure to binary..\
-(similar to Mojang's NBT format)..
+MT3 (short for MoTree) is a library for serializing and deserializing any plain structure to\
+binary and vice-versa (similar to Mojang's NBT format)..
 
-## Specification
-The MT3-format only knows two fundamental types of data: binary-trees and byte-sequences..\
-To distinguish between the type of a byte-sequence, each byte-sequence comes with attributes, namely\
-the length and the payload..\
+MT3 introduces an open format, the so called Binary Tree Object (BTO), of which's properties\
+are explained overleaf..
+
+## BTO Specification
+The BTO-format has knowledge of following data types:\
 \
-Like NBT, each member is stored as a node with a tag; however, the huge difference between the two is\
-that MT3 uses an 8-Byte number to store the name (unlike a string), using an SDBM-hash..\
+| Data type | tag | range | size in bytes |
+| null | 0 | N/A | 0 |
+| root | 1 | N/A | n |
+| byte | 2 | -128 to +127 | 1 |
+| short | 3 | -32,768 to +32,767 | 2|
+| int | 4 | -2,147,483,648 to +2,147,483,647| 4 |
+| long | 5 | -9,223,372,036,854,775,808 to +9,223,372,036,854,775,807 | 8 |
+| float | 6 | -1.2E-38 to +3.4E+38 | 4 | 
+| double | 7 | -2.3E-308 to +1.7E+308 | 8 |
+| string | 8 | N/A | n |
+
+All numeric values are always of a signed type..\
+The tag-byte tells exactly what type of data a node in a BTO stores..\
+\
+Consequently, all data types can be comprised as an array, where the first bit in the tag-value (1 for array, 0 for plain type)\
+tells whether or not some node stores an array of some type..\
+An array of root-objects will store a list of trees as a double-linked list of binary-trees, rather than a binary-tree of binary-trees..
+\
+To distinguish between these types, each node (like NBT) is labeled with a tag..\ 
+However, the huge difference between NBT and BTO is that BTO uses an SDBM-hash to calculate the weight for a node..\
+The input type for a weighted value could be of any type, however MT3 uses a string to calculate a weight..
+\
 The default compression strategy is the Fast-ZLIB-Compression, although, GZIP is also possible..\
-\
-The internal layout of MT3 is a Red-Black-Tree (the color-bit is the 7th bit in the tag)..
+The internal layout of a BTO is a Red-Black-Tree (the color-bit is the 7th bit in the tag)..
 
 ## How to build
 To build this project, you will need to install the CMake CLI-tool,\
