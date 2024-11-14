@@ -1644,9 +1644,9 @@ SPbool _mt3_transplant_proc_4(MT3_node* x, MT3_node* w, MT3_tree* head)
 		if(xBlack && c)
 		{
 			if(x)
-            {
-                SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
-            }
+            		{
+                		SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
+            		}
 			SP_ASSERT(w->parent, "Expected to have parent");
 			w->red = w->parent->red;
 			w->parent->red = SP_FALSE;
