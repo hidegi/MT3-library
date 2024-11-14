@@ -29,11 +29,11 @@ The tag-byte tells exactly what type of data a node in a BTO stores..\
 Consequently, all data types can be comprised as an array, where the first bit in the tag-value (1 for array, 0 for plain type)\
 tells whether or not some node stores an array of some type..\
 An array of root-objects will store a list of trees as a double-linked list of binary-trees, rather than a binary-tree of binary-trees..
-\
-To distinguish between these types, each node (like NBT) is labeled with a tag..\ 
+
+To distinguish between these types, each node (like NBT) is labeled with a tag..\
 However, the huge difference between NBT and BTO is that BTO uses an SDBM-hash to calculate the weight for a node..\
 The input type for a weighted value could be of any type, however MT3 uses a string to calculate a weight..
-\
+
 The default compression strategy is the Fast-ZLIB-Compression, although, GZIP is also possible..\
 The internal layout of a BTO is a Red-Black-Tree (the color-bit is the 7th bit in the tag)..
 
