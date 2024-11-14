@@ -139,7 +139,7 @@ static SPbuffer _mt3_compress(const void* memory, SPsize length)
 	z_stream stream =
 	{
 		.zalloc   = Z_NULL,
-		.zfree	= Z_NULL,
+		.zfree	  = Z_NULL,
 		.opaque   = Z_NULL,
 		.next_in  = (void*) memory,
 		.avail_in = length
@@ -157,11 +157,11 @@ static SPbuffer _mt3_compress(const void* memory, SPsize length)
 		return SP_BUFFER_INIT;
 	}
 
-    if(stream.avail_in != length)
-    {
-        errno = MT3_STATUS_COMPRESSION_ERROR;
-        return buffer;
-    }
+    	if(stream.avail_in != length)
+    	{
+        	errno = MT3_STATUS_COMPRESSION_ERROR;
+        	return buffer;
+    	}
 
 	do
 	{
@@ -358,7 +358,9 @@ void _mt3_free_tree_impl(MT3_tree tree)
 	if(tree)
 	{
 		if(tree->tag != MT3_TAG_ROOT)
+		{
 			free(tree->payload.data);
+		}
 		else
 		{
 			_mt3_free_tree_impl(tree->payload.head);
@@ -1029,7 +1031,7 @@ static MT3_tree _mt3_read_binary(const SPubyte** memory, SPsize* length)
 	tree->minor = _mt3_read_binary(memory, length);
 
 	if(tree->major)
-	    tree->major->parent = tree;
+	    	tree->major->parent = tree;
 	if(tree->minor)
 		tree->minor->parent = tree;
 
@@ -1154,7 +1156,9 @@ static SPbool _mt3_verify_rbt_impl(const MT3_node* rbt, SPsize depth, SPsize ref
 			}
 		}
 		else
+		{
 			++depth;
+		}
 		
 		if(rbt->major || rbt->minor)
 		{
@@ -1225,13 +1229,13 @@ static void _mt3_fix_rbt_violations(MT3_node* node, MT3_tree* head)
 				 {
 					// LR-rotation..
 					r = _mt3_rotate_left(node->parent, head);
-						_mt3_rotate_right(node->parent, head);
+					    _mt3_rotate_right(node->parent, head);
 				 }
 				 else if(pMajor && !nMajor)
 				 {
 					// RL-rotation..
 					r = _mt3_rotate_right(node->parent, head);
-						_mt3_rotate_left(node->parent, head);
+					    _mt3_rotate_left(node->parent, head);
 				 }
 				 else
 				 {
@@ -1440,9 +1444,7 @@ static SPbool _mt3_fix_up_rbt(SPbool redBefore, MT3_node* r, MT3_node* x, MT3_no
 {
 	SPbool redAfter = r ? r->red : SP_FALSE;
 	if(redBefore && redAfter)
-	{
 		return SP_TRUE;
-	}
 	
 	if(!redBefore && redAfter)
 	{
