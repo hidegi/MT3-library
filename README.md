@@ -22,7 +22,7 @@ The BTO-format has knowledge of following data types:
 | long | 5 | -9,223,372,036,854,775,808 to +9,223,372,036,854,775,807 | 8 |
 | float | 6 | -1.2E-38 to +3.4E+38 | 4 | 
 | double | 7 | -2.3E-308 to +1.7E+308 | 8 |
-| string | 8 | N/A | n |
+| string | 8 | N/A | n + 1 |
 
 The tag-byte tells exactly what type of data a node in a BTO stores..
 
