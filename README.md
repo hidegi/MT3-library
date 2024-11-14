@@ -26,7 +26,7 @@ The BTO-format has knowledge of following data types:
 
 The tag-byte tells exactly what type of data a node in a BTO stores..
 
-Consequently, all data types can be comprised as an array, where the first bit in the tag-value (1 for array, 0 for plain type)\
+Consequently, all data types can be comprised as an array, where the first bit in the tag-byte (1 for array, 0 for plain type)\
 tells whether or not some node stores an array of some type..\
 An array of root-objects will store a list of trees as a double-linked list of binary-trees, rather than a binary-tree of binary-trees..
 
