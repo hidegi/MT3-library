@@ -17,7 +17,7 @@ bool containsNumber(int n, const int* array, int length)
 
 void test_insertion()
 {
-	MT3_tree tree = mt3_AllocTree();
+	MT3_tree tree = mt3_AllocObject();
 	mt3_InsertString(&tree, "x", "x");
 	mt3_InsertString(&tree, "y", "y");
 	mt3_InsertString(&tree, "fjiaw", "fjiaw");
@@ -68,13 +68,13 @@ void test_null_tree()
 
 void test_empty_tree()
 {
-    MT3_tree tree = mt3_AllocTree();
+    MT3_tree tree = mt3_AllocObject();
     mt3_InsertString(&tree, "x", "x");
     mt3_InsertString(&tree, "y", "y");
     mt3_InsertString(&tree, "z", "z");
     mt3_InsertString(&tree, "w", "w");
     mt3_InsertInt(&tree, "hda", 34);
-	
+
     SP_ASSERT_NOT_NULL(tree);
 	SP_ASSERT_TRUE_WITH_ACTION(mt3_VerifyRBT(tree), mt3_FreeTree(&tree));
     mt3_PrintTree(tree);
@@ -97,8 +97,8 @@ void test_sub_tree()
     mt3_InsertString(&child, "w", "sub_w");
 
     int array[] = {1, 3, 2, 1, 5, 2};
-    //mt3_InsertArray(&child, "names", MT3_TAG_INT, 6, array);
-    mt3_InsertArray(&child, "names", MT3_TAG_STRING, 4, names);
+    mt3_InsertIntArray(&child, "names", 6, array);
+    mt3_InsertStringArray(&child, "names", 4, names);
     MT3_tree parent = NULL;
     mt3_InsertTree(&parent, "sub tree", child);
 
@@ -107,7 +107,7 @@ void test_sub_tree()
 
     mt3_InsertInt(&parent, "kk", 6);
     mt3_InsertInt(&parent, "ii", 6);
-    mt3_InsertArray(&parent, "names", MT3_TAG_STRING, 4, names);
+    mt3_InsertStringArray(&parent, "names", 4, names);
     mt3_InsertInt(&parent, "suberr", 135);
 
     SPbuffer buffer = mt3_WriteBinary(parent);
@@ -121,6 +121,7 @@ void test_sub_tree()
 
     printf("(%lld bytes)\n\n", buffer.length);
     mt3_FreeTree(&parent);
+    mt3_FreeTree(&child);
     mt3_FreeTree(&output);
     spBufferFree(&buffer);
 }
@@ -128,7 +129,7 @@ void test_sub_tree()
 
 void test_tree_deletion()
 {
-    MT3_tree tree = mt3_AllocTree();
+    MT3_tree tree = mt3_AllocObject();
     mt3_InsertString(&tree, "x", "x");
     mt3_InsertString(&tree, "y", "y");
     mt3_InsertString(&tree, "z", "z");
@@ -136,7 +137,7 @@ void test_tree_deletion()
     mt3_InsertInt(&tree, "hda", 34);
 	SP_ASSERT_TRUE_WITH_ACTION(mt3_Delete(&tree, "w"), mt3_FreeTree(&tree));
 	SP_ASSERT_TRUE_WITH_ACTION(mt3_Delete(&tree, "y"), mt3_FreeTree(&tree));
-	
+
     SP_ASSERT_NOT_NULL_WITH_ACTION(tree, {mt3_PrintTree(tree); mt3_FreeTree(&tree);});
 	SP_ASSERT_TRUE_WITH_ACTION(mt3_VerifyRBT(tree), mt3_FreeTree(&tree));
     mt3_PrintTree(tree);
@@ -158,28 +159,36 @@ void test_tree_deletion_medium()
     mt3_InsertString(&child, "z", "sub_z");
     mt3_InsertString(&child, "w", "sub_w");
 
+
     int array[] = {1, 3, 2, 1, 5, 2};
-    //mt3_InsertArray(&child, "names", MT3_TAG_INT, 6, array);
-    mt3_InsertArray(&child, "names", MT3_TAG_STRING, 4, names);
+
+    mt3_InsertIntArray(&child, "numbers", 6, array);
+
+    mt3_InsertStringArray(&child, "names", 4, names);
     MT3_tree parent = NULL;
     mt3_InsertTree(&parent, "sub tree", child);
 
     mt3_InsertInt(&parent, "i", 1);
+
     mt3_InsertInt(&parent, "j", 2);
 
     mt3_InsertInt(&parent, "kk", 6);
     mt3_InsertInt(&parent, "ii", 6);
-    mt3_InsertArray(&parent, "names", MT3_TAG_STRING, 4, names);
+    mt3_InsertStringArray(&parent, "names", 4, names);
     mt3_InsertInt(&parent, "suberr", 135);
+    mt3_InsertInt(&parent, "suber", 512);
+
 	SP_ASSERT_TRUE_WITH_ACTION(mt3_Delete(&parent, "ii"), mt3_FreeTree(&parent));
 	SP_ASSERT_TRUE_WITH_ACTION(mt3_Delete(&parent, "j"), mt3_FreeTree(&parent));
 	SP_ASSERT_TRUE_WITH_ACTION(mt3_Delete(&parent, "names"), mt3_FreeTree(&parent));
 	SP_ASSERT_TRUE_WITH_ACTION(mt3_Delete(&parent, "sub tree"), mt3_FreeTree(&parent));
-	
+
     SP_ASSERT_NOT_NULL_WITH_ACTION(parent, {mt3_PrintTree(parent); mt3_FreeTree(&parent);});
 	SP_ASSERT_TRUE_WITH_ACTION(mt3_VerifyRBT(parent), mt3_FreeTree(&parent));
+
     mt3_PrintTree(parent);
     mt3_FreeTree(&parent);
+    mt3_FreeTree(&child);
 }
 
 #define ITERATIONS 100
@@ -191,11 +200,11 @@ void test_tree_search()
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dst(1,1000);
 	MT3_tree tree = NULL;
-	
+
 	int* array = new int[LENGTH];
 	for(int i = 0; i < LENGTH; i++)
     {
-		int num; 
+		int num;
 		do
 		{
 			num = dst(rng);
@@ -204,12 +213,12 @@ void test_tree_search()
 		array[i] = num;
 		mt3_InsertInt(&tree, std::to_string(array[i]).c_str(), array[i]);
 	}
-	
+
 	for(int i = 0; i < LENGTH; i++)
     {
 		SP_ASSERT_NOT_NULL_WITH_ACTION(mt3_Search(tree, std::to_string(array[i]).c_str()), mt3_FreeTree(&tree));
 	}
-	
+
 	mt3_FreeTree(&tree);
 	delete[] array;
 }
@@ -218,13 +227,13 @@ SPindex getRandomIndex(bool array[], SPsize length) {
 	SPindex index = -1;
 	SPindex* used = new SPindex[length];
 	SPsize indexCount = 0;
-	
+
 	for(SPsize i = 0; i < length; i++)
 	{
 		if(!array[i])
 			used[indexCount++] = i;
 	}
-	
+
 	if(indexCount == 0)
 	{
 	    delete [] used;
@@ -243,7 +252,7 @@ void test_random_index()
 	constexpr int length = 100;
 	bool array[length] = {};
 	memset(array, false, sizeof(bool) * length);
-	
+
 	SPindex index = -1;
 	SPsize checksum = static_cast<SPsize>((length) * (length - 1) / 2.0);
 	SPsize s = 0;
@@ -256,7 +265,7 @@ void test_random_index()
 		}
 	}
 	while(index != -1);
-	
+
 	SP_ASSERT_INTEGER_EQUAL(checksum, s);
 }
 
@@ -265,7 +274,7 @@ void test_tree_random_integers()
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dst(1,1000);
-	
+
     for(int i = 0; i < ITERATIONS; i++)
     {
         MT3_tree tree = NULL;
@@ -329,8 +338,9 @@ int main(int argc, char** argv)
 	//SP_TEST_ADD(test_if_all_available);
 	//SP_TEST_ADD(test_insertion);
 	//SP_TEST_ADD(test_null_tree);
-	SP_TEST_ADD(test_tree_random_integers);
-	SP_TEST_ADD(test_random_index);
+	SP_TEST_ADD(test_sub_tree);
+	//SP_TEST_ADD(test_tree_random_integers);
+	//SP_TEST_ADD(test_random_index);
 
 	spTestRunAll();
 	spTestTerminate();

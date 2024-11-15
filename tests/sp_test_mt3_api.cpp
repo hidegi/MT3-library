@@ -19,7 +19,7 @@ class MT3fixture : public testing::Test
     protected:
         void SetUp() override
         {
-            tree = mt3_AllocTree();
+            tree = mt3_AllocObject();
             std::cout << ">>>" << __PRETTY_FUNCTION__ << " has been run" << std::endl;
         }
 

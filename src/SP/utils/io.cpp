@@ -21,18 +21,18 @@ namespace sp
 		FILE* file = NULL;
 		const char* mode = "rb";
 #ifdef SP_PLATFORM_WINDOWS
-	wchar_t wmode[64];
-	wchar_t wpath[1024];
-	if(!MultiByteToWideChar(65001, 0, path, -1, wpath, sizeof(wpath) / sizeof(*wpath)))
-	{
-		SP_WARNING("Win32: failed to convert string to wide char for file %s", path);
-		return NULL;
-	}
-	if(!MultiByteToWideChar(65001, 0, mode, -1, wmode, sizeof(wmode) / sizeof(*wmode)))
-	{
-		SP_WARNING("Win32: failed to convert open mode string to wide char for file %s", path);
-		return NULL;
-	}
+        wchar_t wmode[64];
+        wchar_t wpath[1024];
+        if(!MultiByteToWideChar(65001, 0, path, -1, wpath, sizeof(wpath) / sizeof(*wpath)))
+        {
+            SP_WARNING("Win32: failed to convert string to wide char for file %s", path);
+            return NULL;
+        }
+        if(!MultiByteToWideChar(65001, 0, mode, -1, wmode, sizeof(wmode) / sizeof(*wmode)))
+        {
+            SP_WARNING("Win32: failed to convert open mode string to wide char for file %s", path);
+            return NULL;
+        }
 #if defined(SP_MSC_VER) && SP_MSC_VER >= 1400
 		if(_wfopen_s(&file, wpath, wmode))
 			file = NULL;

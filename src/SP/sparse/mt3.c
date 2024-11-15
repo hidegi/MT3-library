@@ -82,8 +82,9 @@ struct MT3_node
 	struct MT3_node* major;
 	struct MT3_node* minor;
 };
-typedef struct MT3_node MT3_node;
 
+static MT3_tree _mt3_copy_tree(const MT3_tree tree);
+static void _mt3_insert_array(MT3_tree* tree, const SPchar* name, MT3_tag tag, SPsize length, const void* data);
 static void _mt3_fix_rbt_violations(MT3_node* node, MT3_tree* head);
 static MT3_node* _mt3_rotate_left(MT3_node* n, MT3_tree* head);
 static MT3_node* _mt3_rotate_right(MT3_node* n, MT3_tree* head);
@@ -156,13 +157,13 @@ static SPbuffer _mt3_compress(const void* memory, SPsize length)
 		8,
 		Z_DEFAULT_STRATEGY) != Z_OK)
 	{
-	    errno = MOT_STATUS_WRITE_ERROR;
+	    errno = MT3_STATUS_WRITE_ERROR;
 		return SP_BUFFER_INIT;
 	}
 
     	if(stream.avail_in != length)
     	{
-        	errno = MOT_STATUS_WRITE_ERROR;
+        	errno = MT3_STATUS_WRITE_ERROR;
         	return buffer;
     	}
 
@@ -180,7 +181,7 @@ static SPbuffer _mt3_compress(const void* memory, SPsize length)
 
 		if(deflate(&stream, Z_FINISH) == Z_STREAM_ERROR)
 		{
-			errno = MOT_STATUS_WRITE_ERROR;
+			errno = MT3_STATUS_WRITE_ERROR;
 			spBufferFree(&buffer);
 			return SP_BUFFER_INIT;
 		}
@@ -250,7 +251,7 @@ static SPbuffer _mt3_decompress(const void* memory, SPsize length)
 	return buffer;
 }
 
-static MT3_node* _mt3_alloc_node(MT3_tag tag, SPhash name, SPsize length, const SPbyte* value)
+static MT3_node* _mt3_alloc_node(MT3_tag tag, SPhash name, SPsize length, const void* value)
 {
 	MT3_node* node = NULL;
 	MT3_CHECKED_CALLOC(node, 1, sizeof(MT3_node), return NULL);
@@ -260,16 +261,21 @@ static MT3_node* _mt3_alloc_node(MT3_tag tag, SPhash name, SPsize length, const 
 	node->major = node->minor = NULL;
 	node->parent = NULL;
 	node->red = SP_FALSE;
+    if(tag != MT3_TAG_ROOT && tag != MT3_TAG_LIST)
+    {
+        if(value && length > 0)
+        {
+            MT3_CHECKED_CALLOC(node->payload.data, node->length, sizeof(SPbyte), return NULL);
+            memcpy(node->payload.data, (const SPbyte*) value, node->length * sizeof(SPbyte));
 
-	if(value && length > 0)
-	{
-		MT3_CHECKED_CALLOC(node->payload.data, node->length, sizeof(SPbyte), return NULL);
-		memcpy(node->payload.data, value, node->length * sizeof(SPbyte));
-
-		if(tag == MT3_TAG_STRING)
-			node->payload.data[node->length - 1] = 0;
+            if(tag == MT3_TAG_STRING)
+                node->payload.data[node->length - 1] = 0;
+        }
 	}
-
+    else
+    {
+        node->payload.head = mt3_CopyTree((const MT3_tree) value);
+    }
 	return node;
 }
 
@@ -286,7 +292,7 @@ static void _mt3_delete_node(MT3_node* n)
 		{
 			mt3_FreeTree(&n->payload.head);
 		}
-		
+
 		free(n);
 	}
 }
@@ -306,7 +312,7 @@ static SPsize _mt3_length_of(MT3_tag tag)
 	return 0;
 }
 
-static SPhash _mt3_sdbm_impl(const SPchar *str) 
+static SPhash _mt3_sdbm_impl(const SPchar *str)
 {
 	SPhash hash = 0;
 	int c;
@@ -344,7 +350,7 @@ void _mt3_print_binary(const unsigned char *byteArray, size_t size, int level)
 	}
 }
 
-MT3_tree mt3_AllocTree()
+MT3_tree mt3_AllocObject()
 {
 	MT3_node* root = NULL;
 	MT3_CHECKED_CALLOC(root, 1, sizeof(MT3_node), return NULL);
@@ -356,23 +362,73 @@ MT3_tree mt3_AllocTree()
 	return root;
 }
 
+MT3_tree mt3_CopyTree(const MT3_tree n)
+{
+    MT3_tree tree = NULL;
+    if(n)
+    {
+        tree = mt3_AllocObject();
+        if(!tree)
+        {
+            errno = MT3_STATUS_NO_MEMORY;
+            return NULL;
+        }
+
+        tree->red = n->red;
+        tree->weight = n->weight;
+        tree->tag = n->tag;
+        tree->length = n->length;
+
+        if(n->tag != MT3_TAG_ROOT && n->tag != MT3_TAG_LIST)
+        {
+            tree->payload.data = malloc(n->length);
+            if(!tree->payload.data)
+            {
+                errno = MT3_STATUS_NO_MEMORY;
+                free(tree);
+                return NULL;
+            }
+
+            memcpy(tree->payload.data, n->payload.data, n->length);
+        }
+        else
+        {
+            tree->payload.head = mt3_CopyTree(n->payload.head);
+        }
+
+        tree->major = mt3_CopyTree(n->major);
+        tree->minor = mt3_CopyTree(n->minor);
+
+        if(tree->major)
+           tree->major->parent = tree;
+
+        if(tree->minor)
+           tree->minor->parent = tree;
+    }
+    return tree;
+}
+
 void _mt3_free_tree_impl(MT3_tree tree)
 {
 	if(tree)
 	{
-		if(tree->tag != MT3_TAG_ROOT)
+		if(tree->tag != MT3_TAG_ROOT && tree->tag != MT3_TAG_LIST)
 		{
 			free(tree->payload.data);
 		}
 		else
 		{
-			_mt3_free_tree_impl(tree->payload.head);
+		    if(tree->tag == MT3_TAG_ROOT)
+		    {
+			    _mt3_free_tree_impl(tree->payload.head);
+            }
 		}
 		_mt3_free_tree_impl(tree->major);
 		_mt3_free_tree_impl(tree->minor);
 		free(tree);
 	}
 }
+
 void mt3_FreeTree(MT3_tree* tree)
 {
     _mt3_free_tree_impl(*tree);
@@ -410,6 +466,12 @@ static MT3_tree _mt3_insert_data(MT3_tree* head, MT3_tree node, SPhash weight, M
 		return *head;
 	}
 
+	if(weight == node->weight)
+	{
+		errno = MT3_STATUS_BAD_NAME;
+		return NULL;
+	}
+
 	if(node->weight == 0 || node->tag == MT3_TAG_NULL)
 	{
 		SP_ASSERT(node->length == 0LL, "Empty tree cannot have length defined (%lld)", node->length);
@@ -419,39 +481,19 @@ static MT3_tree _mt3_insert_data(MT3_tree* head, MT3_tree node, SPhash weight, M
 		SP_ASSERT(!node->red, "Empty tree must be black-coded");
 
 		MT3_tree root = _mt3_alloc_node(tag, weight, length, value);
-		(*head)->weight = weight;
-		(*head)->length = root->length;
-		(*head)->payload.data = root->payload.data;
-		(*head)->tag = tag;
-
-		free(root);
 		return *head;
-	}
-
-	if(weight == node->weight)
-	{
-		errno = MT3_STATUS_BAD_NAME;
-		return NULL;
 	}
 
 	SPbool maj = (weight > node->weight);
 	MT3_tree primary  = maj ? node->major : node->minor;
 
 	if(primary)
+	{
 		_mt3_insert_data(head, primary, weight, tag, length, value);
+	}
 	else
 	{
-		if(!(tag == MT3_TAG_ROOT || tag == MT3_TAG_LIST))
-		{
-			primary = _mt3_alloc_node(tag, weight, length, (const SPbyte*) value);
-		}
-		else
-		{
-			MT3_tree tree = (MT3_tree) value;
-			primary = _mt3_alloc_node(tag, tree->weight, 0, NULL);
-			primary->payload.head = tree;	
-		}
-		
+		primary = _mt3_alloc_node(tag, weight, length, value);
 		primary->parent = node;
 		primary->red = SP_TRUE;
 		maj ? (node->major = primary) : (node->minor = primary);
@@ -460,61 +502,10 @@ static MT3_tree _mt3_insert_data(MT3_tree* head, MT3_tree node, SPhash weight, M
 	return primary;
 }
 
-void mt3_InsertListNode(MT3_tree* tree, const SPchar* name, MT3_node* value)
-{
-	/*
-	if(!name)
-	{
-		errno = MT3_STATUS_BAD_NAME;
-		return;
-	}
-	
-	if(!value)
-	{
-		errno = MT3_STATUS_BAD_VALUE;
-		return;
-	}
-	
-	MT3_node* root = mt3_Search(*tree, name);
-	MT3_node* next = NULL;
-	if(root)
-	{
-		SP_ASSERT(root->tag == MT3_TAG_LIST, "Impossible: value expected of tag \"root\"");
-		MT3_node* tail = root->payload.head;
-		if(!tail)
-		{
-		}
-		else
-		{
-			while(tail->major)
-				tail = tail->major;
-			
-			next = _mt3_alloc_node(MT3_TAG_LIST, 0LL, 0LL, NULL);	
-		}
-		
-		tail->major = next;
-		next->minor = tail;
-		root->length++;
-	}
-	else
-	{
-		MT3_CHECK_INPUT(name);
-		next = _mt3_insert_data(tree, *tree, hash, MT3_TAG_LIST, 0, value);
-	}
-	next->payload.head = value;
-	*/
-}
-
 void mt3_InsertTree(MT3_tree* tree, const SPchar* name, MT3_tree value)
 {
 	MT3_CHECK_INPUT(name);
-	if(value && value->tag != MT3_TAG_ROOT)
-	{
-	    errno = MT3_STATUS_BAD_VALUE;
-	    return;
-	}
-	
-	_mt3_insert_data(tree, *tree, hash, MT3_TAG_ROOT, 0, value);
+	_mt3_insert_data(tree, *tree, hash, MT3_TAG_ROOT, 0LL, value);
 }
 
 void mt3_InsertByte(MT3_tree* tree, const SPchar* name, SPbyte value)
@@ -562,15 +553,9 @@ void mt3_InsertString(MT3_tree* tree, const SPchar* name, const SPchar* value)
 	}
 }
 
-void mt3_InsertArray(MT3_tree* tree, const SPchar* name, MT3_tag tag, SPsize length, const void* data)
+void _mt3_insert_array(MT3_tree* tree, const SPchar* name, MT3_tag tag, SPsize length, const void* data)
 {
 	MT3_tag scalar = tag & ~MT3_TAG_ARRAY;
-	if(scalar == MT3_TAG_ROOT)
-	{
-		mt3_InsertListNode(tree, name, (MT3_node*) value);
-		return;
-	}
-	
     if(scalar > MT3_TAG_STRING)
     {
         errno = MT3_STATUS_BAD_TAG;
@@ -592,7 +577,7 @@ void mt3_InsertArray(MT3_tree* tree, const SPchar* name, MT3_tag tag, SPsize len
 	MT3_CHECK_INPUT(name);
 	if(scalar != MT3_TAG_STRING)
 	{
-		_mt3_insert_data(tree, *tree, hash, tag | MT3_TAG_ARRAY, length * _mt3_length_of(tag), data);
+		_mt3_insert_data(tree, *tree, hash, tag | MT3_TAG_ARRAY, length * _mt3_length_of(scalar), data);
 	}
 	else
 	{
@@ -631,6 +616,86 @@ void mt3_InsertArray(MT3_tree* tree, const SPchar* name, MT3_tag tag, SPsize len
 	}
 }
 
+void mt3_InsertByteArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPbyte* values)
+{
+    _mt3_insert_array(tree, name, MT3_TAG_BYTE, length, values);
+}
+
+void mt3_InsertShortArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPshort* values)
+{
+    _mt3_insert_array(tree, name, MT3_TAG_SHORT, length, values);
+}
+
+void mt3_InsertIntArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPint* values)
+{
+    _mt3_insert_array(tree, name, MT3_TAG_INT, length, values);
+}
+
+void mt3_InsertLongArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPlong* values)
+{
+    _mt3_insert_array(tree, name, MT3_TAG_LONG, length, values);
+}
+
+void mt3_InsertFloatArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPfloat* values)
+{
+    _mt3_insert_array(tree, name, MT3_TAG_FLOAT, length, values);
+}
+
+void mt3_InsertDoubleArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPdouble* values)
+{
+    _mt3_insert_array(tree, name, MT3_TAG_DOUBLE, length, values);
+}
+
+void mt3_InsertStringArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPchar** values)
+{
+    _mt3_insert_array(tree, name, MT3_TAG_STRING, length, values);
+}
+
+void mt3_InsertListNode(MT3_tree* tree, const SPchar* name, MT3_node* value)
+{
+	/*
+	if(!name)
+	{
+		errno = MT3_STATUS_BAD_NAME;
+		return;
+	}
+
+	if(!value)
+	{
+		errno = MT3_STATUS_BAD_VALUE;
+		return;
+	}
+
+	MT3_node* root = mt3_Search(*tree, name);
+	MT3_node* next = NULL;
+	if(root)
+	{
+		SP_ASSERT(root->tag == MT3_TAG_LIST, "Impossible: value expected of tag \"root\"");
+		MT3_node* tail = root->payload.head;
+		if(!tail)
+		{
+		}
+		else
+		{
+			while(tail->major)
+				tail = tail->major;
+
+			next = _mt3_alloc_node(MT3_TAG_LIST, 0LL, 0LL, NULL);
+		}
+
+		tail->major = next;
+		next->minor = tail;
+		root->length++;
+	}
+	else
+	{
+		MT3_CHECK_INPUT(name);
+		next = _mt3_insert_data(tree, *tree, hash, MT3_TAG_LIST, 0, value);
+	}
+	next->payload.head = value;
+	*/
+}
+
 void* mt3_AllocChunk(SPsize size)
 {
 	SPbyte* ptr = NULL;
@@ -656,6 +721,7 @@ const char* _mt3_tag_to_str(MT3_tag tag)
 			case MT3_TAG_FLOAT: return "float array";
 			case MT3_TAG_DOUBLE: return "double array";
 			case MT3_TAG_STRING: return "string array";
+			case MT3_TAG_ROOT: return "list";
 		}
 	}
 	else
@@ -670,7 +736,7 @@ const char* _mt3_tag_to_str(MT3_tag tag)
 			case MT3_TAG_DOUBLE: return "double";
 			case MT3_TAG_STRING: return "string";
 			case MT3_TAG_ARRAY: return "array";
-			case MT3_TAG_ROOT: return "root";
+			case MT3_TAG_ROOT: return "object";
 		}
 	}
 	return "null";
@@ -691,7 +757,7 @@ void _mt3_print_tree(const MT3_tree tree, int level)
 			MT3_tag scalar = tree->tag & ~MT3_TAG_ARRAY;
 			SPsize stride = _mt3_length_of(tree->tag & ~MT3_TAG_ARRAY);
 
-			printf("(%c%c) %s (length: %lld) (%lld): ", color, rank, _mt3_tag_to_str(tree->tag), tree->length, tree->weight);
+			printf("(%c%c) %s (%lld): ", color, rank, _mt3_tag_to_str(tree->tag), tree->length, tree->weight);
 			if(scalar == MT3_TAG_ROOT)
 			{
 				MT3_node* head = tree->payload.head;
@@ -764,7 +830,7 @@ void _mt3_print_tree(const MT3_tree tree, int level)
 
 				case MT3_TAG_ROOT:
 				{
-					printf("(%c%c) root (%lld):\n", color, rank, tree->weight);
+					printf("(%c%c) object (%lld):\n", color, rank, tree->weight);
 					_mt3_print_tree(tree->payload.head, level + 1);
 					break;
 				}
@@ -1086,7 +1152,7 @@ MT3_tree mt3_ReadBinary(SPbuffer buffer)
 	SPbuffer decompressed = _mt3_decompress(buffer.data, buffer.length);
 	const SPubyte** memory = (const SPubyte**) &decompressed.data;
 	SPsize length = decompressed.length;
-	
+
 	return _mt3_read_binary(memory, &length);
 }
 
@@ -1103,7 +1169,7 @@ const char* mt3_GetErrorInfo(MT3_status status)
     switch(status)
     {
         case MT3_STATUS_NO_MEMORY: return "Your local machine has failed to allocate memory";
-        case MOT_STATUS_WRITE_ERROR: return "Error while compressing data";
+        case MT3_STATUS_WRITE_ERROR: return "Error while compressing data";
         case MT3_STATUS_READ_ERROR: return "Error while decompressing data";
         case MT3_STATUS_BAD_NAME: return "Given name was either empty, NULL, or already assigned to a node";
         case MT3_STATUS_BAD_VALUE: return "Given value was invalid";
@@ -1146,7 +1212,7 @@ static SPsize _mt3_calculate_black_depth(const MT3_node* rbt)
 {
 	if(!rbt)
 		return 1;
-	
+
 	SPsize count = 0;
 	if(!rbt->red)
 		count++;
@@ -1173,7 +1239,7 @@ static SPbool _mt3_verify_rbt_impl(const MT3_node* rbt, SPsize depth, SPsize ref
 		{
 			++depth;
 		}
-		
+
 		if(rbt->major || rbt->minor)
 		{
 			return _mt3_verify_rbt_impl(rbt->major, depth, ref) && _mt3_verify_rbt_impl(rbt->minor, depth, ref);
@@ -1202,9 +1268,9 @@ static void _mt3_fix_rbt_violations(MT3_node* node, MT3_tree* head)
 			MT3_node* p = node->parent;
 			MT3_node* g = p->parent;
 			MT3_node* r = NULL;
-			
+
 			SPbool isRed = m != NULL ? m->red : SP_FALSE;
-			
+
 			if(isRed)
 			{
 				// color switch..
@@ -1233,7 +1299,7 @@ static void _mt3_fix_rbt_violations(MT3_node* node, MT3_tree* head)
 				 */
 				 SPbool pMajor = _mt3_is_major(p);
 				 SPbool nMajor = _mt3_is_major(node);
-				 
+
 				 if(!pMajor && !nMajor)
 				 {
 					// R-rotation..
@@ -1271,17 +1337,17 @@ static MT3_node* _mt3_rotate_left(MT3_node* n, MT3_tree* head)
 	MT3_node* p = n->parent;
 	MT3_node* m = n->major;
 	MT3_node* c = m ? n->major->minor : NULL;
-	
+
 	n->parent = m;
 	n->major->minor = n;
-	
+
 	if(c)
 	   c->parent = n;
 	n->major = c;
-	
+
 	if(m)
 	   m->parent = p;
-	
+
 	p ? (maj ? (p->major = m) : (p->minor = m)) : (*head = m);
 	return m;
 }
@@ -1293,17 +1359,17 @@ static MT3_node* _mt3_rotate_right(MT3_node* n, MT3_tree* head)
 	MT3_node* p = n->parent;
 	MT3_node* m = n->minor;
 	MT3_node* c = m ? n->minor->major : NULL;
-	
+
 	n->parent = m;
 	n->minor->major = n;
-	
+
 	if(c)
 	   c->parent = n;
 	n->minor = c;
-	
+
 	if(m)
 	   m->parent = p;
-	
+
 	p ? (maj ? (p->major = m) : (p->minor = m)) : (*head = m);
 	return m;
 }
@@ -1316,10 +1382,10 @@ static void _mt3_bst_delete_impl(MT3_node* n, MT3_tree* head, MT3_node** _r, MT3
 		MT3_node* w = NULL;
 		MT3_node* r = NULL;
 		MT3_node* p = n->parent;
-		
+
 		SPbool maj = _mt3_is_major(n);
 		SPbool root = _mt3_is_root(n);
-		
+
 		if(!n->major && !n->minor)
 		{
 			if(p)
@@ -1337,7 +1403,7 @@ static void _mt3_bst_delete_impl(MT3_node* n, MT3_tree* head, MT3_node** _r, MT3
 			r = n->major ? n->major : n->minor;
 			SP_ASSERT(r, "Fatal, expected to have replacement");
 			r->parent = p;
-			
+
 			if(maj)
 			{
 				if(p)
@@ -1358,32 +1424,32 @@ static void _mt3_bst_delete_impl(MT3_node* n, MT3_tree* head, MT3_node** _r, MT3
 #ifndef MT3_HAVE_BST_MAJOR_INCLINED
 			r = _mt3_find_min(n->major);
 			w = r->parent ? (_mt3_is_major(r) ? r->parent->minor : r->parent->major) : NULL;
-			
+
 			SP_ASSERT(r, "Expected to have replacement");
 			SP_ASSERT(!r->minor, "Expected to have minimum replacement");
 			MT3_node *q = n->minor;
 			MT3_node *m = n->major;
 			MT3_node *a = r->parent;
 			MT3_node *b = r->major;
-			
+
 			SP_ASSERT(!r->minor, "Expected to have no more minimum");
-			
+
 			if(p)
 			   maj ? (p->major = r) : (p->minor = r);
 			r->parent = p;
-		   
+
 			if(q)
 			   q->parent = r;
 			r->minor = q;
-		  
+
 			if(r != m)
 			{
 				SP_ASSERT(a, "Expected minimum to have parent");
-				
+
 				// link m and r..
 				r->major = m;
 				m->parent = r;
-				
+
 				// link a and b..
 				a->minor = b;
 				if(b)
@@ -1394,17 +1460,17 @@ static void _mt3_bst_delete_impl(MT3_node* n, MT3_tree* head, MT3_node** _r, MT3
 			w = r->parent ? (_mt3_is_major(r) ? r->parent->minor : r->parent->major) : NULL;
 			SP_ASSERT(r, "Expected to have replacement");
 			SP_ASSERT(!r->major, "Expected to maximum replacement");
-			
+
 			MT3_node *q = n->major;
 			MT3_node *m = n->minor;
 			MT3_node *a = r->parent;
 			MT3_node *b = r->minor;
-			
+
 			SP_ASSERT(!r->major, "Expected to have no more maxima");
 			if(p)
 				maj ? (p->major = r) : (p->minor = r);
 			r->parent = p;
-			
+
 			if(q)
 			   q->parent = r;
 			r->major = q;
@@ -1413,7 +1479,7 @@ static void _mt3_bst_delete_impl(MT3_node* n, MT3_tree* head, MT3_node** _r, MT3
 				// link m and r..
 				r->minor = m;
 				m->parent = r;
-				
+
 				// link a and b..
 				a->major = b;
 				if(b)
@@ -1422,14 +1488,14 @@ static void _mt3_bst_delete_impl(MT3_node* n, MT3_tree* head, MT3_node** _r, MT3
 #endif
 			x = b;
 		}
-		
+
 		*_r = r;
 		*_x = x;
 		*_w = w;
-		
+
 		if(!p)
 		   *head = r;
-	   
+
 		_mt3_delete_node(n);
 	}
 }
@@ -1444,7 +1510,7 @@ SPbool mt3_Delete(MT3_tree* tree, const SPchar* name)
 		MT3_node* x = NULL;
 		MT3_node* w = NULL;
 		_mt3_bst_delete_impl(n, tree, &r, &x, &w);
-		
+
 		if(x && w)
 		{
 			SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
@@ -1459,23 +1525,23 @@ static SPbool _mt3_fix_up_rbt(SPbool redBefore, MT3_node* r, MT3_node* x, MT3_no
 	SPbool redAfter = r ? r->red : SP_FALSE;
 	if(redBefore && redAfter)
 		return SP_TRUE;
-	
+
 	if(!redBefore && redAfter)
 	{
 		if(r)
 		   r->red = SP_FALSE;
 	   return SP_TRUE;
 	}
-	
+
 	if(redBefore && !redAfter)
 	{
 		if(r)
 		   r->red = SP_TRUE;
 	}
-	
+
 	if(_mt3_is_root(x))
 		return SP_TRUE;
-	
+
 	return _mt3_transplant_rbt(x, w, head);
 }
 
@@ -1494,7 +1560,7 @@ static SPbool _mt3_transplant_rbt(MT3_node* x, MT3_node* w, MT3_tree* head)
 	        	// since double black cannot have children, return here..
 			return SP_TRUE;
 		}
-		
+
 		SPbool maj = !_mt3_is_major(w);
 		if(w->red)
 		{
@@ -1505,18 +1571,18 @@ static SPbool _mt3_transplant_rbt(MT3_node* x, MT3_node* w, MT3_tree* head)
 		{
 			SPbool wMjB = w->major ? !w->major->red : SP_TRUE;
 			SPbool wMnB = w->minor ? !w->minor->red : SP_TRUE;
-			
+
 			if(wMjB && wMnB)
 			{
 				return _mt3_transplant_proc_2(x, w, head);
 			}
-			
+
 			SPbool c = maj ? (!wMjB && wMnB) : (!wMnB && wMjB);
 			if(c)
 			{
 				return _mt3_transplant_proc_3(x, w, head);
 			}
-			
+
 			c = maj ? !wMnB : !wMjB;
 			if(c)
 			{
@@ -1524,7 +1590,7 @@ static SPbool _mt3_transplant_rbt(MT3_node* x, MT3_node* w, MT3_tree* head)
 			}
 		}
 	}
-	
+
 	return SP_FALSE;
 }
 
@@ -1535,7 +1601,7 @@ SPbool _mt3_transplant_proc_0(MT3_node* x)
 		x->red = SP_FALSE;
 		return SP_TRUE;
 	}
-	
+
 	return SP_FALSE;
 }
 
@@ -1554,7 +1620,7 @@ SPbool _mt3_transplant_proc_1(MT3_node* x, MT3_node* w, MT3_tree* head)
             		{
                 		SP_ASSERT(w->parent == x->parent, "Replacement and sibling expected to have equal parent");
             		}
-			
+
 			w->red = SP_FALSE;
 			w->parent->red = SP_TRUE;
 			MT3_node* m = maj ? w->major : w->minor;
@@ -1623,7 +1689,7 @@ SPbool _mt3_transplant_proc_3(MT3_node* x, MT3_node* w, MT3_tree* head)
 		SPbool wMnB = w->minor ? !w->minor->red : SP_TRUE;
 		SPbool maj = !_mt3_is_major(w);
 		SPbool c = maj ? (!wMjB && wMnB) : (wMjB && !wMnB);
-		
+
 		if(xBlack && c)
 		{
 			if(x)
