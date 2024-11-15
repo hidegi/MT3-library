@@ -107,9 +107,12 @@ void test_sub_tree()
 
     mt3_InsertInt(&parent, "kk", 6);
     mt3_InsertInt(&parent, "ii", 6);
+	mt3_InsertString(&parent, "hda", "hda");
+	mt3_SetInt(parent, "kk", 137);
     mt3_InsertStringArray(&parent, "names", 4, names);
     mt3_InsertInt(&parent, "suberr", 135);
-
+	
+	mt3_SetString(parent, "hda", "hidegion");
     SPbuffer buffer = mt3_WriteBinary(parent);
     MT3_tree output = mt3_ReadBinary(buffer);
 
@@ -330,6 +333,49 @@ void test_tree_random_integers()
 	}
 	SP_DEBUG("DONE: %d iteration(s) with %d insertion(s)/deletion(s)", ITERATIONS, LENGTH);
 }
+
+void test_get_set()
+{
+	MT3_tree tree = NULL;
+	mt3_InsertByte(&tree, "byte", 42);
+	SP_ASSERT_NOT_NULL(tree);
+	
+    mt3_InsertShort(&tree, "short", 542);
+	mt3_InsertInt(&tree, "int", 4421);
+	mt3_InsertLong(&tree, "long", 9485);
+	mt3_InsertFloat(&tree, "float", 1.31123);
+	mt3_InsertDouble(&tree, "double", 4353.345);
+	mt3_InsertString(&tree, "string", "hda");
+	SP_ASSERT_TRUE_WITH_ACTION(mt3_VerifyRBT(tree), mt3_FreeTree(&tree));
+	
+	mt3_SetByte(tree, "byte", 64);
+	mt3_SetShort(tree, "short", 135);
+    mt3_SetInt(tree, "int", 1667);
+    mt3_SetLong(tree, "long", 123456789);
+	mt3_SetFloat(tree, "float", 3.141592654);
+	mt3_SetDouble(tree, "double", 1.988E+30);
+	mt3_SetString(tree, "string", "hidegion");
+	
+	SPbyte b64  = mt3_GetByte(tree, "byte");
+	SPshort s135 = mt3_GetShort(tree, "short");
+	SPint i1667 = mt3_GetInt(tree, "int");
+	SPlong l123 = mt3_GetLong(tree, "long");
+	SPfloat fpi = mt3_GetFloat(tree, "float");
+	SPdouble dsn = mt3_GetDouble(tree, "double");
+	const SPchar* str = mt3_GetString(tree, "string");
+	
+	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(64, b64, mt3_FreeTree(&tree));
+	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(135, s135, mt3_FreeTree(&tree));
+	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(1667, i1667, mt3_FreeTree(&tree));
+	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(123456789, l123, mt3_FreeTree(&tree));
+	SP_ASSERT_DECIMAL_ALMOST_EQUAL_WITH_ACTION(3.14159265, fpi, 6, mt3_FreeTree(&tree));
+	SP_ASSERT_DECIMAL_ALMOST_EQUAL_WITH_ACTION(1.988E+30, dsn, 6, mt3_FreeTree(&tree));
+	SP_ASSERT_STRING_EQUAL_WITH_ACTION("hidegion", str, mt3_FreeTree(&tree));
+	printf("byte: %d\nshort: %d\nint: %d\nlong: %lld\nfloat: %f\ndouble: %f\nstring: %s\n\n",
+		b64, s135, i1667, l123, fpi, dsn, str);
+	mt3_PrintTree(tree);
+	mt3_FreeTree(&tree);
+}
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
@@ -338,7 +384,7 @@ int main(int argc, char** argv)
 	//SP_TEST_ADD(test_if_all_available);
 	//SP_TEST_ADD(test_insertion);
 	//SP_TEST_ADD(test_null_tree);
-	SP_TEST_ADD(test_sub_tree);
+	SP_TEST_ADD(test_get_set);
 	//SP_TEST_ADD(test_tree_random_integers);
 	//SP_TEST_ADD(test_random_index);
 

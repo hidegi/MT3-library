@@ -86,18 +86,21 @@ SP_API void mt3_InsertFloatArray(MT3_tree* tree, const SPchar* name, SPsize leng
 SP_API void mt3_InsertDoubleArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPdouble* values);
 SP_API void mt3_InsertStringArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPchar** values);
 
-SP_API void mt3_ListInsertByteArray(MT3_list list, SPsize length, const SPbyte* values);
-SP_API void mt3_ListInsertShortArray(MT3_list list, SPsize length, const SPshort* values);
-SP_API void mt3_ListInsertIntArray(MT3_list list, SPsize length, const SPint* values);
-SP_API void mt3_ListInsertLongArray(MT3_list list, SPsize length, const SPlong* values);
-SP_API void mt3_ListInsertFloatArray(MT3_list list, SPsize length, const SPfloat* values);
-SP_API void mt3_ListInsertDoubleArray(MT3_list list, SPsize length, const SPdouble* values);
-SP_API void mt3_ListInsertStringArray(MT3_list list, SPsize length, const SPchar** values);
-SP_API void mt3_ListInsertList(MT3_list list, SPsize length, const MT3_list value);
-SP_API void mt3_InsertListNode(MT3_tree* tree, const SPchar* name, const MT3_list value);
+SP_API void mt3_SetByte(MT3_tree tree, const char* name, SPbyte value);
+SP_API void mt3_SetShort(MT3_tree tree, const char* name, SPshort value);
+SP_API void mt3_SetInt(MT3_tree tree, const char* name, SPint value);
+SP_API void mt3_SetLong(MT3_tree tree, const char* name, SPlong value);
+SP_API void mt3_SetFloat(MT3_tree tree, const char* name, SPfloat value);
+SP_API void mt3_SetDouble(MT3_tree tree, const char* name, SPdouble value);
+SP_API void mt3_SetString(MT3_tree tree, const char* name, const SPchar* value);
 
-//SP_API const void* mt3_GetData(const SPchar* name);
-//SP_API SPbool mt3_SetData(const SP
+SP_API SPbyte mt3_GetByte(const MT3_tree tree, const SPchar* name);
+SP_API SPshort mt3_GetShort(const MT3_tree tree, const SPchar* name);
+SP_API SPint mt3_GetInt(const MT3_tree tree, const SPchar* name);
+SP_API SPlong mt3_GetLong(const MT3_tree tree, const SPchar* name);
+SP_API SPfloat mt3_GetFloat(const MT3_tree tree, const SPchar* name);
+SP_API SPdouble mt3_GetDouble(const MT3_tree tree, const SPchar* name);
+SP_API const SPchar* mt3_GetString(const MT3_tree tree, const SPchar* name);
 
 SP_API MT3_node* mt3_Search(const MT3_tree tree, const char* name);
 SP_API SPbool mt3_Delete(MT3_tree* tree, const SPchar* name);
