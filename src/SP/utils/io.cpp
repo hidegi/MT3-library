@@ -4,22 +4,23 @@
 #include <fstream>
 namespace
 {
-	sp::Mutex resourceGuard;
+	sp::Mutex readGuard;
+	sp::Mutex writeGuard;
+	sp::Mutex openGuard;
 }
 namespace sp
 {
 	//file loaders must be performed with exclusive access..
-	SPubyte* loadData(const char* path)
+	SPubyte* readFile(const char* path)
 	{
 		size_t dummy;
-		return loadData(path, dummy);
+		return readFile(path, dummy);
 	}
 	
-	SPubyte* loadData(const char* path, size_t& fileSize)
+	FILE* openFile(const SPchar* path, const SPchar* mode)
 	{
-		sp::Lock lock(resourceGuard);
+		sp::Lock lock(openGuard);
 		FILE* file = NULL;
-		const char* mode = "rb";
 #ifdef SP_PLATFORM_WINDOWS
         wchar_t wmode[64];
         wchar_t wpath[1024];
@@ -44,13 +45,19 @@ namespace sp
 #else
 		file = fopen(path, mode);
 #endif // SP_PLATFORM_WINDOWS
+		return file;
+	}
+	
+	SPubyte* readFile(const char* path, size_t& fileSize)
+	{
+		sp::Lock lock(readGuard);
+		FILE* file = openFile(path, "r+b");
 		if(!file)
 		{
 			SP_WARNING("failed to open file %s", path);
 			return NULL;
 		}
 
-		
 		fseek(file, 0, SEEK_END);
 		const long bytes = ftell(file);
 		fseek(file, 0, SEEK_SET);
@@ -75,21 +82,24 @@ namespace sp
 		return buffer;
 	}
 	
-	SPbool writeData(const char* output, const SPubyte* data, SPsize count)
+	SPsize writeFile(const char* path, const SPubyte* data, SPsize count)
 	{
-		sp::Lock lock(resourceGuard);
-		std::ofstream out;
-		out.open(output, std::ios::out | std::ios::binary | std::ios::trunc);
-		SP_ASSERT(out.is_open(), "Failed to open file \"%s\"", output);
-		
-		out.write(reinterpret_cast<const char*>(data), sizeof(SPchar) * count);
-		out.close();
-		return SP_TRUE;
+		sp::Lock lock(writeGuard);
+		FILE* file = openFile(path, "w+b");
+	   
+		// set to start of file..
+		fseek(file, 0, SEEK_SET);
+
+		SPsize length = 0LL;
+		while(fwrite(&data, count, 1, file))
+			length++;
+	   
+		fclose(file);
+		return length;
 	}
 
 	void freeResource(const void* data)
 	{
 		free(const_cast<void*>(data));
-		data = NULL;
 	}
 }

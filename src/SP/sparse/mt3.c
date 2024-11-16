@@ -261,21 +261,31 @@ static MT3_node* _mt3_alloc_node(MT3_tag tag, SPhash name, SPsize length, const 
 	node->major = node->minor = NULL;
 	node->parent = NULL;
 	node->red = SP_FALSE;
-    if(tag != MT3_TAG_ROOT && tag != MT3_TAG_LIST)
-    {
-        if(value && length > 0)
-        {
-            MT3_CHECKED_CALLOC(node->payload.data, node->length, sizeof(SPbyte), return NULL);
-            memcpy(node->payload.data, (const SPbyte*) value, node->length * sizeof(SPbyte));
+	if(tag != MT3_TAG_NULL)
+	{
+		if(tag != MT3_TAG_ROOT)
+		{
+			if(value && length > 0)
+			{
+				MT3_CHECKED_CALLOC(node->payload.data, node->length, sizeof(SPbyte), return NULL);
+				memcpy(node->payload.data, (const SPbyte*) value, node->length * sizeof(SPbyte));
 
-            if(tag == MT3_TAG_STRING)
-                node->payload.data[node->length - 1] = 0;
-        }
+				if(tag == MT3_TAG_STRING)
+					node->payload.data[node->length - 1] = 0;
+			}
+		}
+		else
+		{
+			if(value)
+			{
+				node->payload.head = mt3_CopyTree((const MT3_tree) value);
+			}
+			else
+			{
+				node->payload.head = _mt3_alloc_node(MT3_TAG_NULL, name, 0LL, NULL);
+			}
+		}
 	}
-    else
-    {
-        node->payload.head = mt3_CopyTree((const MT3_tree) value);
-    }
 	return node;
 }
 
@@ -379,7 +389,7 @@ MT3_tree mt3_CopyTree(const MT3_tree n)
         tree->tag = n->tag;
         tree->length = n->length;
 
-        if(n->tag != MT3_TAG_ROOT && n->tag != MT3_TAG_LIST)
+        if(n->tag != MT3_TAG_ROOT)
         {
             tree->payload.data = malloc(n->length);
             if(!tree->payload.data)
@@ -412,16 +422,13 @@ void _mt3_free_tree_impl(MT3_tree tree)
 {
 	if(tree)
 	{
-		if(tree->tag != MT3_TAG_ROOT && tree->tag != MT3_TAG_LIST)
+		if(tree->tag != MT3_TAG_ROOT)
 		{
 			free(tree->payload.data);
 		}
 		else
 		{
-		    if(tree->tag == MT3_TAG_ROOT)
-		    {
-			    _mt3_free_tree_impl(tree->payload.head);
-            }
+			_mt3_free_tree_impl(tree->payload.head);
 		}
 		_mt3_free_tree_impl(tree->major);
 		_mt3_free_tree_impl(tree->minor);
@@ -473,7 +480,6 @@ static MT3_tree _mt3_insert_data(MT3_tree* head, MT3_tree node, SPhash weight, M
 
 	if(node->weight == 0 || node->tag == MT3_TAG_NULL)
 	{
-		SP_WARNING("inserting %lld", weight);
 		SP_ASSERT(node->length == 0LL, "Empty tree cannot have length defined (%lld)", node->length);
 		SP_ASSERT(!node->payload.data, "Empty tree cannot have data");
 		SP_ASSERT(!node->major && !node->minor, "Empty tree cannot have sub-trees");
@@ -726,7 +732,6 @@ void mt3_SetString(MT3_tree tree, const char* name, const SPchar* value)
 	}
 }
 
-
 SPbyte mt3_GetByte(const MT3_tree tree, const SPchar* name)
 {
 	SPbyte ret = 0;
@@ -775,6 +780,12 @@ const SPchar* mt3_GetString(const MT3_tree tree, const SPchar* name)
 	return (n && n->tag == MT3_TAG_STRING) ? n->payload.data : NULL;
 }
 
+MT3_tree* mt3_GetTree(const MT3_tree tree, const SPchar* name)
+{
+	MT3_node* n = mt3_Search(tree, name);
+	return (n && n->tag == MT3_TAG_ROOT) ? &n->payload.head : NULL;
+}
+
 void* mt3_AllocChunk(SPsize size)
 {
 	SPbyte* ptr = NULL;
@@ -793,7 +804,6 @@ const char* _mt3_tag_to_str(MT3_tag tag)
 		MT3_tag scalar = tag & ~MT3_TAG_ARRAY;
 		switch(scalar)
 		{
-			case MT3_TAG_LIST: return "list";
 			case MT3_TAG_BYTE: return "byte array";
 			case MT3_TAG_SHORT: return "short array";
 			case MT3_TAG_INT: return "int array";
@@ -801,7 +811,7 @@ const char* _mt3_tag_to_str(MT3_tag tag)
 			case MT3_TAG_FLOAT: return "float array";
 			case MT3_TAG_DOUBLE: return "double array";
 			case MT3_TAG_STRING: return "string array";
-			case MT3_TAG_ROOT: return "list";
+			case MT3_TAG_ROOT: return "sub-tree";
 		}
 	}
 	else
@@ -1241,16 +1251,18 @@ MT3_tree mt3_ReadBinary(SPbuffer buffer)
  *<==========================================================>*/
 MT3_status mt3_GetLastError()
 {
-    return errno;
+    MT3_status status = errno;
+	errno = MT3_STATUS_OK;
+	return status;
 }
 
 const char* mt3_GetErrorInfo(MT3_status status)
 {
     switch(status)
     {
-        case MT3_STATUS_NO_MEMORY: return "Your local machine has failed to allocate memory";
-        case MT3_STATUS_WRITE_ERROR: return "Error while compressing data";
-        case MT3_STATUS_READ_ERROR: return "Error while decompressing data";
+        case MT3_STATUS_NO_MEMORY: return "Your local machine has insufficient memory available";
+        case MT3_STATUS_WRITE_ERROR: return "Error while reading data";
+        case MT3_STATUS_READ_ERROR: return "Error while writing data";
         case MT3_STATUS_BAD_NAME: return "Given name was either empty, NULL, or already assigned to a node";
         case MT3_STATUS_BAD_VALUE: return "Given value was invalid";
         case MT3_STATUS_BAD_TAG: return "Given tag was invalid";

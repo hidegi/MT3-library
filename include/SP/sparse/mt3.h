@@ -7,6 +7,28 @@
 extern "C" {
 #endif
  
+/*<==========================================================>*
+ *  this API provides basic functionality to create BTOs..
+ *
+ *	however, it does not come with the functionality to create 
+ *	multi-tree objects automatically and therefore, richer APIs 
+ *	may build upon this simple interface..
+ *
+ *	this API uses string-names to generate an 8-Byte hash-value,
+ *	however, key-generation can be implementation-dependent..
+ *	
+ *	simple functionalities provided:
+ *	--------------------------------
+ *	+ inserting nodes with basic data types, arrays and roots..
+ *	+ searching for a node..
+ *	+ reading from nodes..
+ *	+ writing to non-immutable nodes..
+ *	+ deleting nodes..
+ *	+ reading and writing BTOs to files..
+ *	+ self balancing using RBT-scheme..
+ *	
+ *	immutable nodes are any types of arrays and roots..
+ *<==========================================================>*/
 typedef enum
 {
 	MT3_TAG_NULL 	= 0,
@@ -20,10 +42,6 @@ typedef enum
 	MT3_TAG_STRING 	= 8,
 	MT3_TAG_ARRAY	= 0x80,
 
-	// optimized list of roots without writing tag and weight on disk.. (only applies to roots!!)
-	// elements are indexed from 1 to n, since no node can have a weight of 0..
-	// in memory, this is a double-linked list, where the major branch points to the next element,
-	MT3_TAG_LIST	     = MT3_TAG_ARRAY | MT3_TAG_ROOT,
 	MT3_TAG_BYTE_ARRAY   = MT3_TAG_ARRAY | MT3_TAG_BYTE,
 	MT3_TAG_SHORT_ARRAY  = MT3_TAG_ARRAY | MT3_TAG_SHORT,
 	MT3_TAG_INT_ARRAY    = MT3_TAG_ARRAY | MT3_TAG_INT,
@@ -76,6 +94,11 @@ SP_API void mt3_InsertLong(MT3_tree* tree, const SPchar* name, SPlong value);
 SP_API void mt3_InsertFloat(MT3_tree* tree, const SPchar* name, SPfloat value);
 SP_API void mt3_InsertDouble(MT3_tree* tree, const SPchar* name, SPdouble value);
 SP_API void mt3_InsertString(MT3_tree* tree, const SPchar* name, const SPchar* value);
+
+/*
+ *	insert an empty tree with value = NULL,
+ *	otherwise copies a tree and uses it as sub-tree..
+ */
 SP_API void mt3_InsertTree(MT3_tree* tree, const SPchar* name, MT3_tree value);
 
 SP_API void mt3_InsertByteArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPbyte* values);
@@ -101,6 +124,13 @@ SP_API SPlong mt3_GetLong(const MT3_tree tree, const SPchar* name);
 SP_API SPfloat mt3_GetFloat(const MT3_tree tree, const SPchar* name);
 SP_API SPdouble mt3_GetDouble(const MT3_tree tree, const SPchar* name);
 SP_API const SPchar* mt3_GetString(const MT3_tree tree, const SPchar* name);
+
+/*
+ *	careful here!!
+ *	this returns an actual L-value pointer to a sub-tree..
+ *	therefore, do not do something stupid with it.. ;D
+ */
+SP_API MT3_tree* mt3_GetTree(const MT3_tree tree, const SPchar* name);
 
 SP_API MT3_node* mt3_Search(const MT3_tree tree, const char* name);
 SP_API SPbool mt3_Delete(MT3_tree* tree, const SPchar* name);

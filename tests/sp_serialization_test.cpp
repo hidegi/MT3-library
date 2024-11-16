@@ -376,6 +376,212 @@ void test_get_set()
 	mt3_PrintTree(tree);
 	mt3_FreeTree(&tree);
 }
+
+// assuming that access-string has form of "a.b.c.etc.."
+/*
+ *	if empty string, return head, otherwise,
+ *	1. extract first token
+ *	2. search for a child with such token..
+ *		if no such child exists, return head..
+ *	
+ *	3. deepSearch further with remaining tokens..
+ */
+MT3_tree* deepSearch(const MT3_tree* head, const std::string& token, SPsize currentLevel, SPsize levels)
+{
+	// if it is empty, then return head..
+	if(!head)
+		return NULL;
+	
+	if(token.empty())
+	{
+		return const_cast<MT3_tree*>(head);
+	}
+	
+	auto pos = token.find_first_of('.');
+	if(pos == std::string::npos)
+	{
+		return mt3_GetTree(*head, token.c_str());
+	}
+	
+	std::string branch = token.substr(0, pos);
+	MT3_tree* child = mt3_GetTree(*head, branch.c_str());
+	if(!child)
+	{
+		return NULL;
+	}
+	std::string children = token.substr(pos + 1, token.size() - pos);
+	return deepSearch(child, children, currentLevel + 1, levels);
+}
+
+void test_deep_search()
+{
+    const char* names[] =
+    {
+        "hidegi",
+        "motex",
+        "betelgus",
+        "fjiaw"
+    };
+	
+    MT3_tree child = NULL;
+    mt3_InsertString(&child, "x", "sub_x");
+    mt3_InsertString(&child, "y", "sub_y");
+    mt3_InsertString(&child, "z", "sub_z");
+    mt3_InsertString(&child, "w", "sub_w");
+	
+	MT3_tree child2 = NULL;
+	mt3_InsertString(&child2, "a", "sub_a");
+    mt3_InsertString(&child2, "b", "sub_b");
+    mt3_InsertString(&child2, "c", "sub_c");
+    mt3_InsertString(&child2, "d", "sub_d");
+	mt3_InsertTree(&child, "child123", child2);
+
+    int array[] = {1, 3, 2, 1, 5, 2};
+    mt3_InsertIntArray(&child, "numbers", 6, array);
+    mt3_InsertStringArray(&child, "names", 4, names);
+    MT3_tree parent = NULL;
+    mt3_InsertTree(&parent, "child", child);
+
+    mt3_InsertInt(&parent, "i", 1);
+    mt3_InsertInt(&parent, "j", 2);
+
+    mt3_InsertInt(&parent, "kk", 6);
+    mt3_InsertInt(&parent, "ii", 6);
+	mt3_InsertString(&parent, "hda", "hda");
+	mt3_SetInt(parent, "kk", 137);
+    mt3_InsertStringArray(&parent, "names", 4, names);
+    mt3_InsertInt(&parent, "suberr", 135);
+	
+	MT3_tree* branch = mt3_GetTree(parent, "child");
+	SP_ASSERT_TRUE_WITH_ACTION(branch && *branch, 
+		mt3_FreeTree(&parent);
+		mt3_FreeTree(&child);
+		mt3_FreeTree(&child2);
+	);
+	
+	MT3_tree* t = deepSearch(&parent, "child.child123", 0, 2);
+	SP_ASSERT_TRUE_WITH_ACTION(t && *t, 
+		mt3_FreeTree(&parent);
+		mt3_FreeTree(&child);
+		mt3_FreeTree(&child2);
+	);
+	mt3_SetString(*t, "a", "hidegion was here");
+	mt3_PrintTree(parent);
+	mt3_FreeTree(&parent);
+	mt3_FreeTree(&child);
+	mt3_FreeTree(&child2);
+}
+
+std::string extractMember(const std::string& str)
+{
+	auto dot = str.find_last_of(".");
+	if(dot == std::string::npos)
+		return str;
+	
+	return str.substr(dot + 1, str.size());
+}
+
+std::string extractDomain(const std::string& str)
+{
+	auto dot = str.find_last_of(".");
+	if(dot == std::string::npos)
+		return str;
+	
+	return str.substr(0, dot);
+}
+
+void test_name_extraction()
+{
+	std::string selection = "head.child.childXYZ.shark.x";
+	std::string member = extractMember(selection);
+	SP_ASSERT_TRUE_WITH_ACTION(member == "x", SP_DEBUG("member: %s", member.c_str()););
+	
+	selection = "x";
+	member = extractMember(selection);
+	SP_ASSERT_TRUE_WITH_ACTION(member == "x", SP_DEBUG("member: %s", member.c_str()););
+	
+	selection = "head.child.childXYZ.shark.nmg9.betelgus.hda1666.fjiaw";
+	member = extractMember(selection);
+	SP_ASSERT_TRUE_WITH_ACTION(member == "fjiaw", SP_DEBUG("member: %s", member.c_str()););
+	
+	std::string domain = extractDomain(selection);
+	SP_ASSERT_TRUE_WITH_ACTION(domain == "head.child.childXYZ.shark.nmg9.betelgus.hda1666" , SP_DEBUG("domain: %s", domain.c_str()););
+	
+	selection = "head";
+	domain = extractDomain(selection);
+	member = extractMember(selection);
+	SP_ASSERT_TRUE(member == "head" && domain == "head");
+}
+
+MT3_tree deepSearch(const MT3_tree head, const std::string& token)
+{
+	if(!head)
+		return NULL;
+	
+	if(token.empty())
+	{
+		return head;
+	}
+	
+	auto pos = token.find_first_of('.');
+	if(pos == std::string::npos)
+	{
+		MT3_tree* t = mt3_GetTree(head, token.c_str());
+		return t ? *t : NULL;
+	}
+	
+	std::string branch = token.substr(0, pos);
+	MT3_tree* child = mt3_GetTree(head, branch.c_str());
+	if(!child)
+	{
+		return NULL;
+	}
+	return deepSearch(*child, token.substr(pos + 1, token.size() - pos));
+}
+	
+
+void test_insert_empty_tree()
+{
+	const char* names[] =
+    {
+        "hidegi",
+        "motex",
+        "betelgus",
+        "fjiaw"
+    };
+	MT3_tree parent = NULL;
+    mt3_InsertTree(&parent, "child", NULL);
+	SP_ASSERT_NOT_NULL(parent);
+	
+	MT3_tree* child = mt3_GetTree(parent, "child");
+	SP_ASSERT_NOT_NULL_WITH_ACTION(child, mt3_FreeTree(&parent));
+	
+	mt3_InsertInt(child, "xda", 1);
+	mt3_InsertTree(child, "child123", NULL);
+	mt3_InsertString(child, "x", "sub_x");
+    mt3_InsertString(child, "y", "sub_y");
+    mt3_InsertString(child, "z", "sub_z");
+    mt3_InsertString(child, "w", "sub_w");
+	
+	MT3_tree* child123 = mt3_GetTree(*child, "child123");
+	mt3_InsertString(child123, "a", "sub_a");
+    mt3_InsertString(child123, "b", "sub_b");
+    mt3_InsertString(child123, "c", "sub_c");
+    mt3_InsertString(child123, "d", "sub_d");
+	
+	int array[] = {1, 3, 2, 1, 5, 2};
+    mt3_InsertIntArray(child, "numbers", 6, array);
+    mt3_InsertStringArray(child, "names", 4, names);
+	
+	mt3_SetString(*child123, "a", "hidegion was here");
+	const char* str = mt3_GetString(*child123, "a");
+	SP_ASSERT_STRING_EQUAL_WITH_ACTION("hidegion was here", str, mt3_FreeTree(&parent));
+	
+	mt3_SetString(*child123, "a", "hidegion was here");
+	
+	mt3_PrintTree(parent);
+	mt3_FreeTree(&parent);
+}
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
@@ -384,7 +590,7 @@ int main(int argc, char** argv)
 	//SP_TEST_ADD(test_if_all_available);
 	//SP_TEST_ADD(test_insertion);
 	//SP_TEST_ADD(test_null_tree);
-	SP_TEST_ADD(test_get_set);
+	SP_TEST_ADD(test_insert_empty_tree);
 	//SP_TEST_ADD(test_tree_random_integers);
 	//SP_TEST_ADD(test_random_index);
 
