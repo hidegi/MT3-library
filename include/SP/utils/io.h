@@ -4,9 +4,10 @@
 
 namespace sp
 {
-	SP_API SPubyte* loadData(const char* path);
-	SP_API SPubyte* loadData(const char* path, size_t& fileSize);
-	SP_API SPbool writeData(const char* output, const SPubyte* data, SPsize count);
+	SP_API 
+	SP_API SPubyte* readFile(const char* path);
+	SP_API SPubyte* readFile(const char* path, size_t& fileSize);
+	SP_API SPsize writeFile(const char* output, const SPubyte* data, SPsize count);
 	SP_API void freeResource(const void* res);
 }
 
