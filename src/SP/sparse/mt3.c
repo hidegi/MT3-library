@@ -23,18 +23,18 @@
 	{							\
 	    	if(!tree)                                   	\
 	    	{                                           	\
-	        	errno = MT3_STATUS_BAD_VALUE;	\
+	        	errno = MT3_STATUS_BAD_VALUE;		\
 	       		return;                                 \
 	    	}                                           	\
 	    	if(!_name)                                  	\
 	    	{                                           	\
-	        	errno = MT3_STATUS_BAD_NAME;	\
+	        	errno = MT3_STATUS_BAD_NAME;		\
 	        	return;                         	\
 		}                                       	\
 		hash = _mt3_sdbm((_name));			\
 		if(hash == 0)                           	\
 		{                                       	\
-		    errno = MT3_STATUS_BAD_NAME;    	\
+		    errno = MT3_STATUS_BAD_NAME;    		\
 		    return;                             	\
 		}                                       	\
 	} while(0)
