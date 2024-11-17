@@ -21,11 +21,19 @@
 	SPhash hash = 0;					\
 	do							\
 	{							\
-	    	if(!tree)                                   	\
+	    	if(!tree)\
 	    	{                                           	\
 	        	errno = MT3_STATUS_BAD_VALUE;		\
 	       		return;                                 \
 	    	}                                           	\
+			else\
+			{\
+				if((*tree) && (*tree)->parent)\
+				{\
+					errno = MT3_STATUS_BAD_VALUE;\
+					return;\
+				}\
+			}\
 	    	if(!_name)                                  	\
 	    	{                                           	\
 	        	errno = MT3_STATUS_BAD_NAME;		\
@@ -44,6 +52,7 @@
 	{							\
 		if(*length < (n))				\
 		{						\
+			errno = MT3_STATUS_READ_ERROR;\
 			fail;					\
 		}						\
 		*memory = scanner((dst), *memory, (n));		\
@@ -85,6 +94,9 @@ struct MT3_node
 
 static MT3_tree _mt3_copy_tree(const MT3_tree tree);
 static void _mt3_insert_array(MT3_tree* tree, const SPchar* name, MT3_tag tag, SPsize length, const void* data);
+static void _mt3_write_binary(const MT3_tree tree, SPbuffer* buffer, int level);
+static MT3_tree _mt3_read_binary(const SPubyte** memory, SPsize* length);
+void _mt3_print_tree(const MT3_tree tree, int level);
 static void _mt3_fix_rbt_violations(MT3_node* node, MT3_tree* head);
 static MT3_node* _mt3_rotate_left(MT3_node* n, MT3_tree* head);
 static MT3_node* _mt3_rotate_right(MT3_node* n, MT3_tree* head);
@@ -372,6 +384,13 @@ MT3_tree mt3_AllocObject()
 	return root;
 }
 
+MT3_tree mt3_AllocList()
+{
+	MT3_tree list = mt3_AllocObject();
+	list->red = SP_TRUE;
+	return list;
+}
+
 MT3_tree mt3_CopyTree(const MT3_tree n)
 {
     MT3_tree tree = NULL;
@@ -657,6 +676,12 @@ void mt3_InsertStringArray(MT3_tree* tree, const SPchar* name, SPsize length, co
     _mt3_insert_array(tree, name, MT3_TAG_STRING, length, values);
 }
 
+void mt3_InsertArray(MT3_tree* tree, const SPchar* name, MT3_array list)
+{
+	MT3_CHECK_INPUT(name);
+	_mt3_insert_data(tree, *tree, hash, MT3_TAG_ARRAY, 0LL, list);
+}
+
 #define MT3_SET_VALUE(_tag, _value)\
 	do\
 	{\
@@ -786,6 +811,30 @@ MT3_tree* mt3_GetTree(const MT3_tree tree, const SPchar* name)
 	return (n && n->tag == MT3_TAG_ROOT) ? &n->payload.head : NULL;
 }
 
+void mt3_Collect(const MT3_tree tree, SPbuffer* buffer)
+{
+	if(tree)
+	{
+		if(tree->minor)
+			mt3_Collect(tree, buffer);
+		if(tree->major)
+			mt3_Collect(tree, buffer);
+		
+		if(tree->tag == MT3_TAG_ROOT)
+		{
+			spBufferAppend(buffer, (const SPubyte*) &tree->payload.head, sizeof(MT3_tree*));
+		}
+	}
+}
+
+//returns all root nodes..
+MT3_tree** mt3_AsList(const MT3_tree tree)
+{
+	SPbuffer buffer = SP_BUFFER_INIT;
+	mt3_Collect(tree, &buffer);
+	return (MT3_tree**) buffer.data;
+}
+
 void* mt3_AllocChunk(SPsize size)
 {
 	SPbyte* ptr = NULL;
@@ -804,6 +853,7 @@ const char* _mt3_tag_to_str(MT3_tag tag)
 		MT3_tag scalar = tag & ~MT3_TAG_ARRAY;
 		switch(scalar)
 		{
+			case MT3_TAG_NULL: return "list";
 			case MT3_TAG_BYTE: return "byte array";
 			case MT3_TAG_SHORT: return "short array";
 			case MT3_TAG_INT: return "int array";
@@ -832,50 +882,87 @@ const char* _mt3_tag_to_str(MT3_tag tag)
 	return "null";
 }
 
-void _mt3_print_tree(const MT3_tree tree, int level)
+void _mt3_print(const MT3_tree tree, int level)
 {
 	if(tree)
 	{
-		for(int i = 0; i < level; i++)
-		printf("\t");
-
 		SPchar color = tree->red ? 'R' : 'B';
 		SPchar rank = _mt3_is_root(tree) ? '~' : (_mt3_is_major(tree) ? '+' : '-');
-
-		if(tree->tag & MT3_TAG_ARRAY)
+		
+		switch(tree->tag)
 		{
-			MT3_tag scalar = tree->tag & ~MT3_TAG_ARRAY;
-			SPsize stride = _mt3_length_of(tree->tag & ~MT3_TAG_ARRAY);
-
-			printf("(%c%c) %s (%lld): ", color, rank, _mt3_tag_to_str(tree->tag), tree->length, tree->weight);
-			if(scalar == MT3_TAG_ROOT)
+			case MT3_TAG_NULL:
 			{
-				MT3_node* head = tree->payload.head;
-				MT3_node* cursor = NULL;
-				MT3_LIST_FOR_EACH(head, cursor)
-				{
-					_mt3_print_tree(cursor, level + 1);
-				}
+				break;
 			}
-			else if(
-				scalar == MT3_TAG_BYTE ||
-				scalar == MT3_TAG_SHORT ||
-				scalar == MT3_TAG_INT ||
-				scalar == MT3_TAG_LONG
-			)
+
+			case MT3_TAG_ROOT:
 			{
+				printf("(%c%c) object (%lld):\n", color, rank, tree->weight);
+				_mt3_print_tree(tree->payload.head, level + 1);
+				break;
+			}
+			case MT3_TAG_BYTE:
+			case MT3_TAG_SHORT:
+			case MT3_TAG_INT:
+			case MT3_TAG_LONG:
+			{
+					SPbyte* buffer = tree->payload.data;
+					SP_ASSERT(buffer, "Node has invalid data");
+
+					SPlong value = 0;
+					memcpy(&value, buffer, tree->length * sizeof(SPbyte));
+
+					printf("(%c%c) %s (%lld): %ld\n", color, rank, _mt3_tag_to_str(tree->tag), tree->weight, value);
+
+					break;
+			}
+			
+			case MT3_TAG_FLOAT:
+			case MT3_TAG_DOUBLE:
+			{
+				SPbyte* buffer = tree->payload.data;
+				SP_ASSERT(buffer, "Node has invalid data");
+				union
+				{
+					float _f;
+					double _d;
+				} value;
+				memcpy(((tree->tag == MT3_TAG_FLOAT) ? (void*)&value._f : (void*)&value._d), buffer, tree->length * sizeof(SPbyte));
+				printf("(%c%c) %s (%lld): %f\n", color, rank, _mt3_tag_to_str(tree->tag), tree->weight, (tree->tag == MT3_TAG_FLOAT) ? value._f : value._d);
+				break;
+			}
+			
+			case MT3_TAG_STRING:
+			{
+				SPbyte* buffer = tree->payload.data;
+				SP_ASSERT(buffer, "Node has invalid data");
+				printf("(%c%c) string (%lld): \"%s\"\n", color, rank, tree->weight, buffer);
+				break;
+			}
+			
+			case MT3_TAG_BYTE_ARRAY:
+			case MT3_TAG_SHORT_ARRAY:
+			case MT3_TAG_INT_ARRAY:
+			case MT3_TAG_LONG_ARRAY:
+			{
+				printf("(%c%c) %s (%lld): ", color, rank, _mt3_tag_to_str(tree->tag), tree->length, tree->weight);
+				SPsize stride = _mt3_length_of(tree->tag & ~MT3_TAG_ARRAY);
 				for(SPsize i = 0; i < tree->length; i += stride)
 				{
 					SPlong l = 0;
 					memcpy(&l, tree->payload.data + i, stride * sizeof(SPbyte));
 					printf("%ld ", l);
 				}
+				printf("\n");
+				break;
 			}
-			else if(
-				scalar == MT3_TAG_FLOAT ||
-				scalar == MT3_TAG_DOUBLE
-				)
+			
+			case MT3_TAG_FLOAT_ARRAY:
+			case MT3_TAG_DOUBLE_ARRAY:
 			{
+				printf("(%c%c) %s (%lld): ", color, rank, _mt3_tag_to_str(tree->tag), tree->length, tree->weight);
+				SPsize stride = _mt3_length_of(tree->tag & ~MT3_TAG_ARRAY);
 				union
 				{
 					float _f;
@@ -883,13 +970,17 @@ void _mt3_print_tree(const MT3_tree tree, int level)
 				} value;
 				for(SPsize i = 0; i < tree->length; i += stride)
 				{
-					(scalar == MT3_TAG_FLOAT) ? (value._f = 0.f) : (value._d = 0.0);
-					memcpy(((scalar == MT3_TAG_FLOAT) ? (void*)&value._f : (void*)&value._d), tree->payload.data + i, stride);
-					printf("%f ", ((scalar == MT3_TAG_FLOAT) ? value._f : value._d));
+					(tree->tag == MT3_TAG_FLOAT_ARRAY) ? (value._f = 0.f) : (value._d = 0.0);
+					memcpy(((tree->tag == MT3_TAG_FLOAT_ARRAY) ? (void*)&value._f : (void*)&value._d), tree->payload.data + i, stride);
+					printf("%f ", ((tree->tag == MT3_TAG_FLOAT_ARRAY) ? value._f : value._d));
 				}
+				printf("\n");
+				break;
 			}
-			else if(scalar == MT3_TAG_STRING)
+			
+			case MT3_TAG_STRING_ARRAY:
 			{
+				printf("(%c%c) %s (%lld): ", color, rank, _mt3_tag_to_str(tree->tag), tree->length, tree->weight);
 				SPsize i = 0;
 				while(i < tree->length - 1)
 				{
@@ -906,84 +997,63 @@ void _mt3_print_tree(const MT3_tree tree, int level)
 					free(str);
 					i += size;
 				}
+				printf("\n");
+				break;
 			}
-			printf("\n");
-		}
-		else
-		{
-			switch(tree->tag)
+			
+			case MT3_TAG_ARRAY:
 			{
-				case MT3_TAG_NULL:
+				printf("(%c%c) %s (%lld): ", color, rank, _mt3_tag_to_str(tree->tag), tree->length, tree->weight);
+				MT3_tree cursor = NULL;
+				MT3_LIST_FOR_EACH(tree->payload.head, cursor)
 				{
-					break;
+					_mt3_print(cursor, level + 1);
 				}
-
-				case MT3_TAG_ROOT:
-				{
-					printf("(%c%c) object (%lld):\n", color, rank, tree->weight);
-					_mt3_print_tree(tree->payload.head, level + 1);
-					break;
-				}
-				case MT3_TAG_BYTE:
-				case MT3_TAG_SHORT:
-				case MT3_TAG_INT:
-				case MT3_TAG_LONG:
-				{
-					SPbyte* buffer = tree->payload.data;
-					SP_ASSERT(buffer, "Node has invalid data");
-
-					SPlong value = 0;
-					memcpy(&value, buffer, tree->length * sizeof(SPbyte));
-
-					printf("(%c%c) %s (%lld): %ld\n", color, rank, _mt3_tag_to_str(tree->tag), tree->weight, value);
-
-					break;
-				}
-
-				case MT3_TAG_FLOAT:
-				case MT3_TAG_DOUBLE:
-				{
-					SPbyte* buffer = tree->payload.data;
-					SP_ASSERT(buffer, "Node has invalid data");
-					union
-					{
-						float _f;
-						double _d;
-					} value;
-					memcpy(((tree->tag == MT3_TAG_FLOAT) ? (void*)&value._f : (void*)&value._d), buffer, tree->length * sizeof(SPbyte));
-					printf("(%c%c) %s (%lld): %f\n", color, rank, _mt3_tag_to_str(tree->tag), tree->weight, (tree->tag == MT3_TAG_FLOAT) ? value._f : value._d);
-					break;
-				}
-
-				case MT3_TAG_STRING:
-				{
-					SPbyte* buffer = tree->payload.data;
-					SP_ASSERT(buffer, "Node has invalid data");
-					printf("(%c%c) string (%lld): \"%s\"\n", color, rank, tree->weight, buffer);
-					break;
-				}
+				break;
 			}
 		}
+	}
+}
+
+void _mt3_print_tree(const MT3_tree tree, int level)
+{
+	if(tree)
+	{
+		for(int i = 0; i < level; i++)
+		printf("\t");
+
+		SPchar color = tree->red ? 'R' : 'B';
+		SPchar rank = _mt3_is_root(tree) ? '~' : (_mt3_is_major(tree) ? '+' : '-');
+		
+		_mt3_print(tree, level);
 		_mt3_print_tree(tree->major, level + 1);
 		_mt3_print_tree(tree->minor, level + 1);
 	}
 }
 void mt3_PrintTree(const MT3_tree tree)
 {
-	_mt3_print_tree(tree, 0);
-	printf("\n~ ... Root\n");
-	printf("+ ... Major\n");
-	printf("- ... Minor\n");
-	printf("B ... Black\n");
-	printf("R ... Red\n\n");
-	printf("\n");
+	if(!tree->parent)
+	{
+		_mt3_print_tree(tree, 0);
+		printf("\n~ ... Root\n");
+		printf("+ ... Major\n");
+		printf("- ... Minor\n");
+		printf("B ... Black\n");
+		printf("R ... Red\n\n");
+		printf("\n");
+	}
 }
 
 static void _mt3_write_bytes(SPbuffer* buffer, const SPubyte* src, SPsize amount, int level, SPbool toNativeEndian)
 {
 	SPbyte* chunk = mt3_AllocChunk(amount);
 	(toNativeEndian) ? _mt3_swapped_memcpy(chunk, src, amount) : _mt3_memcpy(chunk, src, amount);
-	spBufferAppend(buffer, chunk, amount);
+	if(!spBufferAppend(buffer, chunk, amount))
+	{
+		free(chunk);
+		errno = MT3_STATUS_WRITE_ERROR;
+		return;
+	}
 #ifdef MT3_PRINT_OUTPUT_DEBUG
 	_mt3_print_binary(src, amount, level);
 #endif
@@ -1003,6 +1073,94 @@ static void _mt3_write_bytes(SPbuffer* buffer, const SPubyte* src, SPsize amount
 #define _mt3_print_indent(ntabs, msg, ...)
 #endif
 
+static void _mt3_encode(const MT3_tree tree, SPbuffer* buffer, int level)
+{	
+	if(tree)
+	{
+		switch(tree->tag)
+		{
+			case MT3_TAG_BYTE:
+			case MT3_TAG_SHORT:
+			case MT3_TAG_INT:
+			case MT3_TAG_LONG:
+			case MT3_TAG_FLOAT:
+			case MT3_TAG_DOUBLE:
+			case MT3_TAG_STRING:
+			{
+				if(tree->tag == MT3_TAG_STRING)
+				{
+					_mt3_print_indent(level, "length: %lld", tree->length);
+					_mt3_write_bytes(buffer, (const SPubyte*) &tree->length, sizeof(SPsize), level, SP_TRUE);
+				}
+				
+				SP_ASSERT(tree->payload.data, "Node %lld has invalid data to write", tree->weight);
+				_mt3_print_indent(level, "data: (%lld byte(s))", tree->length);
+				_mt3_write_bytes(buffer, (const SPubyte*)tree->payload.data, tree->length, level, tree->tag != MT3_TAG_STRING);
+				break;
+			}
+			
+			case MT3_TAG_BYTE_ARRAY:
+			case MT3_TAG_SHORT_ARRAY:
+			case MT3_TAG_INT_ARRAY:
+			case MT3_TAG_LONG_ARRAY:
+			case MT3_TAG_FLOAT_ARRAY:
+			case MT3_TAG_DOUBLE_ARRAY:
+			{
+				_mt3_print_indent(level, "length: %lld", tree->length);
+				_mt3_write_bytes(buffer, (const SPubyte*) &tree->length, sizeof(SPsize), level, SP_TRUE);
+				
+				SP_ASSERT(tree->payload.data, "Node %lld has invalid data to write", tree->weight);
+				_mt3_print_indent(level, "data: (%lld byte(s))", tree->length);
+				SPsize stride = _mt3_length_of(tree->tag & ~MT3_TAG_ARRAY);
+				for(SPsize i = 0; i < tree->length / stride; i++)
+					_mt3_write_bytes(buffer, (const SPubyte*)tree->payload.data + stride * i, stride, level, SP_TRUE);
+				break;
+			}
+			
+			case MT3_TAG_STRING_ARRAY:
+			{
+				_mt3_print_indent(level, "length: %lld", tree->length);
+				_mt3_write_bytes(buffer, (const SPubyte*) &tree->length, sizeof(SPsize), level, SP_TRUE);
+				
+				SP_ASSERT(tree->payload.data, "Node %lld has invalid data to write", tree->weight);
+				_mt3_print_indent(level, "data: (%lld byte(s))", tree->length);
+				SPsize i = 0;
+				while(i < tree->length - 1)
+				{
+					SPlong length = 0;
+					memcpy(&length, tree->payload.data + i, sizeof(SPlong));
+					_mt3_write_bytes(buffer, (const SPubyte*) &length, sizeof(SPlong), level, SP_TRUE);
+					i += sizeof(SPlong);
+					_mt3_write_bytes(buffer, (const SPubyte*) tree->payload.data + i, length, level, SP_FALSE);
+					i += length;
+				}
+				SPubyte zero = 0;
+				_mt3_write_bytes(buffer, (const SPubyte*) &zero, sizeof(SPbyte), level, SP_FALSE);			
+				break;
+			}
+			
+			case MT3_TAG_ROOT:
+			{
+				_mt3_print_indent(level + 1, "root");
+				_mt3_write_binary(tree->payload.head, buffer, level + 1);
+				break;
+			}
+			
+			case MT3_TAG_ARRAY:
+			{
+				_mt3_print_indent(level, "length: %lld", tree->length);
+				_mt3_write_bytes(buffer, (const SPubyte*) &tree->length, sizeof(SPsize), level, SP_TRUE);
+				
+				MT3_tree cursor = NULL;
+				MT3_LIST_FOR_EACH(tree->payload.head, cursor)
+				{
+					_mt3_encode(cursor, buffer, level + 1);
+				}
+				break;
+			}
+		}
+	}
+}
 static void _mt3_write_binary(const MT3_tree tree, SPbuffer* buffer, int level)
 {
 	if(!tree)
@@ -1025,54 +1183,8 @@ static void _mt3_write_binary(const MT3_tree tree, SPbuffer* buffer, int level)
 	_mt3_print_indent(level, "weight: %lld", tree->weight);
 	_mt3_write_bytes(buffer, (const SPubyte*) &tree->weight, sizeof(SPlong), level, SP_TRUE);
 
-	if(tree->tag == MT3_TAG_STRING || (tree->tag & MT3_TAG_ARRAY))
-	{
-		//write the length of the string
-		_mt3_print_indent(level, "length: %lld", tree->length);
-		_mt3_write_bytes(buffer, (const SPubyte*) &tree->length, sizeof(SPsize), level, SP_TRUE);
-	}
-
-	if(tree->tag != MT3_TAG_ROOT)
-	{
-		SP_ASSERT(tree->payload.data, "Node %lld has invalid data to write", tree->weight);
-		if((tree->tag & MT3_TAG_ARRAY) == 0)
-		{
-			_mt3_print_indent(level, "data: (%lld byte(s))", tree->length);
-			_mt3_write_bytes(buffer, (const SPubyte*)tree->payload.data, tree->length, level, tree->tag != MT3_TAG_STRING);
-		}
-		else
-		{
-			if((tree->tag & ~MT3_TAG_ARRAY) == MT3_TAG_STRING)
-			{
-				_mt3_print_indent(level, "data: (%lld byte(s))", tree->length);
-
-				SPsize i = 0;
-				while(i < tree->length - 1)
-				{
-					SPlong length = 0;
-					memcpy(&length, tree->payload.data + i, sizeof(SPlong));
-					_mt3_write_bytes(buffer, (const SPubyte*) &length, sizeof(SPlong), level, SP_TRUE);
-					i += sizeof(SPlong);
-					_mt3_write_bytes(buffer, (const SPubyte*) tree->payload.data + i, length, level, SP_FALSE);
-					i += length;
-				}
-				SPubyte zero = 0;
-				_mt3_write_bytes(buffer, (const SPubyte*) &zero, sizeof(SPbyte), level, SP_FALSE);
-			}
-			else
-			{
-				_mt3_print_indent(level, "data: (%lld byte(s))", tree->length);
-				SPsize stride = _mt3_length_of(tree->tag & ~MT3_TAG_ARRAY);
-				for(SPsize i = 0; i < tree->length / stride; i++)
-					_mt3_write_bytes(buffer, (const SPubyte*)tree->payload.data + stride * i, stride, level, SP_TRUE);
-			}
-		}
-	}
-	else
-	{
-		_mt3_print_indent(level + 1, "root");
-        _mt3_write_binary(tree->payload.head, buffer, level + 1);
-	}
+	
+	_mt3_encode(tree, buffer, level);
 	_mt3_print_indent(level + 1, "major");
 	_mt3_write_binary(tree->major, buffer, level + 1);
 
@@ -1123,6 +1235,93 @@ SPbuffer mt3_WriteBinary(const MT3_tree tree)
 	return compressed;
 }
 
+static SPbool _mt3_decode(MT3_tree tree, const SPubyte** memory, SPsize* length)
+{
+	if(tree)
+	{
+		switch(tree->tag)
+		{
+			case MT3_TAG_BYTE:
+			case MT3_TAG_SHORT:
+			case MT3_TAG_INT:
+			case MT3_TAG_LONG:
+			case MT3_TAG_FLOAT:
+			case MT3_TAG_DOUBLE:
+			{
+				tree->length = _mt3_length_of(tree->tag);
+				if(tree->length)
+				{
+					MT3_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return SP_FALSE);
+					MT3_READ_GENERIC(tree->payload.data, tree->length, _mt3_swapped_memcpy, return SP_FALSE);
+				}
+				break;
+			}
+			
+			case MT3_TAG_BYTE_ARRAY:
+			case MT3_TAG_STRING:
+			{
+				MT3_READ_GENERIC(&tree->length, sizeof(SPlong), _mt3_swapped_memcpy, return SP_FALSE);
+				if(tree->length)
+				{
+					MT3_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return SP_FALSE);
+					MT3_READ_GENERIC(tree->payload.data, tree->length, _mt3_memcpy, return SP_FALSE);
+				}
+				break;
+			}
+			
+			case MT3_TAG_SHORT_ARRAY:
+			case MT3_TAG_INT_ARRAY:
+			case MT3_TAG_LONG_ARRAY:
+			case MT3_TAG_FLOAT_ARRAY:
+			case MT3_TAG_DOUBLE_ARRAY:
+			{
+				MT3_READ_GENERIC(&tree->length, sizeof(SPlong), _mt3_swapped_memcpy, return SP_FALSE);
+				if(tree->length)
+				{
+					MT3_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return SP_FALSE);
+					SPsize stride = _mt3_length_of(tree->tag & ~MT3_TAG_ARRAY);
+					
+					for(SPsize i = 0; i < tree->length / stride; i++)
+						MT3_READ_GENERIC(tree->payload.data + i * stride, stride, _mt3_swapped_memcpy, return SP_FALSE);
+				}
+				break;
+			}
+			
+			case MT3_TAG_STRING_ARRAY:
+			{
+				MT3_READ_GENERIC(&tree->length, sizeof(SPlong), _mt3_swapped_memcpy, return SP_FALSE);
+				if(tree->length)
+				{
+					MT3_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return SP_FALSE);
+					SPsize i = 0;
+					while(i < tree->length - 1)
+					{
+						SPlong size = 0;
+						MT3_READ_GENERIC(&size, sizeof(SPlong), _mt3_swapped_memcpy, return SP_FALSE);
+						memcpy(tree->payload.data + i, (const SPchar*) &size, sizeof(SPlong));
+						i += sizeof(SPlong);
+
+						MT3_READ_GENERIC(tree->payload.data + i, size, _mt3_memcpy, return SP_FALSE);
+						i += size;
+					}
+
+					SPbyte zero;
+					MT3_READ_GENERIC(&zero, sizeof(SPbyte), _mt3_memcpy, return SP_FALSE);
+					tree->payload.data[tree->length - 1] = zero;
+				}
+				break;
+			}
+			
+			case MT3_TAG_ROOT:
+			{
+				tree->payload.head = _mt3_read_binary(memory, length);
+				break;
+			}
+		}
+	}
+	return SP_TRUE;
+}
+
 static MT3_tree _mt3_read_binary(const SPubyte** memory, SPsize* length)
 {
 	SPubyte tag;
@@ -1140,63 +1339,9 @@ static MT3_tree _mt3_read_binary(const SPubyte** memory, SPsize* length)
 	tree->red = redness;
 	tree->tag = tag;
 
-	if(tag != MT3_TAG_ROOT)
-	{
-		if(!(tag & MT3_TAG_ARRAY) && tag != MT3_TAG_STRING)
-		{
-			tree->length = _mt3_length_of(tag);
-			if(tree->length)
-			{
-				MT3_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return NULL);
-				MT3_READ_GENERIC(tree->payload.data, tree->length, _mt3_swapped_memcpy, return NULL);
-			}
-		}
-		else if(tag == MT3_TAG_STRING || tag == (MT3_TAG_BYTE | MT3_TAG_ARRAY))
-		{
-			MT3_READ_GENERIC(&tree->length, sizeof(SPlong), _mt3_swapped_memcpy, return NULL);
-			if(tree->length)
-			{
-				MT3_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return NULL);
-				MT3_READ_GENERIC(tree->payload.data, tree->length, _mt3_memcpy, return NULL);
-			}
-		}
-		else
-		{
-			MT3_READ_GENERIC(&tree->length, sizeof(SPlong), _mt3_swapped_memcpy, return NULL);
-			if(tree->length)
-			{
-				MT3_CHECKED_CALLOC(tree->payload.data, tree->length, sizeof(SPbyte), return NULL);
-				if((tag & ~MT3_TAG_ARRAY) != MT3_TAG_STRING)
-				{
-					SPsize stride = _mt3_length_of(tag & ~MT3_TAG_ARRAY);
-					for(SPsize i = 0; i < tree->length / stride; i++)
-						MT3_READ_GENERIC(tree->payload.data + i * stride, stride, _mt3_swapped_memcpy, return NULL);
-				}
-				else
-				{
-					SPsize i = 0;
-					while(i < tree->length - 1)
-					{
-						SPlong size = 0;
-						MT3_READ_GENERIC(&size, sizeof(SPlong), _mt3_swapped_memcpy, return NULL);
-						memcpy(tree->payload.data + i, (const SPchar*) &size, sizeof(SPlong));
-						i += sizeof(SPlong);
-
-						MT3_READ_GENERIC(tree->payload.data + i, size, _mt3_memcpy, return NULL);
-						i += size;
-					}
-
-					SPbyte zero;
-					MT3_READ_GENERIC(&zero, sizeof(SPbyte), _mt3_memcpy, return NULL);
-					tree->payload.data[tree->length - 1] = zero;
-				}
-			}
-		}
-	}
-	else
-	{
-		tree->payload.head = _mt3_read_binary(memory, length);
-	}
+	if(!_mt3_decode(tree, memory, length))
+		return NULL;
+	
 	tree->major = _mt3_read_binary(memory, length);
 	tree->minor = _mt3_read_binary(memory, length);
 

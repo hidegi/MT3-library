@@ -1,5 +1,23 @@
 #include "SP/sparse/tree.h"
-
+#define MT3_INSERT_DATA(fn)\
+		do\
+		{\
+			std::string domain = extractDomain(name);\
+			std::string member = extractMember(name);\
+			if(domain == member)\
+			{\
+				fn(&m_tree, name.c_str(), data);\
+			}\
+			else\
+			{\
+				MT3_tree* root = deepSearch(&m_tree, domain);\
+				if(root)\
+				{\
+					fn(root, member.c_str(), data);\
+				}\
+			}\
+		} while(0);
+		
 namespace
 {
 	// assuming that access-string has form of "a.b.c.etc.."
@@ -13,30 +31,31 @@ namespace
 	 *	
 	 *	3. deep search with remaining tokens..
 	 */
-	MT3_tree deepSearch(const MT3_tree head, const std::string& token)
+	MT3_tree* deepSearch(const MT3_tree* head, const std::string& token)
 	{
+		// if it is empty, then return head..
 		if(!head)
 			return NULL;
 		
 		if(token.empty())
 		{
-			return head;
+			return const_cast<MT3_tree*>(head);
 		}
 		
 		auto pos = token.find_first_of('.');
 		if(pos == std::string::npos)
 		{
-			MT3_tree* t = mt3_GetTree(head, token.c_str());
-			return t ? *t : NULL;
+			return mt3_GetTree(*head, token.c_str());
 		}
 		
 		std::string branch = token.substr(0, pos);
-		MT3_tree* child = mt3_GetTree(head, branch.c_str());
+		MT3_tree* child = mt3_GetTree(*head, branch.c_str());
 		if(!child)
 		{
 			return NULL;
 		}
-		return deepSearch(*child, token.substr(pos + 1, token.size() - pos));
+		std::string children = token.substr(pos + 1, token.size() - pos);
+		return deepSearch(child, children);
 	}
 	
 	std::string extractMember(const std::string& str)
@@ -70,35 +89,63 @@ namespace sp
 		mt3_FreeTree(&m_tree);
 	}
 	
-	void insertByte(const std::string& name, SPbyte data)
+	void BTO::debugPrint()
 	{
+		mt3_PrintTree(m_tree);
+	}
+
+	void BTO::insertByte(const std::string& name, SPbyte data)
+	{
+		MT3_INSERT_DATA(mt3_InsertByte);
 	}
 	
-	void insertShort(const std::string& name, SPshort data)
+	void BTO::insertShort(const std::string& name, SPshort data)
 	{
+		MT3_INSERT_DATA(mt3_InsertShort);
 	}
 	
-	void insertInt(const std::string& name, SPint data)
+	void BTO::insertInt(const std::string& name, SPint data)
 	{
+		MT3_INSERT_DATA(mt3_InsertInt);
 	}
 	
-	void insertLong(const std::string& name, SPlong data)
+	void BTO::insertLong(const std::string& name, SPlong data)
 	{
+		MT3_INSERT_DATA(mt3_InsertLong);
 	}
 	
-	void insertFloat(const std::string& name, SPfloat data)
+	void BTO::insertFloat(const std::string& name, SPfloat data)
 	{
+		MT3_INSERT_DATA(mt3_InsertFloat);
 	}
 	
-	void insertDouble(const std::string& name, SPdouble data)
+	void BTO::insertDouble(const std::string& name, SPdouble data)
 	{
+		MT3_INSERT_DATA(mt3_InsertDouble);
 	}
 	
-	void insertString(const std::string& name, const std::string& data)
+	void BTO::insertString(const std::string& name, const std::string& str)
 	{
+		const char* data = str.c_str();
+		MT3_INSERT_DATA(mt3_InsertString);
 	}
 	
-	void insertTree(const std::string& name)
+	void BTO::insertTree(const std::string& name)
 	{
+		MT3_tree data = NULL;
+		MT3_INSERT_DATA(mt3_InsertTree);
 	}
+	
+	SPbyte BTO::getByte(const std::string& name)
+	{
+		
+	}
+	/*
+	SPshort getShort(const std::string& name);
+	SPint getInt(const std::string& name);
+	SPlong getLong(const std::string& name);
+	SPfloat getFloat(const std::string& name);
+	SPdouble getDouble(const std::string& name);
+	std::string getString(const std::string& name);
+	*/
 }

@@ -6,7 +6,7 @@
 
 namespace sp
 {
-	class BTO final
+	class SP_API BTO final
 	{
 		public:
 			BTO();
@@ -40,6 +40,8 @@ namespace sp
 			bool setDouble(const std::string& name, SPdouble data);
 			bool setString(const std::string& name, const std::string& data);
 			bool remove(const std::string& name);
+			
+			void debugPrint();
 		private:
 			MT3_tree m_tree;
 			

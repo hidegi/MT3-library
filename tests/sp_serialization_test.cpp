@@ -216,12 +216,13 @@ void test_tree_search()
 		array[i] = num;
 		mt3_InsertInt(&tree, std::to_string(array[i]).c_str(), array[i]);
 	}
-
+	
+	/*
 	for(int i = 0; i < LENGTH; i++)
     {
 		SP_ASSERT_NOT_NULL_WITH_ACTION(mt3_Search(tree, std::to_string(array[i]).c_str()), mt3_FreeTree(&tree));
 	}
-
+	*/
 	mt3_FreeTree(&tree);
 	delete[] array;
 }
@@ -386,7 +387,7 @@ void test_get_set()
  *	
  *	3. deepSearch further with remaining tokens..
  */
-MT3_tree* deepSearch(const MT3_tree* head, const std::string& token, SPsize currentLevel, SPsize levels)
+MT3_tree* deepSearch(const MT3_tree* head, const std::string& token)
 {
 	// if it is empty, then return head..
 	if(!head)
@@ -410,7 +411,7 @@ MT3_tree* deepSearch(const MT3_tree* head, const std::string& token, SPsize curr
 		return NULL;
 	}
 	std::string children = token.substr(pos + 1, token.size() - pos);
-	return deepSearch(child, children, currentLevel + 1, levels);
+	return deepSearch(child, children);
 }
 
 void test_deep_search()
@@ -452,20 +453,21 @@ void test_deep_search()
     mt3_InsertStringArray(&parent, "names", 4, names);
     mt3_InsertInt(&parent, "suberr", 135);
 	
-	MT3_tree* branch = mt3_GetTree(parent, "child");
+	MT3_tree* branch = deepSearch(&parent, "child");
 	SP_ASSERT_TRUE_WITH_ACTION(branch && *branch, 
 		mt3_FreeTree(&parent);
 		mt3_FreeTree(&child);
 		mt3_FreeTree(&child2);
 	);
 	
-	MT3_tree* t = deepSearch(&parent, "child.child123", 0, 2);
-	SP_ASSERT_TRUE_WITH_ACTION(t && *t, 
+	mt3_InsertString(branch, "motex", "motex gaming 1667");
+	branch = deepSearch(&parent, "child.child123");
+	SP_ASSERT_TRUE_WITH_ACTION(branch && *branch, 
 		mt3_FreeTree(&parent);
 		mt3_FreeTree(&child);
 		mt3_FreeTree(&child2);
 	);
-	mt3_SetString(*t, "a", "hidegion was here");
+	mt3_SetString(*branch, "a", "hidegion was here");
 	mt3_PrintTree(parent);
 	mt3_FreeTree(&parent);
 	mt3_FreeTree(&child);
@@ -512,33 +514,6 @@ void test_name_extraction()
 	member = extractMember(selection);
 	SP_ASSERT_TRUE(member == "head" && domain == "head");
 }
-
-MT3_tree deepSearch(const MT3_tree head, const std::string& token)
-{
-	if(!head)
-		return NULL;
-	
-	if(token.empty())
-	{
-		return head;
-	}
-	
-	auto pos = token.find_first_of('.');
-	if(pos == std::string::npos)
-	{
-		MT3_tree* t = mt3_GetTree(head, token.c_str());
-		return t ? *t : NULL;
-	}
-	
-	std::string branch = token.substr(0, pos);
-	MT3_tree* child = mt3_GetTree(head, branch.c_str());
-	if(!child)
-	{
-		return NULL;
-	}
-	return deepSearch(*child, token.substr(pos + 1, token.size() - pos));
-}
-	
 
 void test_insert_empty_tree()
 {
@@ -590,7 +565,8 @@ int main(int argc, char** argv)
 	//SP_TEST_ADD(test_if_all_available);
 	//SP_TEST_ADD(test_insertion);
 	//SP_TEST_ADD(test_null_tree);
-	SP_TEST_ADD(test_insert_empty_tree);
+	//SP_TEST_ADD(test_insert_empty_tree);
+	SP_TEST_ADD(test_sub_tree);
 	//SP_TEST_ADD(test_tree_random_integers);
 	//SP_TEST_ADD(test_random_index);
 

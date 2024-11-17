@@ -16,8 +16,10 @@ target_link_libraries(sp_test_mt3_api
 add_test(sp_test_mt3_api sp_test_mt3_api)
 
 add_executable(sp_serialization_test sp_serialization_test.cpp)
+add_executable(sp_bto_test sp_bto_test.cpp)
 add_executable(sp_tree_test sp_tree_test.cpp rbt_ops.cpp)
 #add_test(NAME sp_test_mt3_api COMMAND sp_test_mt3_api)
 
 target_link_libraries(sp_serialization_test mt3)
 target_link_libraries(sp_tree_test mt3)
+target_link_libraries(sp_bto_test mt3)
