@@ -112,7 +112,7 @@ SP_API void mt3_InsertLongArray(MT3_tree* tree, const SPchar* name, SPsize lengt
 SP_API void mt3_InsertFloatArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPfloat* values);
 SP_API void mt3_InsertDoubleArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPdouble* values);
 SP_API void mt3_InsertStringArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPchar** values);
-SP_API void mt3_InsertArray(MT3_tree* tree, const SPchar* name, MT3_array list);
+SP_API void mt3_InsertArray(MT3_tree* tree, const SPchar* name, MT3_array array);
 
 SP_API void mt3_ArrayInsertTree(MT3_array* array, MT3_tree value);
 SP_API void mt3_ArrayInsertByteArray(MT3_array* array, SPsize length, const SPbyte* values);
