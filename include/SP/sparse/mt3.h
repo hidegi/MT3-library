@@ -43,7 +43,7 @@ typedef enum
 	MT3_TAG_STRING 	= 8,
 	MT3_TAG_ARRAY	= 0x80,
 
-	//MT3_TAG_LIST		 = MT3_TAG_ARRAY | MT3_TAG_ROOT,
+	MT3_TAG_ROOT_ARRAY	 = MT3_TAG_ARRAY | MT3_TAG_ROOT,
 	MT3_TAG_BYTE_ARRAY   = MT3_TAG_ARRAY | MT3_TAG_BYTE,
 	MT3_TAG_SHORT_ARRAY  = MT3_TAG_ARRAY | MT3_TAG_SHORT,
 	MT3_TAG_INT_ARRAY    = MT3_TAG_ARRAY | MT3_TAG_INT,
@@ -74,6 +74,7 @@ typedef struct MT3_node MT3_node;
  *  debug
  *<==========================================================>*/
 SP_API void mt3_PrintTree(const MT3_tree tree);
+SP_API void mt3_PrintArray(const MT3_array tree);
 
 /*<==========================================================>*
  *  allocation
@@ -85,6 +86,7 @@ SP_API MT3_array mt3_AllocArray();
  *  copying
  *<==========================================================>*/
 SP_API MT3_tree mt3_CopyTree(const MT3_tree n);
+SP_API MT3_array mt3_CopyArray(const MT3_array n);
 
 /*<==========================================================>*
  *  data feed
@@ -112,15 +114,15 @@ SP_API void mt3_InsertDoubleArray(MT3_tree* tree, const SPchar* name, SPsize len
 SP_API void mt3_InsertStringArray(MT3_tree* tree, const SPchar* name, SPsize length, const SPchar** values);
 SP_API void mt3_InsertArray(MT3_tree* tree, const SPchar* name, MT3_array list);
 
-SP_API void mt3_ArrayInsertTree(MT3_array array, const SPchar* name, MT3_tree value);
-SP_API void mt3_ArrayInsertByteArray(MT3_array array, const SPchar* name, SPsize length, const SPbyte* values);
-SP_API void mt3_ArrayInsertShortArray(MT3_array array, const SPchar* name, SPsize length, const SPshort* values);
-SP_API void mt3_ArrayInsertIntArray(MT3_array array, const SPchar* name, SPsize length, const SPint* values);
-SP_API void mt3_ArrayInsertLongArray(MT3_array array, const SPchar* name, SPsize length, const SPlong* values);
-SP_API void mt3_ArrayInsertFloatArray(MT3_array array, const SPchar* name, SPsize length, const SPfloat* values);
-SP_API void mt3_ArrayInsertDoubleArray(MT3_array array, const SPchar* name, SPsize length, const SPdouble* values);
-SP_API void mt3_ArrayInsertStringArray(MT3_array array, const SPchar* name, SPsize length, const SPchar** values);
-SP_API void mt3_ArrayInsertArray(MT3_array array, const SPchar* name, MT3_array list);
+SP_API void mt3_ArrayInsertTree(MT3_array* array, MT3_tree value);
+SP_API void mt3_ArrayInsertByteArray(MT3_array* array, SPsize length, const SPbyte* values);
+SP_API void mt3_ArrayInsertShortArray(MT3_array* array, SPsize length, const SPshort* values);
+SP_API void mt3_ArrayInsertIntArray(MT3_array* array, SPsize length, const SPint* values);
+SP_API void mt3_ArrayInsertLongArray(MT3_array* array, SPsize length, const SPlong* values);
+SP_API void mt3_ArrayInsertFloatArray(MT3_array* array, SPsize length, const SPfloat* values);
+SP_API void mt3_ArrayInsertDoubleArray(MT3_array* array, SPsize length, const SPdouble* values);
+SP_API void mt3_ArrayInsertStringArray(MT3_array* array, SPsize length, const SPchar** values);
+SP_API void mt3_ArrayInsertArray(MT3_array* array, MT3_array list);
 
 SP_API void mt3_SetByte(MT3_tree tree, const char* name, SPbyte value);
 SP_API void mt3_SetShort(MT3_tree tree, const char* name, SPshort value);
