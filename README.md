@@ -1,5 +1,5 @@
 <p align="left">
-  <img src="assets/motex.ico" width="128" height="128">
+  <img src="assets/mt3.png" width="128" height="128">
 </p>
 
 # The MT3-library (SP 1994)
