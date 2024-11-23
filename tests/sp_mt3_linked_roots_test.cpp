@@ -657,7 +657,7 @@ static void test_array_of_arrays_read_write_trees()
 	mt3_InsertString(&head, "1", "hidegi");
     mt3_InsertString(&head, "2", "motex");
     mt3_InsertString(&head, "3", "betelgus");
-    mt3_InsertString(&head, "4", "fjiaw");
+    mt3_InsertString(&head, "4", "fjiaw");;;
 	*/
 	mt3_InsertArray(&head, "tree_list", array_arrays);
 	
