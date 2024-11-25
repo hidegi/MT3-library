@@ -1063,7 +1063,7 @@ SPdouble mt3_GetDouble(const MT3_tree tree, const SPchar* name)
 const SPchar* mt3_GetString(const MT3_tree tree, const SPchar* name)
 {
 	MT3_node* n = mt3_Search(tree, name);
-	return (n && n->tag == MT3_TAG_STRING) ? n->payload.data : NULL;
+	return (n && n->tag == MT3_TAG_STRING) ? (const SPchar*) n->payload.data : NULL;
 }
 
 MT3_tree* mt3_GetTree(const MT3_tree tree, const SPchar* name)
@@ -1155,7 +1155,7 @@ static void _mt3_print(const MT3_tree tree, int level, SPbool printTreeData)
 				SP_ASSERT(tree->payload.data, "Node has invalid data");
 				SPbyte value = 0;
 				memcpy(&value, tree->payload.data, tree->length * sizeof(SPbyte));
-				printf("(%c%c) %s (%lld): %d\n", color, rank, _mt3_tag_to_str(tree->tag), tree->weight, value);
+				printf("(%c%c) %s (%lld): %hhd\n", color, rank, _mt3_tag_to_str(tree->tag), tree->weight, value);
 				break;
 			}
 			
@@ -1164,7 +1164,7 @@ static void _mt3_print(const MT3_tree tree, int level, SPbool printTreeData)
 				SP_ASSERT(tree->payload.data, "Node has invalid data");
 				SPshort value = 0;
 				memcpy(&value, tree->payload.data, tree->length * sizeof(SPbyte));
-				printf("(%c%c) %s (%lld): %d\n", color, rank, _mt3_tag_to_str(tree->tag), tree->weight, value);
+				printf("(%c%c) %s (%lld): %hd\n", color, rank, _mt3_tag_to_str(tree->tag), tree->weight, value);
 				break;
 			}
 			
@@ -1173,7 +1173,7 @@ static void _mt3_print(const MT3_tree tree, int level, SPbool printTreeData)
 				SP_ASSERT(tree->payload.data, "Node has invalid data");
 				SPint value = 0;
 				memcpy(&value, tree->payload.data, tree->length * sizeof(SPbyte));
-				printf("(%c%c) %s (%lld): %ld\n", color, rank, _mt3_tag_to_str(tree->tag), tree->weight, value);
+				printf("(%c%c) %s (%lld): %d\n", color, rank, _mt3_tag_to_str(tree->tag), tree->weight, value);
 				break;
 			}
 			case MT3_TAG_LONG:
@@ -1230,7 +1230,7 @@ static void _mt3_print(const MT3_tree tree, int level, SPbool printTreeData)
 						{
 							SPbyte value = 0;
 							memcpy(&value, tree->payload.data + i, stride * sizeof(SPbyte));
-							printf("%d ", value);
+							printf("%hhd ", value);
 							break;
 						}
 						
@@ -1238,7 +1238,7 @@ static void _mt3_print(const MT3_tree tree, int level, SPbool printTreeData)
 						{
 							SPshort value = 0;
 							memcpy(&value, tree->payload.data + i, stride * sizeof(SPbyte));
-							printf("%d ", value);
+							printf("%hd ", value);
 							break;
 						}
 						
@@ -1246,7 +1246,7 @@ static void _mt3_print(const MT3_tree tree, int level, SPbool printTreeData)
 						{
 							SPint value = 0;
 							memcpy(&value, tree->payload.data + i, stride * sizeof(SPbyte));
-							printf("%ld ", value);
+							printf("%d ", value);
 							break;
 						}
 						
@@ -1254,7 +1254,7 @@ static void _mt3_print(const MT3_tree tree, int level, SPbool printTreeData)
 						{
 							SPlong value = 0;
 							memcpy(&value, tree->payload.data + i, stride * sizeof(SPbyte));
-							printf("%d ", value);
+							printf("%lld ", value);
 							break;
 						}
 					}
@@ -1329,7 +1329,6 @@ static void _mt3_print(const MT3_tree tree, int level, SPbool printTreeData)
 			case MT3_TAG_ARRAY:
 			{
 				SP_ASSERT(tree->length == _mt3_length_of_array(tree->payload.head), "Expected equal length for array");
-				SP_DEBUG("tree length: %lld, other: %lld", tree->length, _mt3_length_of_array(tree->payload.head));
 				printf("(%c%c) %s (%lld elements) (%lld):\n", color, rank, _mt3_tag_to_str(tree->tag), tree->length, tree->weight);
 				_mt3_print_array(tree->payload.head, level + 1);
 				break;
@@ -1469,7 +1468,7 @@ static void _mt3_encode_array(const MT3_array array, SPbuffer* buffer, int level
 	}
 	_mt3_print_indent(level, "(list end)");
 	SPbyte zero = 0;
-	_mt3_write_bytes(buffer, &zero, sizeof(SPbyte), level, SP_FALSE);	
+	_mt3_write_bytes(buffer, (const SPubyte*) &zero, sizeof(SPbyte), level, SP_FALSE);
 }
 
 static void _mt3_encode(const MT3_tree tree, SPbuffer* buffer, int level)
@@ -1615,7 +1614,7 @@ static void _mt3_write_binary(const MT3_tree tree, SPbuffer* buffer, int level)
  *  write data (char data)..
  *  write null (end)..
  *  due to this, the number types have to be known, therefore more concrete tags needed..
-*/
+ */
 SPbuffer mt3_WriteBinary(const MT3_tree tree)
 {
 	SPbuffer buffer = SP_BUFFER_INIT;
