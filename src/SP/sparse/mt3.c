@@ -651,6 +651,18 @@ static MT3_tree _mt3_insert_data(MT3_tree* head, MT3_tree node, SPhash weight, M
 		return NULL;
 	}
 
+	if(node->weight == 0 || node->tag == MT3_TAG_NULL)
+	{
+		SP_ASSERT(node->length == 0LL, "Empty tree cannot have length defined (%lld)", node->length);
+		SP_ASSERT(!node->payload.data, "Empty tree cannot have data");
+		SP_ASSERT(!node->major && !node->minor, "Empty tree cannot have sub-trees");
+		SP_ASSERT(!node->parent, "Empty tree cannot have a parent");
+		SP_ASSERT(!node->red, "Empty tree must be black-coded");
+
+		*head = _mt3_alloc_node(tag, weight, length, value);
+		return *head;
+	}
+
 	SPbool maj = (weight > node->weight);
 	MT3_tree primary  = maj ? node->major : node->minor;
 

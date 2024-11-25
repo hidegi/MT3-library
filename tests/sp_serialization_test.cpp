@@ -610,16 +610,18 @@ static void big_test()
 	SPlong long_dataset9[] = {119, -31, -73, 90, 31, -80, 86, -100, 106, 13};
 
     SPfloat float_dataset1[] = {1.4, 2.43, 954.23, 1.32, 69.423};
-	SPfloat float_dataset2[] = {96.8945f, 965.f};
+	SPfloat float_dataset2[] = {96.8945f, 965.f, 1667.f};
 	SPfloat float_dataset3[] = {56.35435f, .5652f, 182.3E+12f, 45.34};
 	SPfloat float_dataset4[] = {86.43, 1.4171f, .866, .5838, 182.34f};
 	SPfloat float_dataset5[] = {6878.34, 8128, .344, 969.23, 7.423, 10.444};
+	SPfloat float_dataset6[] = {135.348f, 4527.2434f, 45.123, 923.34f};
 
     SPdouble double_dataset1[] = {1.4, 2.43, 954.23, 1.32, 69.423};
-	SPdouble double_dataset2[] = {96.8945, 965.};
+	SPdouble double_dataset2[] = {96.8945, 965.f, 1667.f};
 	SPdouble double_dataset3[] = {56.35435, .5652, 182.3E+12, 45.34};
 	SPdouble double_dataset4[] = {86.43, 1.4171, .866, .5838, 182.34};
 	SPdouble double_dataset5[] = {6878.34, 8128, .344, 969.23, 7.423, 10.444};
+    SPdouble double_dataset6[] = {135.348f, 4527.2434f, 45.123, 923.34f};
 
 	const SPchar* str_dataset1[] = {"a4353", "234b", "c453", "fhujsd", "bfbf"};
 	const SPchar* str_dataset2[] = {"e498nefsj", "fhf", "ggfshg", "fghijfk"};
@@ -635,7 +637,7 @@ static void big_test()
 	const SPchar* str_dataset10[] = {"1234", "567890", "12345", "678910", "2345", "347858"};
 
     MT3_tree subtree_1 = mt3_AllocTree();
-    mt3_InsertByte(&subtree_1, "byte", -128);
+    mt3_InsertByte(&subtree_1, "byte", -126);
 	mt3_InsertShort(&subtree_1, "short", -750);
     mt3_InsertInt(&subtree_1, "int", -1667);
     mt3_InsertLong(&subtree_1, "long", 123456789000);
@@ -643,9 +645,40 @@ static void big_test()
     mt3_InsertDouble(&subtree_1, "double", 1.742734875845);
     mt3_InsertString(&subtree_1, "string", "motti was here");
 
-	MT3_tree tree = NULL;
+    MT3_tree subtree_2 = mt3_AllocTree();
+    mt3_InsertByte(&subtree_2, "byte", -128);
+	mt3_InsertShort(&subtree_2, "short", -750);
+    mt3_InsertInt(&subtree_2, "int", -1667);
+    mt3_InsertLong(&subtree_2, "long", 123456789000);
+    mt3_InsertFloat(&subtree_2, "float", 3.14159265f);
+    mt3_InsertDouble(&subtree_2, "double", 1.742734875845);
+    mt3_InsertString(&subtree_2, "string", "fjiaw was here");
 
-	mt3_InsertTree(&tree, "subtree_1", subtree_1);
+    MT3_tree subtree_3 = mt3_AllocTree();
+    mt3_InsertByte(&subtree_3, "byte", -128);
+	mt3_InsertShort(&subtree_3, "short", -750);
+    mt3_InsertInt(&subtree_3, "int", -1667);
+    mt3_InsertLong(&subtree_3, "long", 123456789000);
+    mt3_InsertFloat(&subtree_3, "float", 3.14159265f);
+    mt3_InsertDouble(&subtree_3, "double", 1.742734875845);
+    mt3_InsertString(&subtree_3, "string", "thommy was here");
+
+    MT3_tree subtree_4 = mt3_AllocTree();
+    mt3_InsertByte(&subtree_4, "byte", -128);
+	mt3_InsertShort(&subtree_4, "short", -750);
+    mt3_InsertInt(&subtree_4, "int", -1667);
+    mt3_InsertLong(&subtree_4, "long", 123456789000);
+    mt3_InsertFloat(&subtree_4, "float", 3.14159265f);
+    mt3_InsertDouble(&subtree_4, "double", 1.742734875845);
+    mt3_InsertString(&subtree_4, "string", "betelgus was here");
+
+	MT3_tree tree = NULL;
+	/*
+	mt3_InsertTree(&tree, "subtree_123", subtree_1);
+	mt3_InsertTree(&tree, "subtree_223", subtree_2);
+	mt3_InsertTree(&tree, "subtree_323", subtree_3);
+	mt3_InsertTree(&tree, "subtree_423", subtree_4);
+    */
 	mt3_InsertByte(&tree, "byte", -128);
 	mt3_InsertShort(&tree, "short", -348);
     mt3_InsertInt(&tree, "int", -9384);
@@ -654,6 +687,7 @@ static void big_test()
     mt3_InsertDouble(&tree, "double", 1.988E+30);
     mt3_InsertString(&tree, "string", "hidegion was here");
 
+    // plain arrays..
     mt3_InsertByteArray(&tree, "byte_array", sizeof(byte_dataset1) / sizeof(SPbyte), byte_dataset1);
     mt3_InsertShortArray(&tree, "short_array", sizeof(short_dataset1) / sizeof(SPshort), short_dataset1);
     mt3_InsertIntArray(&tree, "int_array", sizeof(int_dataset1) / sizeof(SPint), int_dataset1);
@@ -662,26 +696,110 @@ static void big_test()
     mt3_InsertDoubleArray(&tree, "double_array", sizeof(double_dataset1) / sizeof(SPdouble), double_dataset1);
     mt3_InsertStringArray(&tree, "string_array", sizeof(str_dataset1) / sizeof(const SPchar*), str_dataset1);
 
-    MT3_array multi_byte_array_1 = NULL;
-    mt3_ArrayInsertByteArray(&multi_byte_array_1, sizeof(byte_dataset1) / sizeof(SPbyte),byte_dataset1);
-    mt3_ArrayInsertByteArray(&multi_byte_array_1, sizeof(byte_dataset2) / sizeof(SPbyte), byte_dataset2);
-    mt3_ArrayInsertByteArray(&multi_byte_array_1, sizeof(byte_dataset3) / sizeof(SPbyte), byte_dataset3);
+    // multi byte arrays..
+    MT3_array multi_type_array_1 = mt3_AllocArray();
+    MT3_array multi_type_array_2 = NULL;
+    MT3_array multi_type_array_3 = mt3_AllocArray();
 
-    MT3_array multi_byte_array_2 = NULL;
-    mt3_ArrayInsertByteArray(&multi_byte_array_2, sizeof(byte_dataset4) / sizeof(SPbyte), byte_dataset4);
-    mt3_ArrayInsertByteArray(&multi_byte_array_2, sizeof(byte_dataset5) / sizeof(SPbyte), byte_dataset5);
-    mt3_ArrayInsertByteArray(&multi_byte_array_2, sizeof(byte_dataset6) / sizeof(SPbyte), byte_dataset6);
+/*
+    mt3_ArrayInsertByteArray(&multi_type_array_1, sizeof(byte_dataset1) / sizeof(SPbyte),byte_dataset1);
+    mt3_ArrayInsertByteArray(&multi_type_array_1, sizeof(byte_dataset2) / sizeof(SPbyte), byte_dataset2);
+    mt3_ArrayInsertByteArray(&multi_type_array_1, sizeof(byte_dataset3) / sizeof(SPbyte), byte_dataset3);
+    mt3_ArrayInsertByteArray(&multi_type_array_2, sizeof(byte_dataset4) / sizeof(SPbyte), byte_dataset4);
+    mt3_ArrayInsertByteArray(&multi_type_array_2, sizeof(byte_dataset5) / sizeof(SPbyte), byte_dataset5);
+    mt3_ArrayInsertByteArray(&multi_type_array_2, sizeof(byte_dataset6) / sizeof(SPbyte), byte_dataset6);
+    mt3_ArrayInsertByteArray(&multi_type_array_3, sizeof(byte_dataset7) / sizeof(SPbyte), byte_dataset7);
+    mt3_ArrayInsertByteArray(&multi_type_array_3, sizeof(byte_dataset8) / sizeof(SPbyte), byte_dataset8);
+    mt3_ArrayInsertByteArray(&multi_type_array_3, sizeof(byte_dataset9) / sizeof(SPbyte), byte_dataset9);
+*/
 
-    MT3_array multi_byte_array_3 = NULL;
-    mt3_ArrayInsertByteArray(&multi_byte_array_3, sizeof(byte_dataset7) / sizeof(SPbyte), byte_dataset7);
-    mt3_ArrayInsertByteArray(&multi_byte_array_3, sizeof(byte_dataset8) / sizeof(SPbyte), byte_dataset8);
-    mt3_ArrayInsertByteArray(&multi_byte_array_3, sizeof(byte_dataset9) / sizeof(SPbyte), byte_dataset9);
+/*
+    mt3_ArrayInsertShortArray(&multi_type_array_1, sizeof(short_dataset1) / sizeof(SPshort), short_dataset1);
+    mt3_ArrayInsertShortArray(&multi_type_array_1, sizeof(short_dataset2) / sizeof(SPshort), short_dataset2);
+    mt3_ArrayInsertShortArray(&multi_type_array_1, sizeof(short_dataset3) / sizeof(SPshort), short_dataset3);
+    mt3_ArrayInsertShortArray(&multi_type_array_2, sizeof(short_dataset4) / sizeof(SPshort), short_dataset4);
+    mt3_ArrayInsertShortArray(&multi_type_array_2, sizeof(short_dataset5) / sizeof(SPshort), short_dataset5);
+    mt3_ArrayInsertShortArray(&multi_type_array_2, sizeof(short_dataset6) / sizeof(SPshort), short_dataset6);
+    mt3_ArrayInsertShortArray(&multi_type_array_3, sizeof(short_dataset7) / sizeof(SPshort), short_dataset7);
+    mt3_ArrayInsertShortArray(&multi_type_array_3, sizeof(short_dataset8) / sizeof(SPshort), short_dataset8);
+    mt3_ArrayInsertShortArray(&multi_type_array_3, sizeof(short_dataset9) / sizeof(SPshort), short_dataset9);
+*/
+/*
+    mt3_ArrayInsertIntArray(&multi_type_array_1, sizeof(int_dataset1) / sizeof(SPint), int_dataset1);
+    mt3_ArrayInsertIntArray(&multi_type_array_1, sizeof(int_dataset2) / sizeof(SPint), int_dataset2);
+    mt3_ArrayInsertIntArray(&multi_type_array_1, sizeof(int_dataset3) / sizeof(SPint), int_dataset3);
+    mt3_ArrayInsertIntArray(&multi_type_array_2, sizeof(int_dataset4) / sizeof(SPint), int_dataset4);
+    mt3_ArrayInsertIntArray(&multi_type_array_2, sizeof(int_dataset5) / sizeof(SPint), int_dataset5);
+    mt3_ArrayInsertIntArray(&multi_type_array_2, sizeof(int_dataset6) / sizeof(SPint), int_dataset6);
+    mt3_ArrayInsertIntArray(&multi_type_array_3, sizeof(int_dataset7) / sizeof(SPint), int_dataset7);
+    mt3_ArrayInsertIntArray(&multi_type_array_3, sizeof(int_dataset8) / sizeof(SPint), int_dataset8);
+    mt3_ArrayInsertIntArray(&multi_type_array_3, sizeof(int_dataset9) / sizeof(SPint), int_dataset9);
+*/
+/*
+    mt3_ArrayInsertLongArray(&multi_type_array_1, sizeof(long_dataset1) / sizeof(SPlong), long_dataset1);
+    mt3_ArrayInsertLongArray(&multi_type_array_1, sizeof(long_dataset2) / sizeof(SPlong), long_dataset2);
+    mt3_ArrayInsertLongArray(&multi_type_array_1, sizeof(long_dataset3) / sizeof(SPlong), long_dataset3);
+    mt3_ArrayInsertLongArray(&multi_type_array_2, sizeof(long_dataset4) / sizeof(SPlong), long_dataset4);
+    mt3_ArrayInsertLongArray(&multi_type_array_2, sizeof(long_dataset5) / sizeof(SPlong), long_dataset5);
+    mt3_ArrayInsertLongArray(&multi_type_array_2, sizeof(long_dataset6) / sizeof(SPlong), long_dataset6);
+    mt3_ArrayInsertLongArray(&multi_type_array_3, sizeof(long_dataset7) / sizeof(SPlong), long_dataset7);
+    mt3_ArrayInsertLongArray(&multi_type_array_3, sizeof(long_dataset8) / sizeof(SPlong), long_dataset8);
+    mt3_ArrayInsertLongArray(&multi_type_array_3, sizeof(long_dataset9) / sizeof(SPlong), long_dataset9);
+*/
+/*
+    mt3_ArrayInsertFloatArray(&multi_type_array_1, sizeof(float_dataset1) / sizeof(SPfloat), float_dataset1);
+    mt3_ArrayInsertFloatArray(&multi_type_array_1, sizeof(float_dataset2) / sizeof(SPfloat), float_dataset2);
+    mt3_ArrayInsertFloatArray(&multi_type_array_2, sizeof(float_dataset3) / sizeof(SPfloat), float_dataset3);
+    mt3_ArrayInsertFloatArray(&multi_type_array_2, sizeof(float_dataset4) / sizeof(SPfloat), float_dataset4);
+    mt3_ArrayInsertFloatArray(&multi_type_array_3, sizeof(float_dataset5) / sizeof(SPfloat), float_dataset5);
+    mt3_ArrayInsertFloatArray(&multi_type_array_3, sizeof(float_dataset6) / sizeof(SPfloat), float_dataset6);
+*/
+/*
+    mt3_ArrayInsertDoubleArray(&multi_type_array_1, sizeof(double_dataset1) / sizeof(SPdouble), double_dataset1);
+    mt3_ArrayInsertDoubleArray(&multi_type_array_1, sizeof(double_dataset2) / sizeof(SPdouble), double_dataset2);
+    mt3_ArrayInsertDoubleArray(&multi_type_array_2, sizeof(double_dataset3) / sizeof(SPdouble), double_dataset3);
+    mt3_ArrayInsertDoubleArray(&multi_type_array_2, sizeof(double_dataset4) / sizeof(SPdouble), double_dataset4);
+    mt3_ArrayInsertDoubleArray(&multi_type_array_3, sizeof(double_dataset5) / sizeof(SPdouble), double_dataset5);
+    mt3_ArrayInsertDoubleArray(&multi_type_array_3, sizeof(double_dataset6) / sizeof(SPdouble), double_dataset6);
+*/
+/*
+    mt3_ArrayInsertStringArray(&multi_type_array_1, sizeof(str_dataset1) / sizeof(const SPchar*), str_dataset1);
+    mt3_ArrayInsertStringArray(&multi_type_array_1, sizeof(str_dataset2) / sizeof(const SPchar*), str_dataset2);
+    mt3_ArrayInsertStringArray(&multi_type_array_1, sizeof(str_dataset3) / sizeof(const SPchar*), str_dataset3);
+    mt3_ArrayInsertStringArray(&multi_type_array_2, sizeof(str_dataset4) / sizeof(const SPchar*), str_dataset4);
+    mt3_ArrayInsertStringArray(&multi_type_array_2, sizeof(str_dataset5) / sizeof(const SPchar*), str_dataset5);
+    mt3_ArrayInsertStringArray(&multi_type_array_2, sizeof(str_dataset6) / sizeof(const SPchar*), str_dataset6);
+    mt3_ArrayInsertStringArray(&multi_type_array_3, sizeof(str_dataset7) / sizeof(const SPchar*), str_dataset7);
+    mt3_ArrayInsertStringArray(&multi_type_array_3, sizeof(str_dataset8) / sizeof(const SPchar*), str_dataset8);
+    mt3_ArrayInsertStringArray(&multi_type_array_3, sizeof(str_dataset9) / sizeof(const SPchar*), str_dataset9);
+    mt3_ArrayInsertStringArray(&multi_type_array_3, sizeof(str_dataset10) / sizeof(const SPchar*), str_dataset10);
+*/
+    mt3_ArrayInsertTree(&multi_type_array_1, subtree_1);
+    mt3_ArrayInsertTree(&multi_type_array_1, subtree_2);
+    mt3_ArrayInsertTree(&multi_type_array_2, subtree_3);
+    mt3_ArrayInsertTree(&multi_type_array_2, subtree_4);
+    mt3_ArrayInsertTree(&multi_type_array_3, subtree_1);
+    mt3_ArrayInsertTree(&multi_type_array_3, subtree_2);
+    mt3_ArrayInsertTree(&multi_type_array_3, subtree_3);
+    mt3_ArrayInsertTree(&multi_type_array_3, subtree_4);
 
-    mt3_InsertArray(&tree, "multi_byte_array_1", multi_byte_array_1);
-    mt3_InsertArray(&tree, "multi_byte_array_2", multi_byte_array_2);
-    mt3_InsertArray(&tree, "multi_byte_array_3", multi_byte_array_3);
+    mt3_InsertArray(&tree, "multi_type_array_1", multi_type_array_1);
+    mt3_InsertArray(&tree, "multi_type_array_2", multi_type_array_2);
+    mt3_InsertArray(&tree, "multi_type_array_3", multi_type_array_3);
 
-    MT3_array multi_multi_byte_array = NULL;
+    // multi multi byte arrays..
+    MT3_array multi_multi_type_array = NULL;
+    mt3_ArrayInsertArray(&multi_multi_type_array, multi_type_array_1);
+    mt3_ArrayInsertArray(&multi_multi_type_array, multi_type_array_2);
+    mt3_ArrayInsertArray(&multi_multi_type_array, multi_type_array_3);
+    mt3_InsertArray(&tree, "multi_multi_type_array", multi_multi_type_array);
+
+    MT3_array multi_multi_multi_type_array = mt3_AllocArray();
+    mt3_ArrayInsertArray(&multi_multi_multi_type_array, multi_multi_type_array);
+    mt3_ArrayInsertArray(&multi_multi_multi_type_array, multi_multi_type_array);
+    mt3_ArrayInsertArray(&multi_multi_multi_type_array, multi_multi_type_array);
+    mt3_ArrayInsertArray(&multi_multi_multi_type_array, multi_multi_type_array);
+    mt3_InsertArray(&tree, "multi_multi_multi_type_array", multi_multi_multi_type_array);
 
 	SPbuffer buffer = mt3_WriteBinary(tree);
 	MT3_tree output = mt3_ReadBinary(buffer);
@@ -702,9 +820,15 @@ static void big_test()
     spBufferFree(&buffer);
     mt3_FreeTree(&tree);
     mt3_FreeTree(&subtree_1);
+    mt3_FreeTree(&subtree_2);
+    mt3_FreeTree(&subtree_3);
+    mt3_FreeTree(&subtree_4);
     mt3_FreeTree(&output);
-    mt3_FreeArray(&multi_byte_array_1);
-    mt3_FreeArray(&multi_byte_array_2);
+    mt3_FreeArray(&multi_type_array_1);
+    mt3_FreeArray(&multi_type_array_2);
+    mt3_FreeArray(&multi_type_array_3);
+    mt3_FreeArray(&multi_multi_type_array);
+    mt3_FreeArray(&multi_multi_multi_type_array);
 }
 int main(int argc, char** argv)
 {
