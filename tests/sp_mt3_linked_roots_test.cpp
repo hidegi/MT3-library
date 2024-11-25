@@ -682,22 +682,37 @@ static void test_array_of_arrays_read_write_trees()
 	spBufferFree(&buffer);
 }
 
+static void test_array_empty_insertion()
+{
+	MT3_tree tree = NULL;
+	mt3_InsertArray(&tree, "array", NULL);
+	
+	//const SPchar* dataset[] = {"motex", "hidegi", "betelgus", "fjiaw"};
+	//MT3_array* array = mt3_GetArray(tree, "array");
+	//SP_ASSERT_TRUE_WITH_ACTION(array != NULL, mt3_FreeTree(&tree));
+	//mt3_ArrayInsertStringArray(array, 4, dataset);
+	mt3_PrintTree(tree);
+	mt3_FreeTree(&tree);
+}
+
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
+	
 	//SP_TEST_ADD(sp_test_root_array_from_null);
 	//SP_TEST_ADD(sp_test_root_array_from_alloc);
 	//SP_TEST_ADD(test_byte_array_from_null);
 	//SP_TEST_ADD(test_byte_array_from_alloc);
 	//SP_TEST_ADD(test_array_of_arrays);
-	//SP_TEST_ADD(test_byte_array_read_write);
+	SP_TEST_ADD(test_byte_array_read_write);
 	//SP_TEST_ADD(sp_test_root_array_from_null);
-	//SP_TEST_ADD(test_array_of_arrays_read_write_bytes_ints);
-	//SP_TEST_ADD(test_array_of_arrays_read_write_bytes_strings);
-	//SP_TEST_ADD(test_array_of_arrays_read_write_bytes_floats);
-	//SP_TEST_ADD(test_array_of_arrays_read_write_bytes_doubles);
-	//SP_TEST_ADD(test_array_of_arrays_read_write_shorts);
+	SP_TEST_ADD(test_array_of_arrays_read_write_bytes_ints);
+	SP_TEST_ADD(test_array_of_arrays_read_write_bytes_strings);
+	SP_TEST_ADD(test_array_of_arrays_read_write_bytes_floats);
+	SP_TEST_ADD(test_array_of_arrays_read_write_bytes_doubles);
+	SP_TEST_ADD(test_array_of_arrays_read_write_shorts);
 	SP_TEST_ADD(test_array_of_arrays_read_write_trees);
+	SP_TEST_ADD(test_array_empty_insertion);
 
 	spTestRunAll();
 	spTestTerminate();

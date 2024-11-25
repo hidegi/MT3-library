@@ -19,14 +19,12 @@ class MT3fixture : public testing::Test
     protected:
         void SetUp() override
         {
-            tree = mt3_AllocObject();
-            std::cout << ">>>" << __PRETTY_FUNCTION__ << " has been run" << std::endl;
+            tree = mt3_AllocTree();
         }
 
         void TearDown() override
         {
             mt3_FreeTree(&tree);
-            std::cout << ">>>" << __PRETTY_FUNCTION__ << " has been run" << std::endl;
         }
 
     public:

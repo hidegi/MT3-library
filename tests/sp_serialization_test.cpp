@@ -17,7 +17,7 @@ bool containsNumber(int n, const int* array, int length)
 
 void test_insertion()
 {
-	MT3_tree tree = mt3_AllocObject();
+	MT3_tree tree = mt3_AllocTree();
 	mt3_InsertString(&tree, "x", "x");
 	mt3_InsertString(&tree, "y", "y");
 	mt3_InsertString(&tree, "fjiaw", "fjiaw");
@@ -68,7 +68,7 @@ void test_null_tree()
 
 void test_empty_tree()
 {
-    MT3_tree tree = mt3_AllocObject();
+    MT3_tree tree = mt3_AllocTree();
     mt3_InsertString(&tree, "x", "x");
     mt3_InsertString(&tree, "y", "y");
     mt3_InsertString(&tree, "z", "z");
@@ -132,7 +132,7 @@ void test_sub_tree()
 
 void test_tree_deletion()
 {
-    MT3_tree tree = mt3_AllocObject();
+    MT3_tree tree = mt3_AllocTree();
     mt3_InsertString(&tree, "x", "x");
     mt3_InsertString(&tree, "y", "y");
     mt3_InsertString(&tree, "z", "z");
@@ -550,8 +550,8 @@ void test_insert_empty_tree()
 	
 	mt3_SetString(*child123, "a", "hidegion was here");
 	const char* str = mt3_GetString(*child123, "a");
-	SP_ASSERT_STRING_EQUAL_WITH_ACTION("hidegion was here", str, mt3_FreeTree(&parent));
 	
+	SP_ASSERT_STRING_EQUAL_WITH_ACTION("hidegion was here", str, mt3_FreeTree(&parent));
 	mt3_SetString(*child123, "a", "hidegion was here");
 	
 	mt3_PrintTree(parent);
@@ -560,15 +560,13 @@ void test_insert_empty_tree()
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
-	//SP_TEST_ADD(test_serialization_trivial);
-	//SP_TEST_ADD(test_if_all_available);
-	//SP_TEST_ADD(test_if_all_available);
-	//SP_TEST_ADD(test_insertion);
-	//SP_TEST_ADD(test_null_tree);
-	//SP_TEST_ADD(test_insert_empty_tree);
+	
+	SP_TEST_ADD(test_insertion);
+	SP_TEST_ADD(test_null_tree);
+	SP_TEST_ADD(test_insert_empty_tree);
 	SP_TEST_ADD(test_sub_tree);
-	//SP_TEST_ADD(test_tree_random_integers);
-	//SP_TEST_ADD(test_random_index);
+	SP_TEST_ADD(test_tree_random_integers);
+	SP_TEST_ADD(test_random_index);
 
 	spTestRunAll();
 	spTestTerminate();
