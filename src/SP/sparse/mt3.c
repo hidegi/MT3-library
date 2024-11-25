@@ -599,14 +599,13 @@ void _mt3_free_array_impl(MT3_array array)
 			cursor = cursor->major;
 			free(n);
 		}
-		array->payload.head = NULL;
 	}
 }
 
 void mt3_FreeArray(MT3_array* array)
 {
 	_mt3_free_array_impl(*array);
-	array = NULL;
+	*array = NULL;
 }
 
 void mt3_FreeTree(MT3_tree* tree)
@@ -832,7 +831,7 @@ static void _mt3_init_array_payload(MT3_array node, MT3_tag tag, SPsize length, 
 	node->tag = tag;
 	switch(node->tag)
 	{
-		case MT3_TAG_ROOT:
+		case MT3_TAG_ROOT_ARRAY:
 		{
 			node->payload.head = mt3_CopyTree((MT3_tree) data); //copy pls..
 			break;
@@ -870,7 +869,6 @@ void _mt3_insert_multi_array(MT3_array* _array, MT3_tag tag, SPsize length, cons
 {
 	if(_array)
 	{
-		MT3_tag plainTag = tag & ~MT3_TAG_ARRAY;
 		MT3_array array = *_array;
 		if(!array)
 		{
@@ -951,7 +949,8 @@ void mt3_ArrayInsertStringArray(MT3_array* array, SPsize length, const SPchar** 
 
 void mt3_ArrayInsertArray(MT3_array* array, MT3_array value)
 {
-	_mt3_insert_multi_array(array, MT3_TAG_ARRAY, 0, value);
+	MT3_tag tag = (value && (value->tag == MT3_TAG_ROOT)) ? MT3_TAG_ROOT : MT3_TAG_NULL;
+	_mt3_insert_multi_array(array, MT3_TAG_ARRAY | tag, 0, value);
 }
 
 
@@ -1463,6 +1462,7 @@ static void _mt3_encode_array(const MT3_array array, SPbuffer* buffer, int level
 				break;
 			}
 			
+			case MT3_TAG_ROOT_ARRAY:
 			case MT3_TAG_ARRAY:
 			{
 				_mt3_print_indent(level, "length: %lld", cursor->length);
@@ -1666,6 +1666,7 @@ static MT3_array _mt3_decode_array(const SPubyte** memory, SPsize* length)
 					break;
 				}
 				
+				case MT3_TAG_ROOT_ARRAY:
 				case MT3_TAG_ARRAY:
 				{
 					MT3_READ_GENERIC(&cursor->length, sizeof(SPlong), _mt3_swapped_memcpy, return SP_FALSE);
