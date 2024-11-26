@@ -679,7 +679,7 @@ static void big_test()
 	mt3_InsertTree(&tree, "subtree_323", subtree_3);
 	mt3_InsertTree(&tree, "subtree_423", subtree_4);
     */
-	/*
+	
 	mt3_InsertByte(&tree, "byte", -128);
 	mt3_InsertShort(&tree, "short", -348);
     mt3_InsertInt(&tree, "int", -9384);
@@ -696,7 +696,7 @@ static void big_test()
     mt3_InsertFloatArray(&tree, "float_array", sizeof(float_dataset1) / sizeof(SPfloat), float_dataset1);
     mt3_InsertDoubleArray(&tree, "double_array", sizeof(double_dataset1) / sizeof(SPdouble), double_dataset1);
     mt3_InsertStringArray(&tree, "string_array", sizeof(str_dataset1) / sizeof(const SPchar*), str_dataset1);
-	*/
+	
     // multi byte arrays..
     MT3_array multi_type_array_1 = mt3_AllocArray();
     MT3_array multi_type_array_2 = NULL;
@@ -794,8 +794,6 @@ static void big_test()
 	SPbuffer buffer = mt3_WriteBinary(tree);
 	MT3_tree output = mt3_ReadBinary(buffer);
 	SP_ASSERT_NOT_NULL(output);
-	
-	mt3_PrintArray(multi_multi_type_array);
 
     printf("expected:\n");
     mt3_PrintTree(tree);

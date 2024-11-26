@@ -515,6 +515,7 @@ MT3_array mt3_CopyArray(const MT3_array n)
 						break;
 					}
 					
+					case MT3_TAG_ROOT_ARRAY:
 					case MT3_TAG_ARRAY:
 					{
 						dst_cursor->payload.head = mt3_CopyArray(src_cursor->payload.head);
@@ -582,7 +583,7 @@ void _mt3_free_array_impl(MT3_array array)
 				_mt3_free_tree_impl(cursor->payload.head);
 				cursor->payload.head = NULL;
 			}
-			else if(cursor->tag == MT3_TAG_ARRAY)
+			else if(cursor->tag == MT3_TAG_ARRAY || cursor->tag == MT3_TAG_ROOT_ARRAY)
 			{
 				//multi-array..
 				_mt3_free_array_impl(cursor->payload.head);
@@ -831,12 +832,13 @@ static void _mt3_init_array_payload(MT3_array node, MT3_tag tag, SPsize length, 
 	node->tag = tag;
 	switch(node->tag)
 	{
-		case MT3_TAG_ROOT_ARRAY:
+		case MT3_TAG_ROOT:
 		{
 			node->payload.head = mt3_CopyTree((MT3_tree) data); //copy pls..
 			break;
 		}
 		
+		case MT3_TAG_ROOT_ARRAY:
 		case MT3_TAG_ARRAY:
 		{
 			MT3_array v = (MT3_array) data;
@@ -1363,6 +1365,7 @@ void _mt3_print_array(const MT3_array array, int level)
 					break;
 				}
 				
+				case MT3_TAG_ROOT_ARRAY:
 				case MT3_TAG_ARRAY:
 				{
 					for(int i = 0; i < level; i++)
@@ -1777,8 +1780,8 @@ static SPbool _mt3_decode(MT3_tree tree, const SPubyte** memory, SPsize* length)
 				break;
 			}
 			
-			case MT3_TAG_ARRAY:
 			case MT3_TAG_ROOT_ARRAY:
+			case MT3_TAG_ARRAY:
 			{
 				MT3_READ_GENERIC(&tree->length, sizeof(SPlong), _mt3_swapped_memcpy, return SP_FALSE);
 				tree->payload.head = _mt3_decode_array(memory, length);
