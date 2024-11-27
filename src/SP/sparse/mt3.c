@@ -4,13 +4,14 @@
 #include <zlib.h>
 
 /*
- *  TODO:
- *  - use linked lists for arrays..
+ *  (final step) TODO:
+ *  - use linked lists for any arrays..
  *  - use union for payloads..
  *  - return ascii char-array to dump ascii print..
- *  - add separate definition between trees and arrays..
+ *  - add separate definition between trees and arrays: red = array, black = tree..
  *  - export internal definitions to internal header file..
  *  - add insert, delete, replace operations for arrays..
+ *  - change nomenclature to "list"..
  */
 
 //#define MT3_PRINT_OUTPUT_DEBUG
