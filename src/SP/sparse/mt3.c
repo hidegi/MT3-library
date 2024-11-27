@@ -2,6 +2,17 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <zlib.h>
+
+/*
+ *  TODO:
+ *  - use linked lists for arrays..
+ *  - use union for payloads..
+ *  - return ascii char-array to dump ascii print..
+ *  - add separate definition between trees and arrays..
+ *  - export internal definitions to internal header file..
+ *  - add insert, delete, replace operations for arrays..
+ */
+
 //#define MT3_PRINT_OUTPUT_DEBUG
 #define MT3_HAVE_BST_MAJOR_INCLINED
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
@@ -820,6 +831,12 @@ void mt3_InsertStringArray(MT3_tree* tree, const SPchar* name, SPsize length, co
 void mt3_InsertArray(MT3_tree* tree, const SPchar* name, MT3_array list)
 {
 	MT3_CHECK_INPUT(name);
+	if(list && !list->red)
+	{
+	    errno = MT3_STATUS_BAD_VALUE;
+	    return;
+	}
+
 	SPsize length = _mt3_length_of_array(list);
 	
 	MT3_tag tag = list ? ((list->tag == MT3_TAG_ROOT) ? list->tag : MT3_TAG_NULL) : MT3_TAG_NULL;
@@ -1548,7 +1565,7 @@ static void _mt3_encode(const MT3_tree tree, SPbuffer* buffer, int level)
 					i += length;
 				}
 				SPubyte zero = 0;
-				_mt3_write_bytes(buffer, (const SPubyte*) &zero, sizeof(SPbyte), level, SP_FALSE);			
+				_mt3_write_bytes(buffer, (const SPubyte*) &zero, sizeof(SPbyte), level, SP_FALSE);
 				break;
 			}
 			

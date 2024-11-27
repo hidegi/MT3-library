@@ -763,7 +763,7 @@ static void big_test()
     mt3_ArrayInsertDoubleArray(&multi_type_array_3, sizeof(double_dataset5) / sizeof(SPdouble), double_dataset5);
     mt3_ArrayInsertDoubleArray(&multi_type_array_3, sizeof(double_dataset6) / sizeof(SPdouble), double_dataset6);
 */
-/*
+
     mt3_ArrayInsertStringArray(&multi_type_array_1, sizeof(str_dataset1) / sizeof(const SPchar*), str_dataset1);
     mt3_ArrayInsertStringArray(&multi_type_array_1, sizeof(str_dataset2) / sizeof(const SPchar*), str_dataset2);
     mt3_ArrayInsertStringArray(&multi_type_array_1, sizeof(str_dataset3) / sizeof(const SPchar*), str_dataset3);
@@ -774,12 +774,12 @@ static void big_test()
     mt3_ArrayInsertStringArray(&multi_type_array_3, sizeof(str_dataset8) / sizeof(const SPchar*), str_dataset8);
     mt3_ArrayInsertStringArray(&multi_type_array_3, sizeof(str_dataset9) / sizeof(const SPchar*), str_dataset9);
     mt3_ArrayInsertStringArray(&multi_type_array_3, sizeof(str_dataset10) / sizeof(const SPchar*), str_dataset10);
-*/
+/*
     mt3_ArrayInsertTree(&multi_type_array_1, subtree_1);
     mt3_ArrayInsertTree(&multi_type_array_1, subtree_2);
     mt3_ArrayInsertTree(&multi_type_array_1, subtree_3);
     mt3_ArrayInsertTree(&multi_type_array_1, subtree_4);
-
+*/
     //mt3_InsertArray(&tree, "multi_type_array_1", multi_type_array_1);
 
     // multi multi byte arrays..

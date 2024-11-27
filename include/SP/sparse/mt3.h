@@ -1169,7 +1169,6 @@ SP_API void mt3_InsertStringArray(MT3_tree* tree, const SPchar* name, SPsize len
  *	@ingroup insertion
  */
 SP_API void mt3_InsertArray(MT3_tree* tree, const SPchar* name, MT3_array array);
-
 SP_API void mt3_ArrayInsertTree(MT3_array* array, MT3_tree value);
 SP_API void mt3_ArrayInsertByteArray(MT3_array* array, SPsize length, const SPbyte* values);
 SP_API void mt3_ArrayInsertShortArray(MT3_array* array, SPsize length, const SPshort* values);
@@ -1196,6 +1195,14 @@ SP_API SPlong mt3_GetLong(const MT3_tree tree, const SPchar* name);
 SP_API SPfloat mt3_GetFloat(const MT3_tree tree, const SPchar* name);
 SP_API SPdouble mt3_GetDouble(const MT3_tree tree, const SPchar* name);
 SP_API const SPchar* mt3_GetString(const MT3_tree tree, const SPchar* name);
+
+SP_API const SPbyte* mt3_GetByteArray(const MT3_tree tree, const SPchar* name, SPsize* length);
+SP_API const SPshort* mt3_GetShortArray(const MT3_tree tree, const SPchar* name, SPsize* length);
+SP_API const SPint* mt3_GetIntArray(const MT3_tree tree, const SPchar* name, SPsize* length);
+SP_API const SPlong* mt3_GetLongArray(const MT3_tree tree, const SPchar* name, SPsize* length);
+SP_API const SPfloat* mt3_GetFloatArray(const MT3_tree tree, const SPchar* name, SPsize* length);
+SP_API const SPdouble* mt3_GetDoubleArray(const MT3_tree tree, const SPchar* name, SPsize* length);
+SP_API const SPchar** mt3_GetStringArray(const MT3_tree tree, const SPchar* name, SPsize* length);
 /*
  *	careful here!!
  *	this returns an actual L-value pointer to a multi-tree..
