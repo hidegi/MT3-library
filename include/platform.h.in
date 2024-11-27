@@ -1,0 +1,24 @@
+#ifndef MT3_PLATFORM_H
+#define MT3_PLATFORM_H
+
+#define MT3_VERSION_MAJOR @mt3_VERSION_MAJOR@
+#define MT3_VERSION_MINOR @mt3_VERSION_MINOR@
+#define MT3_VERSION_PATCH @mt3_VERSION_PATCH@
+
+#cmakedefine MOT_PRINT_OUTPUT_DEBUG
+#cmakedefine SP_STATIC_BUILD
+#cmakedefine SP_PLATFORM_WINDOWS
+#cmakedefine SP_PLATFORM_MACOS
+#cmakedefine SP_PLATFORM_LINUX
+
+#ifndef SP_STATIC_BUILD
+	#if defined(SP_PLATFORM_WINDOWS)
+		#define SP_API __declspec(dllexport)
+	#else
+		#define SP_API __attribute__((visibility("default")))
+	#endif
+#else
+	#define SP_API
+#endif
+
+#endif

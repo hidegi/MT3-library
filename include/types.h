@@ -1,12 +1,5 @@
 #ifndef SP_TYPES_H
 #define SP_TYPES_H
-
-#define SP_FALSE 0
-#define SP_TRUE 1
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 typedef float SPfloat;
 typedef double SPdouble;
 
@@ -43,8 +36,4 @@ typedef SPuint64 SPulong;
 typedef SPulong SPsize;
 typedef SPsize SPindex;
 typedef SPulong SPhash;
-typedef void (*SP_ProcAddress)(void);
-#ifdef __cplusplus
-}
-#endif
 #endif

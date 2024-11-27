@@ -1,11 +1,5 @@
-#ifndef SP_DEBUG_H_INCLUDED
-#define SP_DEBUG_H_INCLUDED
-
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-
+#ifndef MT3_DEBUG_H
+#define MT3_DEBUG_H
 #ifdef NDEBUG
 #define SP_NO_DEBUG
 #endif
@@ -46,4 +40,4 @@ if(!(c))						\
 #define SP_PRINT(msg, ...);
 #endif //SP_NO_DEBUG
 
-#endif // DEBUG_H_INCLUDED
+#endif

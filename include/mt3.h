@@ -1,6 +1,23 @@
 #ifndef MT3_PUBLIC_INTERFACE_H
 #define MT3_PUBLIC_INTERFACE_H
 
+#include "platform.h"
+#include "types.h"
+#include "buffer.h"
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include "debug.h"
+
+#if defined(__clang__)
+#define SP_COMPILER_CLANG
+#elif defined(__GNUC__) || defined(__GNUC__)
+#define SP_COMPILER_GNUC
+#elif defined(_MSC_VER)
+#define SP_COMPILER_MSC
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,16 +66,23 @@ typedef struct _MT3_node* MT3_node;
 SP_API MT3_node mt3_AllocTree();
 SP_API MT3_node mt3_AllocList();
 
-SP_API MT3_node mt3_CopyTree(const MT3_node tree);
-SP_API MT3_node mt3_CopyList(const MT3_node list);
+SP_API void mt3_PrintTree(const MT3_node tree);
+
+//SP_API MT3_node mt3_CopyTree(const MT3_node tree);
+//SP_API MT3_node mt3_CopyList(const MT3_node list);
+
+SP_API MT3_node mt3_Copy(const MT3_node object);
 SP_API MT3_tag mt3_GetTag(const MT3_node node);
 
 /*<==========================================================>*
  *  tree interface
  *<==========================================================>*/
 SP_API SPbool mt3_IsTree(const MT3_node node);
-SP_API void mt3_InsertTree(MT3_node* tree, const char* name, const MT3_node value);
-SP_API void mt3_InsertList(MT3_node* tree, const char* name, const MT3_node value);
+
+//SP_API void mt3_InsertTree(MT3_node* tree, const char* name, const MT3_node value);
+//SP_API void mt3_InsertList(MT3_node* tree, const char* name, const MT3_node value);
+
+SP_API void mt3_Insert(MT3_node* tree, const char* name, const MT3_node value);
 SP_API void mt3_InsertByte(MT3_node* tree, const char* name, SPbyte value);
 SP_API void mt3_InsertShort(MT3_node* tree, const char* name, SPshort value);
 SP_API void mt3_InsertInt(MT3_node* tree, const char* name, SPint value);
@@ -93,14 +117,17 @@ SP_API MT3_node* mt3_GetTree(const MT3_node tree, const SPchar* name);
 SP_API MT3_node* mt3_GetList(const MT3_node tree, const SPchar* name);
 
 SP_API SPbool mt3_Remove(MT3_node* tree, const SPchar* name);
-SP_API SPbool mt3_VerifyRBT(const MT3_tree rbt);
+SP_API SPbool mt3_VerifyRBT(const MT3_node rbt);
 
 /*<==========================================================>*
  *  list interface
  *<==========================================================>*/
 SP_API SPbool mt3_IsList(const MT3_node node);
-SP_API void mt3_AppendTree(MT3_node* list, const MT3_node value);
-SP_API void mt3_AppendList(MT3_node* list, const MT3_node value);
+
+//SP_API void mt3_AppendTree(MT3_node* list, const MT3_node value);
+//SP_API void mt3_AppendList(MT3_node* list, const MT3_node value);
+
+SP_API void mt3_Append(MT3_node* list, const MT3_node value);
 SP_API void mt3_AppendByte(MT3_node* list, SPbyte value);
 SP_API void mt3_AppendShort(MT3_node* list, SPshort value);
 SP_API void mt3_AppendInt(MT3_node* list, SPint value);

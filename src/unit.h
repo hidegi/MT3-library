@@ -1,7 +1,8 @@
 #ifndef SP_TEST_H
 #define SP_TEST_H
-#include "SP/config.h"
-#include "SP/test/asserts.h"
+#include "platform.h"
+#include "types.h"
+#include "asserts.h"
 
 #ifndef SP_DEFAULT_PRECISION
 #define SP_DEFAULT_PRECISION 15

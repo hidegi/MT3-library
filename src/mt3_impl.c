@@ -1,4 +1,4 @@
-#include "SP/sparse/mt3.h"
+#include "mt3.h"
 #include <errno.h>
 #include <stdarg.h>
 #include <zlib.h>

@@ -1,5 +1,5 @@
-#include "SP/sparse/mt3.h"
-#include "SP/sparse/buffer.h"
+#include "mt3.h"
+#include "buffer.h"
 
 #ifdef SP_COMPILER_GNUC
 #define likely(x)   __builtin_expect(!!(x), 1)
@@ -28,15 +28,15 @@ void spBufferFree(SPbuffer* b)
     b->length = b->capacity = 0;
 }
 
-SPint spBufferReserve(SPbuffer* b, SPsize reserved)
+SPbool spBufferReserve(SPbuffer* b, SPsize reserved)
 {
     SP_ASSERT(b, "Cannot reserve for uninitialized buffer");
     if(unlikely(!b->data) && unlikely(_spLazyInit(b)))
     {
-        return MT3_STATUS_NO_MEMORY;
+        return SP_FALSE;
     }
     if(likely(b->capacity >= reserved))
-        return MT3_STATUS_OK;
+        return SP_TRUE;
     
     while(b->capacity < reserved)
         b->capacity *= 2;
@@ -45,27 +45,27 @@ SPint spBufferReserve(SPbuffer* b, SPsize reserved)
     if(unlikely(!tmp))
     {
         spBufferFree(b);
-        return MT3_STATUS_NO_MEMORY;
+        return SP_FALSE;
     }
     
     b->data = tmp;
-    return MT3_STATUS_OK;
+    return SP_FALSE;
 }
 
-SPint spBufferAppend(SPbuffer* b, const void* data, SPsize n)
+SPbool spBufferAppend(SPbuffer* b, const void* data, SPsize n)
 {
     SP_ASSERT(b, "Cannot append to empty buffer");
     if(unlikely(!b->data) && unlikely(_spLazyInit(b)))
     {
-        return MT3_STATUS_NO_MEMORY;
+        return SP_FALSE;
     }
     
     if(unlikely(spBufferReserve(b, b->length + n)))
     {
-        return MT3_STATUS_NO_MEMORY;
+        return SP_FALSE;
     }
     
     memcpy(b->data + b->length, data, n);
     b->length += n;
-    return MT3_STATUS_OK;
+    return SP_TRUE;
 } 

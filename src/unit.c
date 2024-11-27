@@ -1,5 +1,12 @@
-#include "SP/test/unit.h"
+#include "types.h"
+#include "debug.h"
+#include "unit.h"
 #include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <memory.h>
+#include <assert.h>
+#include <string.h>
 #define SP_DEFAULT_LIST_CAP 16
 
 typedef struct
