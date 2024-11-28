@@ -66,12 +66,7 @@ typedef struct _MT3_node* MT3_node;
 SP_API MT3_node mt3_AllocTree();
 SP_API MT3_node mt3_AllocList();
 
-SP_API void mt3_PrintTree(const MT3_node tree);
-SP_API void mt3_PrintList(const MT3_node list);
-
-//SP_API MT3_node mt3_CopyTree(const MT3_node tree);
-//SP_API MT3_node mt3_CopyList(const MT3_node list);
-
+SP_API void mt3_Print(const MT3_node tree);
 SP_API MT3_node mt3_Copy(const MT3_node object);
 SP_API MT3_tag mt3_GetTag(const MT3_node node);
 
@@ -118,7 +113,7 @@ SP_API MT3_node* mt3_GetTree(const MT3_node tree, const SPchar* name);
 SP_API MT3_node* mt3_GetList(const MT3_node tree, const SPchar* name);
 
 SP_API SPbool mt3_Remove(MT3_node* tree, const SPchar* name);
-SP_API SPbool mt3_VerifyRBT(const MT3_node rbt);
+SP_API SPbool mt3_IsValidRBT(const MT3_node rbt);
 
 /*<==========================================================>*
  *  list interface

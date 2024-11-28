@@ -26,5 +26,5 @@
 #target_link_libraries(sp_bto_test mt3)
 #target_link_libraries(sp_mt3_linked_roots_test mt3)
 
-add_executable(simpletest mt3_serialization_test.cpp)
+add_executable(simpletest mt3_base_test.cpp)
 target_link_libraries(simpletest mt3)
