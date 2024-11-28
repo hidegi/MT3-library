@@ -31,8 +31,6 @@ struct _MT3_node
 	struct _MT3_node* minor;
 };
 
-typedef struct _MT3_node* MT3_node;
-
 const char* _mt3_tag_to_str(MT3_tag tag);
 MT3_node _mt3_search(const MT3_node tree, const char* name);
 SPhash _mt3_sdbm(const SPchar* str);

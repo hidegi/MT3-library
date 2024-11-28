@@ -67,6 +67,7 @@ SP_API MT3_node mt3_AllocTree();
 SP_API MT3_node mt3_AllocList();
 
 SP_API void mt3_PrintTree(const MT3_node tree);
+SP_API void mt3_PrintList(const MT3_node list);
 
 //SP_API MT3_node mt3_CopyTree(const MT3_node tree);
 //SP_API MT3_node mt3_CopyList(const MT3_node list);
