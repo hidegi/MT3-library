@@ -48,6 +48,33 @@
 		}                                       	\
 	} while(0)
 
+#define MT3_CHECK_OBJECT()\
+    MT3_tag tag = MT3_TAG_NULL;\
+    if(value)\
+    {\
+        if(value->tag == MT3_TAG_NULL)\
+        {\
+            errno = MT3_STATUS_BAD_TAG;\
+            return;\
+        }\
+        if(!mt3_IsList(value) && !mt3_IsTree(value))\
+        {\
+            errno = MT3_STATUS_BAD_VALUE;\
+            return;\
+        }\
+        if(mt3_IsTree(value))\
+        {\
+            tag = MT3_TAG_ROOT;\
+        }\
+        else\
+        {\
+            if(value->tag & MT3_TAG_LIST)\
+                tag = MT3_TAG_LIST;\
+            else\
+                tag = MT3_TAG_LIST | value->tag;\
+        }\
+    }
+
 #define MT3_READ_GENERIC(dst, n, scanner, fail)     		\
 	do							\
 	{							\
@@ -793,15 +820,8 @@ void mt3_InsertStringList(MT3_node* tree, const char* name, SPsize length, const
 void mt3_Insert(MT3_node* tree, const char* name, const MT3_node value)
 {
     MT3_CHECK_INPUT(name);
-    if(value)
-    {
-        if(!mt3_IsTree(value) && !mt3_IsList(value))
-        {
-            errno = MT3_STATUS_BAD_VALUE;
-            return;
-        }
-    }
-	_mt3_insert_data(tree, *tree, hash, mt3_IsTree(value) ? MT3_TAG_ROOT : (value->tag | MT3_TAG_LIST), mt3_IsList(value) ? _mt3_length_of_list(value) : 0, value, SP_TRUE);
+    MT3_CHECK_OBJECT();
+	_mt3_insert_data(tree, *tree, hash, tag, mt3_IsList(value) ? _mt3_length_of_list(value) : 0, value, SP_TRUE);
 }
 
 SPsize _mt3_length_of_list(const MT3_node list)
@@ -913,16 +933,8 @@ void mt3_AppendString(MT3_node* list, const SPchar* value)
 
 void mt3_Append(MT3_node* list, const MT3_node value)
 {
-    if(value)
-    {
-        if(!mt3_IsList(value) && !mt3_IsTree(value))
-        {
-            errno = MT3_STATUS_BAD_VALUE;
-            return;
-        }
-    }
-
-    _mt3_insert_multi_list(list, mt3_IsTree(value) ? MT3_TAG_ROOT : value->tag | MT3_TAG_LIST, mt3_IsTree(value) ? 0 : _mt3_length_of_list(value), value);
+    MT3_CHECK_OBJECT();
+    _mt3_insert_multi_list(list, tag, mt3_IsTree(value) ? 0 : _mt3_length_of_list(value), value);
 }
 
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
