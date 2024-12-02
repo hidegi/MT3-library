@@ -92,8 +92,7 @@ SP_API SPlong mt3_GetLong(const MT3_node tree, const SPchar* name);
 SP_API SPfloat mt3_GetFloat(const MT3_node tree, const SPchar* name);
 SP_API SPdouble mt3_GetDouble(const MT3_node tree, const SPchar* name);
 SP_API const SPchar* mt3_GetString(const MT3_node tree, const SPchar* name);
-SP_API MT3_node* mt3_GetTree(const MT3_node tree, const SPchar* name);
-SP_API MT3_node* mt3_GetList(const MT3_node tree, const SPchar* name);
+SP_API MT3_node* mt3_Get(const MT3_node tree, const SPchar* name);
 
 SP_API void mt3_SetByte(MT3_node tree, const char* name, SPbyte value);
 SP_API void mt3_SetShort(MT3_node tree, const char* name, SPshort value);
@@ -142,8 +141,7 @@ SP_API SPlong mt3_GetLongAt(const MT3_node list, SPindex index);
 SP_API SPfloat mt3_GetFloatAt(const MT3_node list, SPindex index);
 SP_API SPdouble mt3_GetDoubleAt(const MT3_node list, SPindex index);
 SP_API const SPchar* mt3_GetStringAt(const MT3_node list, SPindex index);
-SP_API MT3_node* mt3_GetTreeAt(const MT3_node list, SPindex index);
-SP_API MT3_node* mt3_GetListAt(const MT3_node list, SPindex index);
+SP_API MT3_node* mt3_GetAt(const MT3_node list, SPindex index);
 
 //converts a contiguous list in memory to a linked list..
 SP_API MT3_node mt3_ToList(MT3_tag tag, SPsize length, const void* data);
