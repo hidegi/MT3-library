@@ -578,6 +578,29 @@ void test_encode_decode_string_multi_multi_multi_list()
 	mt3_Delete(&string_multi_multi_list);
 	mt3_Delete(&tree);
 }
+
+void test_encode_decode_tree_list()
+{
+    MT3_node tree_1 = NULL;
+
+    mt3_InsertString(&tree_1, "hda1", "hda1");
+    mt3_InsertString(&tree_1, "hda2", "hda2");
+    mt3_InsertString(&tree_1, "hda3", "hda3");
+    mt3_InsertString(&tree_1, "hda4", "hda4");
+
+    MT3_node list = NULL;
+    mt3_Append(&list, tree_1);
+    mt3_Append(&list, tree_1);
+    mt3_Append(&list, tree_1);
+    mt3_Append(&list, tree_1);
+
+    MT3_node main_tree = NULL;
+    mt3_Insert(&main_tree, "list", list);
+    mt3_Print(main_tree);
+    mt3_Delete(&main_tree);
+    mt3_Delete(&tree_1);
+    mt3_Delete(&list);
+}
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
@@ -588,6 +611,7 @@ int main(int argc, char** argv)
 	SP_TEST_ADD(test_encode_decode_byte_multi_multi_list);
 	SP_TEST_ADD(test_encode_decode_string_multi_multi_list);
 	SP_TEST_ADD(test_encode_decode_string_multi_multi_multi_list);
+	SP_TEST_ADD(test_encode_decode_tree_list);
 	spTestRunAll();
 	spTestTerminate();
 	return 0;

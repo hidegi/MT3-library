@@ -5,14 +5,11 @@
 #define MT3_CHECKED_CALLOC(ptr, n, size, on_error)		\
 	do							\
 	{							\
-		if(n * size < 100000000000)\
-		{\
 		if(!((ptr) = calloc(n, size)))			\
 		{						\
 			errno = MT3_STATUS_NO_MEMORY;		\
 			on_error;				\
 		}						\
-		}\
 	} while(0)
 		
 struct _MT3_node

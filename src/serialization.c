@@ -233,7 +233,6 @@ static void _mt3_encode(const MT3_node node, SPbuffer* buffer, int level)
 {	
 	if(node)
 	{
-		
 		switch(node->tag)
 		{
 			case MT3_TAG_BYTE: _mt3_print_indent(level, "data: (%lld byte(s))", sizeof(SPbyte)); _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_byte, sizeof(SPbyte), SP_TRUE, level); break;
@@ -477,6 +476,7 @@ SPbool _mt3_decode_list(MT3_node node, const SPubyte** memory, SPsize* length)
                 mt3_Delete(&array);
                 return SP_FALSE;
             }
+            
             cursor->major = mt3_AllocList();
             MT3_node minor = cursor;
             cursor = cursor->major;
