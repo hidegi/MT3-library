@@ -1010,7 +1010,7 @@ MT3_node mt3_ToList(MT3_tag tag, SPsize length, const void* data)
 	MT3_node list = NULL;
 	for(SPsize i = 0; i < length; i++)
 	{
-		switch(tag)
+		switch(tag & ~MT3_TAG_LIST)
 		{
 			case MT3_TAG_BYTE: mt3_AppendByte(&list, *(((const SPbyte*) data) + i)); break;
 			case MT3_TAG_SHORT: mt3_AppendShort(&list, *(((const SPshort*) data) + i)); break;
