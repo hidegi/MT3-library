@@ -125,9 +125,9 @@ static MT3_node _mt3_alloc_node(MT3_tag tag, SPhash name, SPsize length, const v
 		case MT3_TAG_DOUBLE: node->payload.tag_double = *(const SPdouble*) value; break;
 		case MT3_TAG_STRING:
 		{
-			MT3_CHECKED_CALLOC(node->payload.tag_string, node->length, sizeof(SPbyte), return NULL);
-			memcpy(node->payload.tag_string, (const SPbyte*) value, node->length * sizeof(SPbyte));
-			node->payload.tag_string[node->length - 1] = 0;
+		    MT3_CHECKED_CALLOC(node->payload.tag_string, node->length, sizeof(SPbyte), return NULL);
+		    memcpy(node->payload.tag_string, (const SPbyte*) value, node->length * sizeof(SPbyte));
+		    node->payload.tag_string[node->length - 1] = 0;
 			break;
 		}
 		
@@ -257,9 +257,9 @@ static SPbool _mt3_copy_payload_from_memory(MT3_node node, MT3_tag tag, SPsize l
 			case MT3_TAG_DOUBLE: node->payload.tag_double = *(const SPdouble*) value; node->length = sizeof(SPdouble); break;
 			case MT3_TAG_STRING:
 			{
-				node->length = length;
-				MT3_CHECKED_CALLOC(node->payload.tag_string, length, sizeof(SPchar), return SP_FALSE);
-				memcpy(node->payload.tag_string, (const SPchar*) value, length);
+			    node->length = length;
+			    MT3_CHECKED_CALLOC(node->payload.tag_string, length, sizeof(SPchar), return SP_FALSE);
+			    memcpy(node->payload.tag_string, (const SPchar*) value, length);
 				break;
 			}
 			
@@ -375,7 +375,7 @@ void _mt3_delete_node(MT3_node n)
 				break;
 			case MT3_TAG_STRING:
 			{
-				free(n->payload.tag_string);
+			    free(n->payload.tag_string);
 				break;
 			}
 			
@@ -805,7 +805,7 @@ static void _mt3_insert_list(MT3_node* tree, const char* name, MT3_tag tag, SPsi
 
 	MT3_node list = mt3_ToList(tag & ~MT3_TAG_LIST, length, values);
 	SP_ASSERT(list, "Expected non-NULL list");
-	_mt3_insert_data(tree, *tree, hash, tag, length, list, SP_FALSE);
+	_mt3_insert_data(tree, *tree, hash, tag, _mt3_length_of_list(list), list, SP_FALSE);
 }
 
 void mt3_InsertByteList(MT3_node* tree, const char* name, SPsize length, const SPbyte* values)
@@ -949,16 +949,19 @@ static void _mt3_set_value(MT3_node tree, MT3_tag tag, const char* name, const v
 			case MT3_TAG_STRING:
 			{
 				const SPchar* newValue = (const SPchar*) value;
-				SPsize length = strlen(newValue) + 1;
-				SPchar* newStr = realloc(n->payload.tag_string, length);
-				if(!newStr)
+				if(newValue)
 				{
-					errno = MT3_STATUS_NO_MEMORY;
-					return;
-				}
-				n->payload.tag_string = newStr;
-				memcpy(n->payload.tag_string, newValue, length - 1);
-				n->payload.tag_string[length - 1] = 0;
+                    SPsize length = strlen(newValue) + 1;
+                    SPchar* newStr = realloc(n->payload.tag_string, length);
+                    if(!newStr)
+                    {
+                        errno = MT3_STATUS_NO_MEMORY;
+                        return;
+                    }
+                    n->payload.tag_string = newStr;
+                    memcpy(n->payload.tag_string, newValue, length - 1);
+                    n->payload.tag_string[length - 1] = 0;
+			    }
 				break;
 			}
 		}
@@ -1015,7 +1018,12 @@ MT3_node mt3_ToList(MT3_tag tag, SPsize length, const void* data)
 			case MT3_TAG_LONG: mt3_AppendLong(&list, *(((const SPlong*) data) + i)); break;
 			case MT3_TAG_FLOAT: mt3_AppendFloat(&list, *(((const SPfloat*) data) + i)); break;
 			case MT3_TAG_DOUBLE: mt3_AppendDouble(&list, *(((const SPdouble*) data) + i)); break;
-			case MT3_TAG_STRING: mt3_AppendString(&list, *(((const SPchar**) data) + i)); break;
+			case MT3_TAG_STRING:
+			{
+			    if(*(((const SPchar**) data) + i))
+    			    mt3_AppendString(&list, *(((const SPchar**) data) + i));
+                break;
+			}
 		}
 	}
 	return list;
@@ -1144,7 +1152,7 @@ void mt3_AppendStringList(MT3_node* list, SPsize length, const SPchar** values)
 {
 	MT3_node v = mt3_ToList(MT3_TAG_STRING, length, values);
 	SP_ASSERT(v, "Expected list non-equal NULL");
-	_mt3_insert_multi_list(list, MT3_TAG_STRING_LIST, length, v, SP_FALSE);
+	_mt3_insert_multi_list(list, MT3_TAG_STRING_LIST, _mt3_length_of_list(v), v, SP_FALSE);
 }
 
 void mt3_Append(MT3_node* list, const MT3_node value)

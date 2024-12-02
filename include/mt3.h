@@ -67,9 +67,6 @@ SP_API MT3_tag mt3_GetTag(const MT3_node node);
  *<==========================================================>*/
 SP_API SPbool mt3_IsTree(const MT3_node node);
 
-//SP_API void mt3_InsertTree(MT3_node* tree, const char* name, const MT3_node value);
-//SP_API void mt3_InsertList(MT3_node* tree, const char* name, const MT3_node value);
-
 SP_API void mt3_Insert(MT3_node* tree, const char* name, const MT3_node value);
 SP_API void mt3_InsertByte(MT3_node* tree, const char* name, SPbyte value);
 SP_API void mt3_InsertShort(MT3_node* tree, const char* name, SPshort value);
@@ -113,9 +110,6 @@ SP_API SPbool mt3_IsValidRBT(const MT3_node rbt);
  *  list interface
  *<==========================================================>*/
 SP_API SPbool mt3_IsList(const MT3_node node);
-
-//SP_API void mt3_AppendTree(MT3_node* list, const MT3_node value);
-//SP_API void mt3_AppendList(MT3_node* list, const MT3_node value);
 
 SP_API void mt3_Append(MT3_node* list, const MT3_node value);
 SP_API void mt3_AppendByte(MT3_node* list, SPbyte value);

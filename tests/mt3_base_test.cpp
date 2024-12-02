@@ -270,8 +270,11 @@ static const SPchar* string_data_set_05[] = {
     "Raccoon",
     "Squirrel",
     "Turtle",
+    NULL,
+    NULL,
     "Uakari",
     "Vulture",
+    NULL,
     "Wolf",
     "Xerus"
 };
@@ -816,7 +819,8 @@ int main(int argc, char** argv)
 	SP_TEST_ADD(test_string_multi_list_insert);
 	*/
 	//SP_TEST_ADD(test_deletion);
-	SP_TEST_ADD(test_replace);
+	SP_TEST_ADD(test_string_list_insert);
+	//SP_TEST_ADD(test_replace);
 	spTestRunAll();
 	spTestTerminate();
 	return 0;

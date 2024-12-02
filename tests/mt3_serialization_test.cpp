@@ -550,8 +550,8 @@ void test_encode_decode_string_multi_multi_multi_list()
 	MT3_node string_multi_list_2 = NULL;
 
 
-	mt3_AppendStringList(&string_multi_list_1, string_data_set_01_length, string_data_set_01);
-	mt3_AppendStringList(&string_multi_list_1, string_data_set_02_length, string_data_set_02);
+	mt3_AppendIntList(&string_multi_list_1, int_data_set_01_length, int_data_set_01);
+	mt3_AppendIntList(&string_multi_list_1, int_data_set_02_length, int_data_set_02);
 	mt3_AppendStringList(&string_multi_list_2, string_data_set_03_length, string_data_set_03);
 	mt3_AppendStringList(&string_multi_list_2, string_data_set_04_length, string_data_set_04);
 
