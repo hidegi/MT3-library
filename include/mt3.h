@@ -94,14 +94,8 @@ SP_API void mt3_InsertFloatList(MT3_node* tree, const char* name, SPsize length,
 SP_API void mt3_InsertDoubleList(MT3_node* tree, const char* name, SPsize length, const SPdouble* values);
 SP_API void mt3_InsertStringList(MT3_node* tree, const char* name, SPsize length, const SPchar** values);
 
-SP_API void mt3_SetByte(MT3_node tree, const char* name, SPbyte value);
-SP_API void mt3_SetShort(MT3_node tree, const char* name, SPshort value);
-SP_API void mt3_SetInt(MT3_node tree, const char* name, SPint value);
-SP_API void mt3_SetLong(MT3_node tree, const char* name, SPlong value);
-SP_API void mt3_SetFloat(MT3_node tree, const char* name, SPfloat value);
-SP_API void mt3_SetDouble(MT3_node tree, const char* name, SPdouble value);
-SP_API void mt3_SetString(MT3_node tree, const char* name, const SPchar* value);
-
+SP_API SPlong mt3_GetNumber(const MT3_node tree, const SPchar* name);
+SP_API SPdouble mt3_GetDecimal(const MT3_node tree, const SPchar* name);
 SP_API SPbyte mt3_GetByte(const MT3_node tree, const SPchar* name);
 SP_API SPshort mt3_GetShort(const MT3_node tree, const SPchar* name);
 SP_API SPint mt3_GetInt(const MT3_node tree, const SPchar* name);
@@ -111,6 +105,14 @@ SP_API SPdouble mt3_GetDouble(const MT3_node tree, const SPchar* name);
 SP_API const SPchar* mt3_GetString(const MT3_node tree, const SPchar* name);
 SP_API MT3_node* mt3_GetTree(const MT3_node tree, const SPchar* name);
 SP_API MT3_node* mt3_GetList(const MT3_node tree, const SPchar* name);
+
+SP_API void mt3_SetByte(MT3_node tree, const char* name, SPbyte value);
+SP_API void mt3_SetShort(MT3_node tree, const char* name, SPshort value);
+SP_API void mt3_SetInt(MT3_node tree, const char* name, SPint value);
+SP_API void mt3_SetLong(MT3_node tree, const char* name, SPlong value);
+SP_API void mt3_SetFloat(MT3_node tree, const char* name, SPfloat value);
+SP_API void mt3_SetDouble(MT3_node tree, const char* name, SPdouble value);
+SP_API void mt3_SetString(MT3_node tree, const char* name, const SPchar* value);
 
 SP_API SPbool mt3_Remove(MT3_node* tree, const SPchar* name);
 SP_API SPbool mt3_IsValidRBT(const MT3_node rbt);
@@ -165,8 +167,8 @@ SP_API MT3_node mt3_Last(const MT3_node n);
 SP_API void mt3_RemoveAt(MT3_node list, SPindex pos);
 
 /*<==========================================================>*/
-SP_API SPbuffer mt3_WriteBinary(const MT3_node node);
-SP_API MT3_node mt3_ReadBinary(SPbuffer buffer);
+SP_API SPbuffer mt3_EncodeTree(const MT3_node node);
+SP_API MT3_node mt3_DecodeTree(SPbuffer buffer);
 SP_API void mt3_Delete(MT3_node* node);
 
 SP_API MT3_status mt3_GetLastError();

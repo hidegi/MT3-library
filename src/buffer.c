@@ -17,7 +17,7 @@ static int _spLazyInit(SPbuffer* b)
     b->length = 0;
     b->capacity = capacity;
     
-    return unlikely(!b->data) ? MT3_STATUS_NO_MEMORY : MT3_STATUS_OK;
+    return unlikely(!b->data) ? SP_FALSE : SP_TRUE;
 }
 
 void spBufferFree(SPbuffer* b)
@@ -31,7 +31,7 @@ void spBufferFree(SPbuffer* b)
 SPbool spBufferReserve(SPbuffer* b, SPsize reserved)
 {
     SP_ASSERT(b, "Cannot reserve for uninitialized buffer");
-    if(unlikely(!b->data) && unlikely(_spLazyInit(b)))
+    if(unlikely(!b->data) && unlikely(!_spLazyInit(b)))
     {
         return SP_FALSE;
     }
@@ -49,18 +49,18 @@ SPbool spBufferReserve(SPbuffer* b, SPsize reserved)
     }
     
     b->data = tmp;
-    return SP_FALSE;
+    return SP_TRUE;
 }
 
 SPbool spBufferAppend(SPbuffer* b, const void* data, SPsize n)
 {
     SP_ASSERT(b, "Cannot append to empty buffer");
-    if(unlikely(!b->data) && unlikely(_spLazyInit(b)))
+    if(unlikely(!b->data) && unlikely(!_spLazyInit(b)))
     {
         return SP_FALSE;
     }
     
-    if(unlikely(spBufferReserve(b, b->length + n)))
+    if(unlikely(!spBufferReserve(b, b->length + n)))
     {
         return SP_FALSE;
     }

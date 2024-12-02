@@ -1,4 +1,3 @@
-#include "mt3.h"
 #include "internal.h"
 #include <errno.h>
 
@@ -8,16 +7,6 @@
 #pragma GCC diagnostic ignored "-Wswitch"
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
-#define MT3_CHECKED_CALLOC(ptr, n, size, on_error)		\
-	do							\
-	{							\
-		if(!((ptr) = calloc(n, size)))			\
-		{						\
-			errno = MT3_STATUS_NO_MEMORY;		\
-			on_error;				\
-		}						\
-	} while(0)
-
 #define MT3_CHECK_INPUT(_name)					\
 	SPhash hash = 0;					\
 	do							\
@@ -660,7 +649,7 @@ static void _mt3_print(const MT3_node tree, int level, SPbool printTreeData)
 			
 			default:
 			{
-				SP_ASSERT(tree->length == _mt3_length_of_list(tree->payload.tag_object), "Expected equal length for list");
+				SP_ASSERT(tree->length == _mt3_length_of_list(tree->payload.tag_object), "Expected %lld length for list but got %lld", _mt3_length_of_list(tree->payload.tag_object), tree->length);
 				if(printTreeData)
 					printf("(%c%c) %s (%lld elements) (%lld):\n", color, rank, _mt3_tag_to_str(tree->tag), tree->length, tree->weight);
 				else
@@ -871,6 +860,147 @@ SPsize _mt3_length_of_list(const MT3_node list)
 	}
 	return length;
 }
+
+SPlong mt3_GetNumber(const MT3_node tree, const SPchar* name)
+{
+	MT3_node n = _mt3_search(tree, name);
+	if(n)
+	{
+		switch(n->tag)
+		{
+			case MT3_TAG_BYTE: return n->payload.tag_byte;
+			case MT3_TAG_SHORT: return n->payload.tag_short;
+			case MT3_TAG_INT: return n->payload.tag_int;
+			case MT3_TAG_LONG: return n->payload.tag_long;
+		}
+	}
+	return 0LL;
+}
+
+SPdouble mt3_GetDecimal(const MT3_node tree, const SPchar* name)
+{
+	MT3_node n = _mt3_search(tree, name);
+	if(n)
+	{
+		switch(n->tag)
+		{
+			case MT3_TAG_FLOAT: return n->payload.tag_float;
+			case MT3_TAG_DOUBLE: return n->payload.tag_double;
+		}
+	}
+	return 0.0;
+}
+
+SPbyte mt3_GetByte(const MT3_node tree, const SPchar* name)
+{
+	MT3_node n = _mt3_search(tree, name);
+	return (n && n->tag == MT3_TAG_BYTE) ? n->payload.tag_byte : 0;
+}
+
+SPshort mt3_GetShort(const MT3_node tree, const SPchar* name)
+{
+	MT3_node n = _mt3_search(tree, name);
+	return (n && n->tag == MT3_TAG_SHORT) ? n->payload.tag_short : 0;
+}
+
+SPint mt3_GetInt(const MT3_node tree, const SPchar* name)
+{
+	MT3_node n = _mt3_search(tree, name);
+	return (n && n->tag == MT3_TAG_INT) ? n->payload.tag_int : 0;
+}
+
+SPlong mt3_GetLong(const MT3_node tree, const SPchar* name)
+{
+	MT3_node n = _mt3_search(tree, name);
+	return (n && n->tag == MT3_TAG_LONG) ? n->payload.tag_long : 0;
+}
+
+SPfloat mt3_GetFloat(const MT3_node tree, const SPchar* name)
+{
+	MT3_node n = _mt3_search(tree, name);
+	return (n && n->tag == MT3_TAG_FLOAT) ? n->payload.tag_float : 0;
+}
+
+SPdouble mt3_GetDouble(const MT3_node tree, const SPchar* name)
+{
+	MT3_node n = _mt3_search(tree, name);
+	return (n && n->tag == MT3_TAG_DOUBLE) ? n->payload.tag_double : 0;
+}
+
+const SPchar* mt3_GetString(const MT3_node tree, const SPchar* name)
+{
+	MT3_node n = _mt3_search(tree, name);
+	return (n && n->tag == MT3_TAG_STRING) ? n->payload.tag_string : 0;
+}
+
+static void _mt3_set_value(MT3_node tree, MT3_tag tag, const char* name, const void* value)
+{
+	MT3_node n = _mt3_search(tree, name);
+	if(n && n->tag == tag)
+	{
+		switch(tag)
+		{
+			case MT3_TAG_BYTE: n->payload.tag_byte = *((const SPbyte*) value); break;
+			case MT3_TAG_SHORT: n->payload.tag_short = *((const SPshort*) value); break;
+			case MT3_TAG_INT: n->payload.tag_int = *((const SPint*) value); break;
+			case MT3_TAG_LONG: n->payload.tag_long = *((const SPlong*) value); break;
+			case MT3_TAG_FLOAT: n->payload.tag_float = *((const SPfloat*) value); break;
+			case MT3_TAG_DOUBLE: n->payload.tag_double = *((const SPdouble*) value); break;
+			case MT3_TAG_STRING:
+			{
+				const SPchar* newValue = (const SPchar*) value;
+				SPsize length = strlen(newValue) + 1;
+				SPchar* newStr = realloc(n->payload.tag_string, length);
+				if(!newStr)
+				{
+					errno = MT3_STATUS_NO_MEMORY;
+					return;
+				}
+				n->payload.tag_string = newStr;
+				memcpy(n->payload.tag_string, newValue, length - 1);
+				n->payload.tag_string[length - 1] = 0;
+				break;
+			}
+		}
+	}
+}
+
+void mt3_SetByte(MT3_node tree, const char* name, SPbyte value)
+{
+	_mt3_set_value(tree, MT3_TAG_BYTE, name, &value);
+}
+
+void mt3_SetShort(MT3_node tree, const char* name, SPshort value)
+{
+	_mt3_set_value(tree, MT3_TAG_SHORT, name, &value);
+}
+
+void mt3_SetInt(MT3_node tree, const char* name, SPint value)
+{
+	_mt3_set_value(tree, MT3_TAG_INT, name, &value);
+}
+
+void mt3_SetLong(MT3_node tree, const char* name, SPlong value)
+{
+	_mt3_set_value(tree, MT3_TAG_LONG, name, &value);
+}
+
+void mt3_SetFloat(MT3_node tree, const char* name, SPfloat value)
+{
+	_mt3_set_value(tree, MT3_TAG_FLOAT, name, &value);
+}
+
+void mt3_SetDouble(MT3_node tree, const char* name, SPdouble value)
+{
+	_mt3_set_value(tree, MT3_TAG_DOUBLE, name, &value);
+}
+
+void mt3_SetString(MT3_node tree, const char* name, const SPchar* value)
+{
+	_mt3_set_value(tree, MT3_TAG_STRING, name, value);
+}
+
+
 
 MT3_node mt3_ToList(MT3_tag tag, SPsize length, const void* data)
 {

@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <random>
-
 static const SPbyte byte_data_set_01[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 static const SPbyte byte_data_set_02[] = {-31, -2, -74, -20, 15, -104, -67, 22, 36, -65, 118, -112, -22, -79, -7, -110, 59, -95, -70, 116};
 static const SPbyte byte_data_set_03[] = {-17, 39, 97, -82, -54, -109, 95, -33, -91, 125, -31, -97, 126, -70, -55, 18, 60, -111, 54, 71};
@@ -364,459 +363,154 @@ static const SPsize string_data_set_08_length = sizeof(string_data_set_08) / siz
 static const SPsize string_data_set_09_length = sizeof(string_data_set_09) / sizeof(const SPchar*);
 static const SPsize string_data_set_10_length = sizeof(string_data_set_10) / sizeof(const SPchar*);
 
-void test_byte_insert()
+void test_encode_decode_trivial()
 {
 	MT3_node tree = NULL;
-	for(SPsize i = 0; i < 10; i++)
-	{
-		mt3_InsertByte(&tree, std::string("byte_" + std::to_string(i + 1)).c_str(), byte_data_set_01[i]);
-	}
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_short_insert()
-{
-	MT3_node tree = NULL;
-	for(SPsize i = 0; i < 10; i++)
-	{
-		mt3_InsertShort(&tree, std::string("short_" + std::to_string(i + 1)).c_str(), short_data_set_01[i]);
-	}
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_int_insert()
-{
-	MT3_node tree = NULL;
-	for(SPsize i = 0; i < 10; i++)
-	{
-		mt3_InsertInt(&tree, std::string("int_" + std::to_string(i + 1)).c_str(), int_data_set_01[i]);
-	}
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_long_insert()
-{
-	MT3_node tree = NULL;
-	for(SPsize i = 0; i < 10; i++)
-	{
-		mt3_InsertLong(&tree, std::string("long_" + std::to_string(i + 1)).c_str(), long_data_set_01[i]);
-	}
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_float_insert()
-{
-	MT3_node tree = NULL;
-	for(SPsize i = 0; i < 10; i++)
-	{
-		mt3_InsertFloat(&tree, std::string("float_" + std::to_string(i + 1)).c_str(), float_data_set_01[i]);
-	}
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_double_insert()
-{
-	MT3_node tree = NULL;
-	for(SPsize i = 0; i < 10; i++)
-	{
-		mt3_InsertDouble(&tree, std::string("double_" + std::to_string(i + 1)).c_str(), double_data_set_01[i]);
-	}
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_string_insert()
-{
-	MT3_node tree = NULL;
-	for(SPsize i = 0; i < 10; i++)
-	{
-		mt3_InsertString(&tree, std::string("string_" + std::to_string(i + 1)).c_str(), string_data_set_01[i]);
-	}
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_tree_insert()
-{
-	MT3_node tree = NULL;
-	for(SPsize i = 0; i < 10; i++)
-	{
-		MT3_node subtree = NULL;
-		mt3_InsertByte(&subtree, "byte", byte_data_set_01[i]);
-		mt3_InsertShort(&subtree, "short", short_data_set_01[i]);
-		mt3_InsertInt(&subtree, "int", int_data_set_01[i]);
-		mt3_InsertLong(&subtree, "long", long_data_set_01[i]);
-		mt3_InsertFloat(&subtree, "float", float_data_set_01[i]);
-		mt3_InsertDouble(&subtree, "double", double_data_set_01[i]);
-		mt3_InsertString(&subtree, "string", string_data_set_01[i]);
-		mt3_Insert(&tree, std::string("tree_" + std::to_string(i + 1)).c_str(), subtree);
-		mt3_Delete(&subtree);
-	}
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_byte_list_insert()
-{
-	MT3_node tree = NULL;
-	mt3_InsertByteList(&tree, "byte_array_01", byte_data_set_01_length, byte_data_set_01);
-	mt3_InsertByteList(&tree, "byte_array_02", byte_data_set_02_length, byte_data_set_02);
-	mt3_InsertByteList(&tree, "byte_array_03", byte_data_set_03_length, byte_data_set_03);
-	mt3_InsertByteList(&tree, "byte_array_04", byte_data_set_04_length, byte_data_set_04);
-	mt3_InsertByteList(&tree, "byte_array_05", byte_data_set_05_length, byte_data_set_05);
-	mt3_InsertByteList(&tree, "byte_array_06", byte_data_set_06_length, byte_data_set_06);
-	mt3_InsertByteList(&tree, "byte_array_07", byte_data_set_07_length, byte_data_set_07);
-	mt3_InsertByteList(&tree, "byte_array_08", byte_data_set_08_length, byte_data_set_08);
-	mt3_InsertByteList(&tree, "byte_array_09", byte_data_set_09_length, byte_data_set_09);
-	mt3_InsertByteList(&tree, "byte_array_10", byte_data_set_10_length, byte_data_set_10);
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_short_list_insert()
-{
-	MT3_node tree = NULL;
-	mt3_InsertShortList(&tree, "short_array_01", short_data_set_01_length, short_data_set_01);
-	mt3_InsertShortList(&tree, "short_array_02", short_data_set_02_length, short_data_set_02);
-	mt3_InsertShortList(&tree, "short_array_03", short_data_set_03_length, short_data_set_03);
-	mt3_InsertShortList(&tree, "short_array_04", short_data_set_04_length, short_data_set_04);
-	mt3_InsertShortList(&tree, "short_array_05", short_data_set_05_length, short_data_set_05);
-	mt3_InsertShortList(&tree, "short_array_06", short_data_set_06_length, short_data_set_06);
-	mt3_InsertShortList(&tree, "short_array_07", short_data_set_07_length, short_data_set_07);
-	mt3_InsertShortList(&tree, "short_array_08", short_data_set_08_length, short_data_set_08);
-	mt3_InsertShortList(&tree, "short_array_09", short_data_set_09_length, short_data_set_09);
-	mt3_InsertShortList(&tree, "short_array_10", short_data_set_10_length, short_data_set_10);
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_int_list_insert()
-{
-	MT3_node tree = NULL;
-	mt3_InsertIntList(&tree, "int_array_01", int_data_set_01_length, int_data_set_01);
-	mt3_InsertIntList(&tree, "int_array_02", int_data_set_02_length, int_data_set_02);
-	mt3_InsertIntList(&tree, "int_array_03", int_data_set_03_length, int_data_set_03);
-	mt3_InsertIntList(&tree, "int_array_04", int_data_set_04_length, int_data_set_04);
-	mt3_InsertIntList(&tree, "int_array_05", int_data_set_05_length, int_data_set_05);
-	mt3_InsertIntList(&tree, "int_array_06", int_data_set_06_length, int_data_set_06);
-	mt3_InsertIntList(&tree, "int_array_07", int_data_set_07_length, int_data_set_07);
-	mt3_InsertIntList(&tree, "int_array_08", int_data_set_08_length, int_data_set_08);
-	mt3_InsertIntList(&tree, "int_array_09", int_data_set_09_length, int_data_set_09);
-	mt3_InsertIntList(&tree, "int_array_10", int_data_set_10_length, int_data_set_10);
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_long_list_insert()
-{
-	MT3_node tree = NULL;
-	mt3_InsertLongList(&tree, "long_array_01", long_data_set_01_length, long_data_set_01);
-	mt3_InsertLongList(&tree, "long_array_02", long_data_set_02_length, long_data_set_02);
-	mt3_InsertLongList(&tree, "long_array_03", long_data_set_03_length, long_data_set_03);
-	mt3_InsertLongList(&tree, "long_array_04", long_data_set_04_length, long_data_set_04);
-	mt3_InsertLongList(&tree, "long_array_05", long_data_set_05_length, long_data_set_05);
-	mt3_InsertLongList(&tree, "long_array_06", long_data_set_06_length, long_data_set_06);
-	mt3_InsertLongList(&tree, "long_array_07", long_data_set_07_length, long_data_set_07);
-	mt3_InsertLongList(&tree, "long_array_08", long_data_set_08_length, long_data_set_08);
-	mt3_InsertLongList(&tree, "long_array_09", long_data_set_09_length, long_data_set_09);
-	mt3_InsertLongList(&tree, "long_array_10", long_data_set_10_length, long_data_set_10);
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_float_list_insert()
-{
-	MT3_node tree = NULL;
-	mt3_InsertFloatList(&tree, "float_array_01", float_data_set_01_length, float_data_set_01);
-	mt3_InsertFloatList(&tree, "float_array_02", float_data_set_02_length, float_data_set_02);
-	mt3_InsertFloatList(&tree, "float_array_03", float_data_set_03_length, float_data_set_03);
-	mt3_InsertFloatList(&tree, "float_array_04", float_data_set_04_length, float_data_set_04);
-	mt3_InsertFloatList(&tree, "float_array_05", float_data_set_05_length, float_data_set_05);
-	mt3_InsertFloatList(&tree, "float_array_06", float_data_set_06_length, float_data_set_06);
-	mt3_InsertFloatList(&tree, "float_array_07", float_data_set_07_length, float_data_set_07);
-	mt3_InsertFloatList(&tree, "float_array_08", float_data_set_08_length, float_data_set_08);
-	mt3_InsertFloatList(&tree, "float_array_09", float_data_set_09_length, float_data_set_09);
-	mt3_InsertFloatList(&tree, "float_array_10", float_data_set_10_length, float_data_set_10);
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_double_list_insert()
-{
-	MT3_node tree = NULL;
-	mt3_InsertDoubleList(&tree, "double_array_01", double_data_set_01_length, double_data_set_01);
-	mt3_InsertDoubleList(&tree, "double_array_02", double_data_set_02_length, double_data_set_02);
-	mt3_InsertDoubleList(&tree, "double_array_03", double_data_set_03_length, double_data_set_03);
-	mt3_InsertDoubleList(&tree, "double_array_04", double_data_set_04_length, double_data_set_04);
-	mt3_InsertDoubleList(&tree, "double_array_05", double_data_set_05_length, double_data_set_05);
-	mt3_InsertDoubleList(&tree, "double_array_06", double_data_set_06_length, double_data_set_06);
-	mt3_InsertDoubleList(&tree, "double_array_07", double_data_set_07_length, double_data_set_07);
-	mt3_InsertDoubleList(&tree, "double_array_08", double_data_set_08_length, double_data_set_08);
-	mt3_InsertDoubleList(&tree, "double_array_09", double_data_set_09_length, double_data_set_09);
-	mt3_InsertDoubleList(&tree, "double_array_10", double_data_set_10_length, double_data_set_10);
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_string_list_insert()
-{
-	MT3_node tree = NULL;
-	mt3_InsertStringList(&tree, "string_array_01", string_data_set_01_length, string_data_set_01);
-	mt3_InsertStringList(&tree, "string_array_02", string_data_set_02_length, string_data_set_02);
-	mt3_InsertStringList(&tree, "string_array_03", string_data_set_03_length, string_data_set_03);
-	mt3_InsertStringList(&tree, "string_array_04", string_data_set_04_length, string_data_set_04);
-	mt3_InsertStringList(&tree, "string_array_05", string_data_set_05_length, string_data_set_05);
-	mt3_InsertStringList(&tree, "string_array_06", string_data_set_06_length, string_data_set_06);
-	mt3_InsertStringList(&tree, "string_array_07", string_data_set_07_length, string_data_set_07);
-	mt3_InsertStringList(&tree, "string_array_08", string_data_set_08_length, string_data_set_08);
-	mt3_InsertStringList(&tree, "string_array_09", string_data_set_09_length, string_data_set_09);
-	mt3_InsertStringList(&tree, "string_array_10", string_data_set_10_length, string_data_set_10);
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-}
-
-void test_tree_list_insert()
-{
-	MT3_node tree = NULL;
-	MT3_node list = NULL;
-	for(SPsize i = 0; i < 10; i++)
-	{
-		MT3_node subtree = NULL;
-		for(SPsize j = 0; j < 10; j++)
-		{
-			mt3_InsertByte(&subtree, "byte", byte_data_set_list[i][j]);
-			mt3_InsertShort(&subtree, "short", short_data_set_list[i][j]);
-			mt3_InsertInt(&subtree, "int", int_data_set_list[i][j]);
-			mt3_InsertLong(&subtree, "long", long_data_set_list[i][j]);
-			mt3_InsertFloat(&subtree, "float", float_data_set_list[i][j]);
-			mt3_InsertDouble(&subtree, "double", double_data_set_list[i][j]);
-			mt3_InsertString(&subtree, "string", string_data_set_list[i][j]);
-		}
-		mt3_Append(&list, subtree);
-		mt3_Delete(&subtree);
-	}
+	MT3_node child = NULL;
 	
-	mt3_Insert(&tree, "list", list);
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-	mt3_Delete(&list);
-}
-
-void test_byte_multi_list_insert()
-{
-	MT3_node tree = NULL;
-	MT3_node list = NULL;
+	mt3_InsertString(&child, "str1", "motex");
+	mt3_InsertString(&child, "str2", "hidegi");
+	mt3_InsertString(&child, "str3", "fjiaw");
+	mt3_InsertString(&child, "str4", "betelgus");
 	
-	for(SPsize i = 0; i < 10; i++)
-	{
-		mt3_AppendByteList(&list, 10, byte_data_set_list[i]);
-	}
-	
-	mt3_Insert(&tree, "list", list);
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-	mt3_Delete(&list);
-}
-
-void test_string_multi_list_insert()
-{
-	MT3_node tree = NULL;
-	MT3_node list = NULL;
-	
-	for(SPsize i = 0; i < 10; i++)
-	{
-		mt3_AppendStringList(&list, 10, string_data_set_list[i]);
-	}
-	
-	mt3_Insert(&tree, "list", list);
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Print(tree);
-	mt3_Delete(&tree);
-	mt3_Delete(&list);
-}
-
-void test_simple()
-{
-    MT3_node subtree = NULL;
-    mt3_InsertString(&subtree, "str1", "motex");
-    mt3_InsertString(&subtree, "str2", "gaming");
-    mt3_InsertString(&subtree, "str3", "is");
-    mt3_InsertString(&subtree, "str4", "ugly");
-    SP_ASSERT_TRUE_WITH_ACTION(mt3_IsTree(subtree), mt3_Delete(&subtree));
-
-    MT3_node list = NULL;
-    mt3_Append(&list, subtree);
-    mt3_Append(&list, subtree);
-    mt3_Append(&list, subtree);
-    mt3_Append(&list, subtree);
-
-	MT3_node tree = NULL;
-
-	mt3_InsertByte(&tree, "byte_1", 1);
-	mt3_InsertShort(&tree, "short_1", -123);
-	mt3_InsertInt(&tree, "int_1", 1234567);
-	mt3_InsertLong(&tree, "long_1", 1234567485);
-	mt3_InsertFloat(&tree, "float_1", 134.45f);
-	mt3_InsertDouble(&tree, "double_1", 5423);
+	mt3_InsertByte(&tree, "byte_1", 127);
+	mt3_InsertShort(&tree, "short_1", 1667);
+	mt3_InsertInt(&tree, "int_1", -10);
+	mt3_InsertLong(&tree, "long_1", 123);
+	mt3_InsertFloat(&tree, "float_1", 135.f);
+	mt3_InsertDouble(&tree, "double_1", 123456789.10);
 	mt3_InsertString(&tree, "string_1", "motex");
-	mt3_InsertByte(&tree, "byte_2", 1);
-	mt3_InsertShort(&tree, "short_2", -123);
-	mt3_InsertInt(&tree, "int_2", 1234567);
-	mt3_InsertLong(&tree, "long_2", 1234567485);
-	mt3_InsertFloat(&tree, "float_2", 134.45f);
-	mt3_InsertDouble(&tree, "double_2", 5423);
-	mt3_InsertString(&tree, "string_2", "gaming");
-	mt3_Insert(&tree, "subtree", subtree);
-	mt3_Insert(&tree, "list", list);
-
-	MT3_node multi_list = NULL;
-	mt3_Append(&multi_list, list);
-	mt3_Append(&multi_list, list);
-	mt3_Append(&multi_list, list);
-
-	SPbyte byte_array[] = {1, 2, 3, 4, 5, -6, -7, -8, -9};
-	SPshort short_array[] = {1, 2, 3, 4, 5, -6, -7, -8, -9};
-	SPint int_array[] = {1, 2, 3, 4, 5, -6, -7, -8, -9};
-	SPlong long_array[] = {1, 2, 3, 4, 5, -6, -7, -8, -9};
-	SPfloat float_array[] = {1.3f, 2.4f, 5.4f, 252.f, 19.f, 43.f, 74.f};
-	SPdouble double_array[] = {1.3, 2.4, 5.4, 252.0, 19.0, 43.0, 74.0};
-    const SPchar* string_array[] = {"hda1666", "sp1667", "fjiaw", "betel"};
+	mt3_Insert(&tree, "subtree", child);
 	
-	MT3_node byte_list = NULL;
-	mt3_AppendByteList(&byte_list, sizeof(byte_array) / sizeof(SPbyte), byte_array);
-	mt3_AppendByteList(&byte_list, sizeof(byte_array) / sizeof(SPbyte), byte_array);
-	mt3_AppendByteList(&byte_list, sizeof(byte_array) / sizeof(SPbyte), byte_array);
-	mt3_AppendByteList(&byte_list, sizeof(byte_array) / sizeof(SPbyte), byte_array);
+	SP_ASSERT_NOT_NULL(tree);
 	
-	mt3_InsertByteList(&tree, "byte_array", 9, byte_array);
-	mt3_InsertShortList(&tree, "short_aray", 9, short_array);
-	mt3_InsertIntList(&tree, "int_aray", 9, int_array);
-	mt3_InsertLongList(&tree, "long_aray", 9, long_array);
-	mt3_InsertFloatList(&tree, "float_aray", sizeof(float_array) / sizeof(SPfloat), float_array);
-	mt3_InsertDoubleList(&tree, "double_aray", sizeof(double_array) / sizeof(SPdouble), double_array);
-	mt3_InsertStringList(&tree, "string_array", sizeof(string_array) / sizeof(SPchar*), string_array);
-	mt3_Insert(&tree, "multi_list", multi_list);
-	mt3_Insert(&tree, "byte_multi_list", byte_list);
-
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+	
+	SP_DEBUG("expected:");
 	mt3_Print(tree);
+	
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	spBufferFree(&buffer);
 	mt3_Delete(&tree);
-	mt3_Delete(&subtree);
-	mt3_Delete(&list);
+	mt3_Delete(&deserialized_tree);
 }
 
-void test_deletion()
+void test_encode_decode_byte_list()
 {
 	MT3_node tree = NULL;
-	for(SPsize i = 0; i < 10; i++)
-	{
-		mt3_InsertByte(&tree, std::string("byte_" + std::to_string(i + 1)).c_str(), byte_data_set_01[i]);
-	}
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Remove(&tree, "byte_1");
-	mt3_Remove(&tree, "byte_2");
-	mt3_Remove(&tree, "byte_3");
-	mt3_Remove(&tree, "byte_4");
-	mt3_Remove(&tree, "byte_5");
-	mt3_Remove(&tree, "byte_6");
-	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
+	mt3_InsertByteList(&tree, "byte_list_1", byte_data_set_01_length, byte_data_set_01);
+	SP_ASSERT_NOT_NULL(tree);
+	
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+	
+	SP_DEBUG("expected:");
 	mt3_Print(tree);
+	
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	
+	spBufferFree(&buffer);
+	
+	mt3_Delete(&tree);
+	mt3_Delete(&deserialized_tree);
+}
+
+void test_encode_decode_string_list()
+{
+	MT3_node tree = NULL;
+	mt3_InsertStringList(&tree, "string_list_1", string_data_set_01_length, string_data_set_01);
+	SP_ASSERT_NOT_NULL(tree);
+	
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+	
+	SP_DEBUG("expected:");
+	mt3_Print(tree);
+	
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	
+	spBufferFree(&buffer);
+	
+	mt3_Delete(&tree);
+	mt3_Delete(&deserialized_tree);
+}
+
+void test_encode_decode_byte_multi_list()
+{
+	MT3_node tree = NULL;
+	MT3_node byte_multi_list = NULL;
+	
+	mt3_AppendByteList(&byte_multi_list, byte_data_set_01_length, byte_data_set_01);
+	mt3_AppendByteList(&byte_multi_list, byte_data_set_02_length, byte_data_set_02);
+	//mt3_AppendByteList(&byte_multi_list, byte_data_set_03_length, byte_data_set_03);
+	
+	mt3_Insert(&tree, "byte_multi_list", byte_multi_list);
+	SP_ASSERT_NOT_NULL(tree);
+	
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+	
+	SP_DEBUG("expected:");
+	mt3_Print(tree);
+	
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	spBufferFree(&buffer);
+	
+	mt3_Delete(&byte_multi_list);
 	mt3_Delete(&tree);
 }
 
-void test_replace()
+void test_encode_decode_byte_multi_multi_list()
 {
 	MT3_node tree = NULL;
-	mt3_InsertByte(&tree, "byte_1", 1);
-	mt3_SetByte(tree, "byte_1", 17);
-	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(17, mt3_GetByte(tree, "byte_1"), mt3_Delete(&tree));
-	
-	mt3_InsertShort(&tree, "short_1", 1);
-	mt3_SetShort(tree, "short_1", 1667);
-	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(1667, mt3_GetShort(tree, "short_1"), mt3_Delete(&tree));
-	
-	mt3_InsertInt(&tree, "int_1", 1);
-	mt3_SetInt(tree, "int_1", 1667);
-	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(1667, mt3_GetInt(tree, "int_1"), mt3_Delete(&tree));
-	
-	mt3_InsertLong(&tree, "long_1", 1);
-	mt3_SetLong(tree, "long_1", 1667);
-	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(1667, mt3_GetLong(tree, "long_1"), mt3_Delete(&tree));
+	MT3_node byte_multi_multi_list = NULL;
 	
 	
-	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(17, mt3_GetNumber(tree, "byte_1"), mt3_Delete(&tree));
-	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(1667, mt3_GetNumber(tree, "short_1"), mt3_Delete(&tree));
-	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(1667, mt3_GetNumber(tree, "int_1"), mt3_Delete(&tree));
-	SP_ASSERT_INTEGER_EQUAL_WITH_ACTION(1667, mt3_GetNumber(tree, "long_1"), mt3_Delete(&tree));
+	MT3_node byte_multi_list_1 = NULL;
+	MT3_node byte_multi_list_2 = NULL;
 	
-	mt3_InsertFloat(&tree, "float_1", 143.f);
-	mt3_SetFloat(tree, "float_1", 135.f);
-	SP_ASSERT_DECIMAL_ALMOST_EQUAL_WITH_ACTION(135.f, mt3_GetFloat(tree, "float_1"), 6, mt3_Delete(&tree));
 	
-	mt3_InsertDouble(&tree, "double_1", 344954.9485);
-	mt3_SetDouble(tree, "double_1", 135.0);
-	SP_ASSERT_DECIMAL_ALMOST_EQUAL_WITH_ACTION(135.0, mt3_GetDouble(tree, "double_1"), 15, mt3_Delete(&tree));
+	mt3_AppendByteList(&byte_multi_list_1, byte_data_set_01_length, byte_data_set_01);
+	mt3_AppendByteList(&byte_multi_list_1, byte_data_set_01_length, byte_data_set_02);
+	mt3_AppendByteList(&byte_multi_list_2, byte_data_set_02_length, byte_data_set_03);
+	mt3_AppendByteList(&byte_multi_list_2, byte_data_set_02_length, byte_data_set_04);
 	
-	SP_ASSERT_DECIMAL_ALMOST_EQUAL_WITH_ACTION(135.0, mt3_GetDecimal(tree, "float_1"), 6, mt3_Delete(&tree));
-	SP_ASSERT_DECIMAL_ALMOST_EQUAL_WITH_ACTION(135.0, mt3_GetDecimal(tree, "double_1"), 15, mt3_Delete(&tree));
+	mt3_Append(&byte_multi_multi_list, byte_multi_list_1);
+	mt3_Append(&byte_multi_multi_list, byte_multi_list_2);
+	//mt3_AppendByteList(&byte_multi_list, byte_data_set_03_length, byte_data_set_03);
 	
-	mt3_InsertString(&tree, "string_1", "motex gaming 1667");
-	mt3_SetString(tree, "string_1", "fjiaw");
-	SP_ASSERT_STRING_EQUAL_WITH_ACTION("fjiaw", mt3_GetString(tree, "string_1"), mt3_Delete(&tree));
+	mt3_Insert(&tree, "byte_multi_list", byte_multi_multi_list);
+	SP_ASSERT_NOT_NULL(tree);
 	
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+	
+	SP_DEBUG("expected:");
 	mt3_Print(tree);
+	
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	spBufferFree(&buffer);
+	
+	mt3_Delete(&byte_multi_list_1);
+	mt3_Delete(&byte_multi_list_2);
+	mt3_Delete(&byte_multi_multi_list);
 	mt3_Delete(&tree);
 }
 
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
-	
-	//SP_TEST_ADD(test_simple);
-	/*
-	SP_TEST_ADD(test_byte_insert);
-	SP_TEST_ADD(test_short_insert);
-	SP_TEST_ADD(test_int_insert);
-	SP_TEST_ADD(test_long_insert);
-	SP_TEST_ADD(test_float_insert);
-	SP_TEST_ADD(test_double_insert);
-	SP_TEST_ADD(test_string_insert);
-	SP_TEST_ADD(test_tree_insert);
-	SP_TEST_ADD(test_byte_list_insert);
-	SP_TEST_ADD(test_short_list_insert);
-	SP_TEST_ADD(test_int_list_insert);
-	SP_TEST_ADD(test_long_list_insert);
-	SP_TEST_ADD(test_float_list_insert);
-	SP_TEST_ADD(test_double_list_insert);
-	SP_TEST_ADD(test_string_list_insert);
-	SP_TEST_ADD(test_tree_list_insert);
-	SP_TEST_ADD(test_byte_multi_list_insert);
-	SP_TEST_ADD(test_string_multi_list_insert);
-	*/
-	//SP_TEST_ADD(test_deletion);
-	SP_TEST_ADD(test_replace);
+	//SP_TEST_ADD(test_encode_decode_trivial);
+	//SP_TEST_ADD(test_encode_decode_byte_list);
+	//SP_TEST_ADD(test_encode_decode_string_list);
+	//SP_TEST_ADD(test_encode_decode_byte_multi_list);
+	SP_TEST_ADD(test_encode_decode_byte_multi_multi_list);
 	spTestRunAll();
 	spTestTerminate();
 	return 0;
