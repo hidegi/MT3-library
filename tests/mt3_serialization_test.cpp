@@ -503,14 +503,91 @@ void test_encode_decode_byte_multi_multi_list()
 	mt3_Delete(&tree);
 }
 
+void test_encode_decode_string_multi_multi_list()
+{
+	MT3_node tree = NULL;
+	MT3_node string_multi_multi_list = NULL;
+
+
+	MT3_node string_multi_list_1 = NULL;
+	MT3_node string_multi_list_2 = NULL;
+
+
+	mt3_AppendStringList(&string_multi_list_1, string_data_set_01_length, string_data_set_01);
+	mt3_AppendStringList(&string_multi_list_1, string_data_set_02_length, string_data_set_02);
+	mt3_AppendStringList(&string_multi_list_2, string_data_set_03_length, string_data_set_03);
+	mt3_AppendStringList(&string_multi_list_2, string_data_set_04_length, string_data_set_04);
+
+	mt3_Append(&string_multi_multi_list, string_multi_list_1);
+	mt3_Append(&string_multi_multi_list, string_multi_list_2);
+
+	mt3_Insert(&tree, "string_multi_list", string_multi_multi_list);
+	SP_ASSERT_NOT_NULL(tree);
+
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+
+	SP_DEBUG("expected:");
+	mt3_Print(tree);
+
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	spBufferFree(&buffer);
+
+	mt3_Delete(&string_multi_list_1);
+	mt3_Delete(&string_multi_list_2);
+	mt3_Delete(&string_multi_multi_list);
+	mt3_Delete(&tree);
+}
+
+void test_encode_decode_string_multi_multi_multi_list()
+{
+	MT3_node tree = NULL;
+	MT3_node string_multi_multi_list = NULL;
+	MT3_node string_multi_multi_multi_list = NULL;
+
+	MT3_node string_multi_list_1 = NULL;
+	MT3_node string_multi_list_2 = NULL;
+
+
+	mt3_AppendStringList(&string_multi_list_1, string_data_set_01_length, string_data_set_01);
+	mt3_AppendStringList(&string_multi_list_1, string_data_set_02_length, string_data_set_02);
+	mt3_AppendStringList(&string_multi_list_2, string_data_set_03_length, string_data_set_03);
+	mt3_AppendStringList(&string_multi_list_2, string_data_set_04_length, string_data_set_04);
+
+	mt3_Append(&string_multi_multi_list, string_multi_list_1);
+	mt3_Append(&string_multi_multi_list, string_multi_list_2);
+    mt3_Append(&string_multi_multi_multi_list, string_multi_multi_list);
+    mt3_Append(&string_multi_multi_multi_list, string_multi_multi_list);
+
+	mt3_Insert(&tree, "string_multi_multi_list", string_multi_multi_multi_list);
+	SP_ASSERT_NOT_NULL(tree);
+
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+
+	SP_DEBUG("expected:");
+	mt3_Print(tree);
+
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	spBufferFree(&buffer);
+
+	mt3_Delete(&string_multi_list_1);
+	mt3_Delete(&string_multi_list_2);
+	mt3_Delete(&string_multi_multi_list);
+	mt3_Delete(&tree);
+}
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
 	//SP_TEST_ADD(test_encode_decode_trivial);
 	//SP_TEST_ADD(test_encode_decode_byte_list);
-	//SP_TEST_ADD(test_encode_decode_string_list);
-	//SP_TEST_ADD(test_encode_decode_byte_multi_list);
+	SP_TEST_ADD(test_encode_decode_string_list);
+	SP_TEST_ADD(test_encode_decode_byte_multi_list);
 	SP_TEST_ADD(test_encode_decode_byte_multi_multi_list);
+	SP_TEST_ADD(test_encode_decode_string_multi_multi_list);
+	SP_TEST_ADD(test_encode_decode_string_multi_multi_multi_list);
 	spTestRunAll();
 	spTestTerminate();
 	return 0;

@@ -1,6 +1,7 @@
 #ifndef MT3_INTERNAL_IMPL_H
 #define MT3_INTERNAL_IMPL_H
 #include "mt3.h"
+#include "platform.h"
 #define MT3_CHECKED_CALLOC(ptr, n, size, on_error)		\
 	do							\
 	{							\
@@ -21,8 +22,8 @@ struct _MT3_node
 	MT3_tag tag;   // 1 byte
 	SPsize length; // 8 bytes
 
-	// encoded in the 7th bit of the tag..
-	// signals the node's color..
+	// encoded in the 7th bit of the tag
+	// signals the node's color
 	SPbool red;
 
 	union
@@ -37,7 +38,7 @@ struct _MT3_node
 		MT3_node tag_object; // Meant for all list types and trees
 	} payload; //length bytes
 
-	// total bytes written = 17 + length bytes..
+	// total bytes written = 17 + length bytes
 	struct _MT3_node* parent;
 	struct _MT3_node* major;
 	struct _MT3_node* minor;
@@ -52,7 +53,7 @@ SPbuffer _mt3_decompress(const void* memory, SPsize length);
 void _mt3_encode_tree(const MT3_node tree, SPbuffer* buffer, int level);
 void _mt3_encode_list(const MT3_node list, SPbuffer* buffer, int level);
 MT3_node _mt3_decode_tree(const SPubyte** memory, SPsize* length);
-MT3_node _mt3_decode_list(const SPubyte** memory, SPsize* length);
+SPbool _mt3_decode_list(MT3_node node, const SPubyte** memory, SPsize* length);
 
 SPbool _mt3_is_root(const MT3_node node);
 SPbool _mt3_is_major(const MT3_node node);

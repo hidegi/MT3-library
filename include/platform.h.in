@@ -5,7 +5,9 @@
 #define MT3_VERSION_MINOR @mt3_VERSION_MINOR@
 #define MT3_VERSION_PATCH @mt3_VERSION_PATCH@
 
-#cmakedefine MOT_PRINT_OUTPUT_DEBUG
+
+#cmakedefine MT3_PRINT_OUTPUT_DEBUG
+#cmakedefine MT3_HAVE_BST_MAJOR_INCLINED
 #cmakedefine SP_STATIC_BUILD
 #cmakedefine SP_PLATFORM_WINDOWS
 #cmakedefine SP_PLATFORM_MACOS
@@ -19,6 +21,14 @@
 	#endif
 #else
 	#define SP_API
+#endif
+
+#if defined(__clang__)
+#define SP_COMPILER_CLANG
+#elif defined(__GNUC__) || defined(__GNUC__)
+#define SP_COMPILER_GNUC
+#elif defined(_MSC_VER)
+#define SP_COMPILER_MSC
 #endif
 
 #endif

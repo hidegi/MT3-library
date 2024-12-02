@@ -10,14 +10,6 @@
 #include <stdio.h>
 #include "debug.h"
 
-#if defined(__clang__)
-#define SP_COMPILER_CLANG
-#elif defined(__GNUC__) || defined(__GNUC__)
-#define SP_COMPILER_GNUC
-#elif defined(_MSC_VER)
-#define SP_COMPILER_MSC
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif

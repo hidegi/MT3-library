@@ -101,7 +101,7 @@ void _mt3_fix_rbt_violations(MT3_node node, MT3_node* head)
 
 			if(isRed)
 			{
-				// color switch..
+				// color switch
 				p->red = !p->red;
 				g->red = g->parent ? !g->red : SP_FALSE;
 				m->red = !m->red;
@@ -110,9 +110,9 @@ void _mt3_fix_rbt_violations(MT3_node node, MT3_node* head)
 			else
 			{
 				/*
-				 *  child-parent combinations:
+				 *  parent-child combinations:
 				 *
-				 *  major = true..
+				 *  major = true
 				 *  minor = false
 				 *
 				 *  P   C | rotation
@@ -122,32 +122,32 @@ void _mt3_fix_rbt_violations(MT3_node node, MT3_node* head)
 				 *  1   0 |	RL
 				 *  1   1 |	L
 				 *
-				 *	for skews, rotate once..
-				 *	for triangles, rotate twice..
+				 *	for skews, rotate once
+				 *	for triangles, rotate twice
 				 */
 				 SPbool pMajor = _mt3_is_major(p);
 				 SPbool nMajor = _mt3_is_major(node);
 
 				 if(!pMajor && !nMajor)
 				 {
-					// R-rotation..
+					// R-rotation
 					 r = _mt3_rotate_right(node->parent->parent, head);
 				 }
 				 else if(!pMajor && nMajor)
 				 {
-					// LR-rotation..
+					// LR-rotation
 					r = _mt3_rotate_left(node->parent, head);
 					    _mt3_rotate_right(node->parent, head);
 				 }
 				 else if(pMajor && !nMajor)
 				 {
-					// RL-rotation..
+					// RL-rotation
 					r = _mt3_rotate_right(node->parent, head);
 					    _mt3_rotate_left(node->parent, head);
 				 }
 				 else
 				 {
-					// L-rotation..
+					// L-rotation
 					r = _mt3_rotate_left(node->parent->parent, head);
 				 }
 				 r->red = !r->red;
@@ -274,11 +274,11 @@ void _mt3_bst_delete_impl(MT3_node n, MT3_node* head, MT3_node* _r, MT3_node* _x
 			{
 				SP_ASSERT(a, "Expected minimum to have parent");
 
-				// link m and r..
+				// link m and r
 				r->major = m;
 				m->parent = r;
 
-				// link a and b..
+				// link a and b
 				a->minor = b;
 				if(b)
 				   b->parent = a;
@@ -304,11 +304,11 @@ void _mt3_bst_delete_impl(MT3_node n, MT3_node* head, MT3_node* _r, MT3_node* _x
 			r->major = q;
 			if(r != m)
 			{
-				// link m and r..
+				// link m and r
 				r->minor = m;
 				m->parent = r;
 
-				// link a and b..
+				// link a and b
 				a->major = b;
 				if(b)
 				   b->parent = a;
@@ -364,15 +364,15 @@ static SPbool _mt3_transplant_rbt(MT3_node x, MT3_node w, MT3_node* head)
 	{
 		if(!w)
 		{
-			// following cases would expect w to have children..
-	        	// since double black cannot have children, return here..
+			// following cases would expect w to have children
+	        // since double black cannot have children, return here
 			return SP_TRUE;
 		}
 
 		SPbool maj = !_mt3_is_major(w);
 		if(w->red)
 		{
-			// x is black and w is red..
+			// x is black and w is red
 			return _mt3_transplant_proc_1(x, w, head);
 		}
 		else
@@ -421,7 +421,7 @@ static SPbool _mt3_transplant_proc_1(MT3_node x, MT3_node w, MT3_node* head)
 		SPbool maj = !_mt3_is_major(w);
 		if(xBlack && w->red)
 		{
-			// only x could be double black, w must be red..
+			// only x could be double black, w must be red
 			SP_ASSERT(w->parent, "Replacement expected to have parent");
             		SP_ASSERT(maj ? w->parent->minor == w : w->parent->major == w, "Linking error");
 			if(x)
@@ -450,12 +450,12 @@ static SPbool _mt3_transplant_proc_2(MT3_node x, MT3_node w, MT3_node* head)
 {
 	if(w)
 	{
-		// x is black and w is black..
-		// x could be double black, w cannot be double black..
+		// x is black and w is black
+		// x could be double black, w cannot be double black
 		SPbool xBlack = x ? !x->red : SP_TRUE;
 		if(xBlack && !w->red)
 		{
-			// only x could be double black..
+			// only x could be double black
 			SPbool maj = !_mt3_is_major(w);
 			SPbool wMnB = w->minor ? !w->minor->red : SP_TRUE;
 			SPbool wMjB = w->major ? !w->major->red : SP_TRUE;
@@ -523,8 +523,8 @@ static SPbool _mt3_transplant_proc_4(MT3_node x, MT3_node w, MT3_node* head)
 {
 	if(w)
 	{
-		// x can be double black..
-		// w cannot be double black..
+		// x can be double black
+		// w cannot be double black
 		SPbool wMjR = w->major ? w->major->red : SP_FALSE;
 		SPbool wMnR = w->minor ? w->minor->red : SP_FALSE;
 		SPbool xBlack = x ? !x->red : SP_TRUE;

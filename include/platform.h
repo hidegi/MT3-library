@@ -5,10 +5,12 @@
 #define MT3_VERSION_MINOR 1
 #define MT3_VERSION_PATCH 1
 
-/* #undef MOT_PRINT_OUTPUT_DEBUG */
+
+/* #undef MT3_PRINT_OUTPUT_DEBUG */
+#define MT3_HAVE_BST_MAJOR_INCLINED
 /* #undef SP_STATIC_BUILD */
 /* #undef SP_PLATFORM_WINDOWS */
-/* #undef SP_PLATFORM_MACOS */
+#define SP_PLATFORM_MACOS
 /* #undef SP_PLATFORM_LINUX */
 
 #ifndef SP_STATIC_BUILD
@@ -19,6 +21,14 @@
 	#endif
 #else
 	#define SP_API
+#endif
+
+#if defined(__clang__)
+#define SP_COMPILER_CLANG
+#elif defined(__GNUC__) || defined(__GNUC__)
+#define SP_COMPILER_GNUC
+#elif defined(_MSC_VER)
+#define SP_COMPILER_MSC
 #endif
 
 #endif

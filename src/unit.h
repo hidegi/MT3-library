@@ -4,6 +4,11 @@
 #include "types.h"
 #include "asserts.h"
 
+#if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+#pragma GCC diagnostic ignored "-Wformat"
+#endif
 #ifndef SP_DEFAULT_PRECISION
 #define SP_DEFAULT_PRECISION 15
 #endif

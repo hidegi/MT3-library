@@ -1,6 +1,13 @@
 #include "internal.h"
 #include <zlib.h>
-#define MT3_PRINT_OUTPUT_DEBUG
+#include <errno.h>
+
+#if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+#pragma GCC diagnostic ignored "-Wformat"
+#endif
+
 #define MT3_READ_GENERIC(dst, n, scanner, fail)     		\
 	do							\
 	{							\
@@ -100,7 +107,7 @@ SPbuffer _mt3_compress(const void* memory, SPsize length)
 
 	do
 	{
-		if(!spBufferReserve(&buffer, buffer.length + CHUNK_SIZE) != MT3_STATUS_OK)
+		if(!spBufferReserve(&buffer, buffer.length + CHUNK_SIZE))
 		{
 			errno = MT3_STATUS_NO_MEMORY;
 			spBufferFree(&buffer);
@@ -132,7 +139,7 @@ SPbuffer _mt3_decompress(const void* memory, SPsize length)
 	z_stream stream =
 	{
 		.zalloc   = Z_NULL,
-		.zfree	= Z_NULL,
+		.zfree	  = Z_NULL,
 		.opaque   = Z_NULL,
 		.next_in  = (void*) memory,
 		.avail_in = length
@@ -213,14 +220,12 @@ static void _mt3_write_bytes(SPbuffer* buffer, const SPubyte* src, SPsize length
 	if(!spBufferAppend(buffer, chunk, length))
 	{
 		free(chunk);
-		SP_DEBUG("error");
 		errno = MT3_STATUS_WRITE_ERROR;
 		return;
 	}
-//#ifdef MT3_PRINT_OUTPUT_DEBUG
-	
+#ifdef MT3_PRINT_OUTPUT_DEBUG
 	_mt3_print_binary(src, length, level);
-//#endif
+#endif
 	free(chunk);
 }
 
@@ -231,7 +236,7 @@ static void _mt3_encode(const MT3_node node, SPbuffer* buffer, int level)
 		
 		switch(node->tag)
 		{
-			case MT3_TAG_BYTE: _mt3_print_indent(level, "data: (%lld byte(s))", sizeof(SPbyte)); _mt3_write_bytes(buffer, &node->payload.tag_byte, sizeof(SPbyte), SP_TRUE, level); break;
+			case MT3_TAG_BYTE: _mt3_print_indent(level, "data: (%lld byte(s))", sizeof(SPbyte)); _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_byte, sizeof(SPbyte), SP_TRUE, level); break;
 			case MT3_TAG_SHORT: _mt3_print_indent(level, "data: (%lld byte(s))", sizeof(SPshort)); _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_short, sizeof(SPshort), SP_TRUE, level); break;
 			case MT3_TAG_INT: _mt3_print_indent(level, "data: (%lld byte(s))", sizeof(SPint)); _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_int, sizeof(SPint), SP_TRUE, level); break;
 			case MT3_TAG_LONG: _mt3_print_indent(level, "data: (%lld byte(s))", sizeof(SPlong)); _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_long, sizeof(SPlong), SP_TRUE, level); break;
@@ -240,7 +245,7 @@ static void _mt3_encode(const MT3_node node, SPbuffer* buffer, int level)
 			case MT3_TAG_STRING:
 			{
 				SP_ASSERT(node->payload.tag_string, "Node %lld has invalid data to write", node->weight);
-				
+
 				_mt3_print_indent(level, "length: %lld", node->length);
 				_mt3_write_bytes(buffer, (const SPubyte*) &node->length, sizeof(SPsize), SP_TRUE, level);
 				_mt3_print_indent(level, "data: (%lld byte(s))", node->length);
@@ -295,25 +300,24 @@ void _mt3_encode_tree(const MT3_node tree, SPbuffer* buffer, int level)
 
 void _mt3_encode_list(const MT3_node list, SPbuffer* buffer, int level)
 {
-	SP_ASSERT(mt3_IsList(list), "Expected list to encode");
-	MT3_node cursor = NULL;
-	SPsize i = 0;
-	
-	//encode the tag only once
-	
-	for(cursor = list; cursor != NULL; cursor = cursor->major)
-	{
-		if(cursor->tag & MT3_TAG_LIST)
-		{
-			_mt3_print_indent(level, "tag (%s):", _mt3_tag_to_str(list->tag));
-			SPuint8 tag = list->tag | ((list->red & 1) << 6);
-			_mt3_write_bytes(buffer, (const SPubyte*) &tag, sizeof(SPbyte), SP_FALSE, level);
-		}
-		_mt3_encode(cursor, buffer, level);
+    if(list)
+    {
+        SP_ASSERT(mt3_IsList(list), "Expected list to encode");
+        MT3_node cursor = NULL;
+        SPsize i = 0;
+
+        for(cursor = list; cursor != NULL; cursor = cursor->major)
+        {
+            if(cursor->tag & MT3_TAG_LIST)
+            {
+                //encode the tag, if it is a multi-list
+                _mt3_print_indent(level, "tag (%s):", _mt3_tag_to_str(list->tag));
+                SPuint8 tag = list->tag | ((list->red & 1) << 6);
+                _mt3_write_bytes(buffer, (const SPubyte*) &tag, sizeof(SPbyte), SP_FALSE, level);
+            }
+            _mt3_encode(cursor, buffer, level);
+        }
 	}
-	
-	//MT3_tag null = MT3_TAG_NULL;
-	//_mt3_write_bytes(buffer, (const SPubyte*) &null, sizeof(SPbyte), SP_FALSE, level);
 }
 
 /*
@@ -321,29 +325,29 @@ void _mt3_encode_list(const MT3_node list, SPbuffer* buffer, int level)
  *   writing rule
  *------------------------------------------------------------------------------------------------------------------
  *  for all nodes:
- *  1. write current tag..
- *  2. write weight..
- *  3. write data (explained below)..
- *  4. for major and minor repeat step 1 if not NULL, otherwise write MT3_TAG_NULL as tag respectively..
+ *  1. write current tag
+ *  2. write weight
+ *  3. write data (explained below)
+ *  4. for major and minor repeat step 1 if not NULL, otherwise write MT3_TAG_NULL as tag respectively
  *
  *  for root nodes:
- *  skip step 3..
+ *  skip step 3
  *
  *  for scalar nodes:
- *  write data..
- *  (you neither need length nor stride, since type is known by tag)..
+ *  write data
+ *  (you neither need length nor stride, since type is known by tag)
  *
  *  for number array nodes:
- *  write length..
- *  write data..
- *  (stride is known by tag, counts for byte, short, int long, float double and string)..
+ *  write length
+ *  write data
+ *  (stride is known by tag, counts for byte, short, int long, float double and string)
  *
  *  for string array nodes:
- *  write length (how many strings)..
- *  write length (string length)..
- *  write data (char data)..
- *  write null (end)..
- *  due to this, the number types have to be known, therefore more concrete tags needed..
+ *  write length (how many strings)
+ *  write length (string length)
+ *  write data (char data)
+ *  write null (end)
+ *  due to this, the number types have to be known, therefore more concrete tags needed
  */
 SPbuffer mt3_EncodeTree(const MT3_node tree)
 {
@@ -368,7 +372,7 @@ static SPbool _mt3_decode(MT3_node node, const SPubyte** memory, SPsize* length)
 		SP_ASSERT(node->tag != MT3_TAG_NULL, "Expected type");
 		switch(node->tag)
 		{
-			case MT3_TAG_BYTE: MT3_READ_GENERIC(&node->payload.tag_byte, sizeof(SPbyte), _mt3_swapped_memcpy, return SP_FALSE); node->length = sizeof(SPbyte); SP_DEBUG("reading byte: %d", node->payload.tag_byte); break;
+			case MT3_TAG_BYTE: MT3_READ_GENERIC(&node->payload.tag_byte, sizeof(SPbyte), _mt3_swapped_memcpy, return SP_FALSE); node->length = sizeof(SPbyte); break;
 			case MT3_TAG_SHORT: MT3_READ_GENERIC(&node->payload.tag_short, sizeof(SPshort), _mt3_swapped_memcpy, return SP_FALSE); node->length = sizeof(SPshort); break;
 			case MT3_TAG_INT: MT3_READ_GENERIC(&node->payload.tag_int, sizeof(SPint), _mt3_swapped_memcpy, return SP_FALSE); node->length = sizeof(SPint); break;
 			case MT3_TAG_LONG: MT3_READ_GENERIC(&node->payload.tag_long, sizeof(SPlong), _mt3_swapped_memcpy, return SP_FALSE); node->length = sizeof(SPlong); break;
@@ -392,117 +396,7 @@ static SPbool _mt3_decode(MT3_node node, const SPubyte** memory, SPsize* length)
 			
 			default:
 			{
-				
-				if(node->tag != MT3_TAG_LIST)
-				{
-					SP_DEBUG("reading %s", _mt3_tag_to_str(node->tag));
-					MT3_READ_GENERIC(&node->length, sizeof(SPlong), _mt3_swapped_memcpy, return SP_FALSE);
-					SP_DEBUG("length: %lld", node->length);
-					SP_ASSERT(node->length < 100 && node->length > 0, "too much memory: %lld", node->length);
-					if(node->length)
-					{
-						SPsize i = 0;
-						MT3_node array = mt3_AllocList();
-						MT3_node cursor = array;
-						
-						while(i < node->length)
-						{
-							cursor->tag = node->tag & ~MT3_TAG_LIST;
-							cursor->red = SP_TRUE;
-							
-							_mt3_decode(cursor, memory, length);
-							
-							cursor->major = mt3_AllocList();
-							MT3_node minor = cursor;
-							cursor = cursor->major;
-							cursor->minor = minor;
-							i++;
-						}
-						if(cursor->minor)
-						   cursor->minor->major = NULL;
-						free(cursor);
-						node->payload.tag_object = array;
-					}
-				}
-				else
-				{	
-					SP_DEBUG("reading multi-list");
-					MT3_READ_GENERIC(&node->length, sizeof(SPlong), _mt3_swapped_memcpy, return SP_FALSE);
-					if(node->length)
-					{
-						SP_DEBUG("list length: %lld", node->length);
-						SP_ASSERT(node->length < 100 && node->length > 0, "too much memory: %lld", node->length);
-							
-						SPsize i = 0;
-						MT3_node array = mt3_AllocList();
-						MT3_node cursor = array;
-						
-						SPubyte tag;
-						do
-						{
-							MT3_READ_GENERIC(&tag, sizeof(SPbyte), _mt3_memcpy, return SP_FALSE);
-							SPbool redness = (tag >> 6) & 1;
-							tag &= ~0x40;
-							
-							if(tag == MT3_TAG_NULL)
-								break;
-							SP_DEBUG("i = %lld", i);
-							
-							_mt3_print_binary(&tag, sizeof(SPbyte), 0);
-							if(tag == MT3_TAG_NULL)
-							{
-								SP_DEBUG("tag null (stop)");
-								break;
-							}
-							
-							cursor->tag = tag;
-							cursor->red = redness;
-							
-							_mt3_decode(cursor, memory, length);
-							SP_DEBUG("reading done");
-							cursor->major = mt3_AllocList();
-							MT3_node minor = cursor;
-							cursor = cursor->major;
-							cursor->minor = minor;
-							
-							MT3_READ_GENERIC(&tag, sizeof(SPbyte), _mt3_memcpy, return SP_FALSE);
-							i++;
-						} while(i < node->length);
-						SP_DEBUG("multi list read done");
-						if(cursor->minor)
-						   cursor->minor->major = NULL;
-						free(cursor);
-						node->payload.tag_object = array;
-					}
-				}
-				
-				/*
-				if(node->length)
-				{
-					MT3_tag tag = node->tag;
-					if(tag != MT3_TAG_LIST)
-					{
-						//node->payload.tag_object = _mt3_decode_list(memory, length);
-						SPsize length = node->length;
-						SP_DEBUG("%lld elements");
-						
-					}
-					else
-					{
-						
-					}
-				}
-				/*
-				MT3_CHECKED_CALLOC(node->payload.tag_object, 1, sizeof(struct _MT3_node), return SP_FALSE);
-				MT3_READ_GENERIC(&node->payload.tag_object->tag, sizeof(SPubyte), _mt3_memcpy, return SP_FALSE);
-				
-				if(node->length)
-				{
-					
-				}
-				*/
-				
-				// all list types..
+                _mt3_decode_list(node, memory, length);
 				break;
 			}
 		}
@@ -517,7 +411,6 @@ MT3_node _mt3_decode_tree(const SPubyte** memory, SPsize* length)
 	
 	SPbool redness = (tag >> 6) & 1;
 	tag &= ~0x40;
-	SP_DEBUG("reading tag: %s", _mt3_tag_to_str(tag));
 	
 	if(tag == MT3_TAG_NULL)
 		return NULL;
@@ -525,13 +418,13 @@ MT3_node _mt3_decode_tree(const SPubyte** memory, SPsize* length)
 	MT3_node tree;
 	MT3_CHECKED_CALLOC(tree, 1, sizeof(struct _MT3_node), return NULL);
 	MT3_READ_GENERIC(&tree->weight, sizeof(SPlong), _mt3_swapped_memcpy, return NULL);
-	SP_DEBUG("reading weight: %lld", tree->weight);
+
 	tree->red = redness;
 	tree->tag = tag;
 	
 	if(!_mt3_decode(tree, memory, length))
 		return NULL;
-	
+
 	tree->major = _mt3_decode_tree(memory, length);
 	tree->minor = _mt3_decode_tree(memory, length);
 
@@ -544,43 +437,59 @@ MT3_node _mt3_decode_tree(const SPubyte** memory, SPsize* length)
 }
 
 
-MT3_node _mt3_decode_list(const SPubyte** memory, SPsize* length)
+SPbool _mt3_decode_list(MT3_node node, const SPubyte** memory, SPsize* length)
 {
-	SPubyte tag;
-	MT3_node array = NULL;
-	
-	MT3_READ_GENERIC(&tag, sizeof(SPubyte), _mt3_memcpy, return NULL);
-	if(tag != MT3_TAG_NULL)
-	{
-		array = mt3_AllocList();
-		MT3_node cursor = array;
-		
-		while(tag != MT3_TAG_NULL)
-		{
-			SP_ASSERT((tag >> 6) & 1, "Expected red-list");
-			tag &= ~0x40;
-			cursor->tag = tag;
-			
-			if(!_mt3_decode(cursor, memory, length))
-				return NULL;
-			
-			cursor->major = mt3_AllocList();
-			MT3_node minor = cursor;
-			cursor = cursor->major;
-			cursor->minor = minor;
-			MT3_READ_GENERIC(&tag, sizeof(SPubyte), _mt3_memcpy, return NULL);
-		}
-		cursor->minor->major = NULL;
-		free(cursor);
-	}
-	
-	/*
-	for(SPsize i = 0; i < elmsToRead; i++)
-	{
-		
-	}
-	return array;
-	*/
+    if(!node)
+        return SP_FALSE;
+
+    MT3_READ_GENERIC(&node->length, sizeof(SPlong), _mt3_swapped_memcpy, return SP_FALSE);
+    if(node->length)
+    {
+        MT3_node array = mt3_AllocList();
+        MT3_node cursor = array;
+
+        for(SPsize i = 0; i < node->length; i++)
+        {
+            SPubyte tag;
+            SPbool redness = SP_FALSE;
+            if(node->tag == MT3_TAG_LIST)
+            {
+                MT3_READ_GENERIC(&tag, sizeof(SPbyte), _mt3_memcpy, return SP_FALSE);
+                redness = (tag >> 6) & 1;
+                if(!redness)
+                {
+                    mt3_Delete(&array);
+                    return SP_FALSE;
+                }
+                tag &= ~0x40;
+            }
+            else
+            {
+                tag = node->tag & ~MT3_TAG_LIST;
+                redness = SP_TRUE;
+            }
+
+            cursor->tag = tag;
+            cursor->red = redness;
+
+            if(!_mt3_decode(cursor, memory, length))
+            {
+                mt3_Delete(&array);
+                return SP_FALSE;
+            }
+            cursor->major = mt3_AllocList();
+            MT3_node minor = cursor;
+            cursor = cursor->major;
+            cursor->minor = minor;
+        }
+
+        if(cursor->minor)
+           cursor->minor->major = NULL;
+
+        free(cursor);
+        node->payload.tag_object = array;
+    }
+    return SP_TRUE;
 }
 
 MT3_node mt3_DecodeTree(SPbuffer buffer)
@@ -591,3 +500,7 @@ MT3_node mt3_DecodeTree(SPbuffer buffer)
 
 	return _mt3_decode_tree(memory, &length);
 }
+
+#if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
+#pragma GCC diagnostic pop
+#endif

@@ -42,31 +42,27 @@ set(MT3_PARENT_DIRECTORY PARENT_DIRECTORY)
 set(MT3_LIB_NAME mt3)
 
 if(NOT BUILD_SHARED_LIBS)
-	set(MT3_STATIC_BUILD 1)
+	set(SP_STATIC_BUILD 1)
 endif()
 
 set(MT3_LIB_NAME_SUFFIX "")
 if(WIN32)
-	set(MT3_PLATFORM_WINDOWS 1)
+	set(SP_PLATFORM_WINDOWS 1)
 	if(BUILD_SHARED_LIBS)
-		set(MT3_LIB_NAME_SUFFIX "dll")
+		set(SP_LIB_NAME_SUFFIX "dll")
 	endif()
 endif()
 
 if(UNIX AND NOT APPLE)
-	set(MT3_PLATFORM_LINUX 1)
+	set(SP_PLATFORM_LINUX 1)
 endif()
 
 if(APPLE)
-	set(MT3_PLATFORM_MACOS 1)
+	set(SP_PLATFORM_MACOS 1)
 endif()
 
-
-sp_set_option(MT3_OUTPUT_DEBUG OFF BOOL "Print the read and write procedures")
-
-if(MT3_OUTPUT_DEBUG)
-	set(MT3_PRINT_OUTPUT_DEBUG 1)
-endif()
+sp_set_option(MT3_PRINT_OUTPUT_DEBUG OFF BOOL "Print serialization debugging output")
+sp_set_option(MT3_HAVE_BST_MAJOR_INCLINED ON BOOL "Have binary search major inclined")
 
 configure_file(
 	"${CMAKE_SOURCE_DIR}/include/platform.h.in"
