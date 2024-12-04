@@ -776,7 +776,7 @@ void test_rbt_delete_random()
     {
         Node* n = nodeAlloc(123);
 
-        int* array = new int[LENGTH];
+        
         array[0] = 123;
         SPsize length = LENGTH;
 #ifdef PRINT_STEPS

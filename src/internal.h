@@ -1,3 +1,28 @@
+/*************************************************************************************************
+ * MT3 1.1 - MoTree Library
+ * A lightweight library for serializing and deserializing BTOs (Binary Tree Objects).
+ * 
+ * Copyright (c) 2024 Hidegi
+ * 
+ * This software is provided 'as-is', without any express or implied
+ * warranty.  In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ * 
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ * 
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ *
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ *
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ *************************************************************************************************/
 #ifndef MT3_INTERNAL_IMPL_H
 #define MT3_INTERNAL_IMPL_H
 #include "mt3.h"
@@ -33,16 +58,4 @@ SPbool _mt3_fix_up_rbt(SPbool redBefore, MT3_node r, MT3_node x, MT3_node w, MT3
 void _mt3_print_tree(const MT3_node tree, SPbuffer* buffer, int level);
 void _mt3_print_list(const MT3_node tree, SPbuffer* buffer, int level);
 SPsize _mt3_length_of_list(const MT3_node list);
-/*
-static const char* _mt3_tag_to_str(MT3_tag tag);
-static void _mt3_encode(const MT3_node tree, SPbuffer* buffer, int level);
-static SPbool _mt3_decode(MT3_node tree, const SPubyte** memory, SPsize* length);
-static SPsize _mt3_length_of_array(const MT3_node array);
-static void _mt3_insert_array(MT3_node* tree, const SPchar* name, MT3_tag tag, SPsize length, const void* data);
-static void _mt3_write_binary(const MT3_node tree, SPbuffer* buffer, int level);
-static SPchar* _mt3_init_string_array_buffer(SPsize* bCount, SPsize length, const SPchar** strings);
-static MT3_node _mt3_read_binary(const SPubyte** memory, SPsize* length);
-static void _mt3_print_tree(const MT3_node tree, int level);
-static void _mt3_print_array(const MT3_node array, int level);
-*/
 #endif
