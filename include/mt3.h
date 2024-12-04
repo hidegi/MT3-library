@@ -49,18 +49,48 @@ typedef enum
 	MT3_STATUS_WRITE_ERROR,		/// write error
 	MT3_STATUS_BAD_NAME,		/// bad name, either taken, empty or null
 	MT3_STATUS_BAD_VALUE,		/// invalid value
+	MT3_STATUS_NOT_A_TREE,      /// given node is not a tree
+	MT3_STATUS_NOT_A_LIST,      /// given node is not a list
 	MT3_STATUS_BAD_TAG,			/// invalid tag
 } MT3_status;
 
-struct _MT3_node;
+struct _MT3_node
+{
+	//written to disk:
+	SPhash weight; // 8 bytes (do not change)
+	MT3_tag tag;   // 1 byte (do not change)
+	SPsize length; // 8 bytes (do not change)
+
+	// encoded in the 7th bit of the tag
+	// signals the node's color
+	SPbool red; // do not change
+
+	union
+	{
+		SPbyte tag_byte;
+		SPshort tag_short;
+		SPint tag_int;
+		SPlong tag_long;
+		SPfloat tag_float;
+		SPdouble tag_double;
+		SPchar* tag_string;
+		struct _MT3_node* tag_object; // meant for all list types and trees
+	} payload; //length bytes
+
+	// total bytes written = 17 + length bytes
+	struct _MT3_node* parent; // do not change
+	struct _MT3_node* major;  // do not change
+	struct _MT3_node* minor;  // do not change
+};
 typedef struct _MT3_node* MT3_node;
 
 SP_API MT3_node mt3_AllocTree();
 SP_API MT3_node mt3_AllocList();
 
 SP_API void mt3_Print(const MT3_node tree);
+SP_API const SPchar* mt3_ToString(const MT3_node tree);
+
 SP_API MT3_node mt3_Copy(const MT3_node object);
-SP_API MT3_tag mt3_GetTag(const MT3_node node);
 
 /*<==========================================================>*
  *  tree interface
@@ -109,6 +139,7 @@ SP_API SPbool mt3_IsValidRBT(const MT3_node rbt);
  *  list interface
  *<==========================================================>*/
 SP_API SPbool mt3_IsList(const MT3_node node);
+SP_API SPsize mt3_Length(const MT3_node node);
 
 SP_API void mt3_Append(MT3_node* list, const MT3_node value);
 SP_API void mt3_AppendByte(MT3_node* list, SPbyte value);
@@ -126,29 +157,9 @@ SP_API void mt3_AppendFloatList(MT3_node* list, SPsize length, const SPfloat* va
 SP_API void mt3_AppendDoubleList(MT3_node* list, SPsize length, const SPdouble* values);
 SP_API void mt3_AppendStringList(MT3_node* list, SPsize length, const SPchar** values);
 
-SP_API void mt3_SetByteAt(MT3_node list, SPindex index, SPbyte value);
-SP_API void mt3_SetShortAt(MT3_node list, SPindex index, SPshort value);
-SP_API void mt3_SetIntAt(MT3_node list, SPindex index, SPint value);
-SP_API void mt3_SetLongAt(MT3_node list, SPindex index, SPlong value);
-SP_API void mt3_SetFloatAt(MT3_node list, SPindex index, SPfloat value);
-SP_API void mt3_SetDoubleAt(MT3_node list, SPindex index, SPdouble value);
-SP_API void mt3_SetStringAt(MT3_node list, SPindex index, const SPchar* value);
-
-SP_API SPbyte mt3_GetByteAt(const MT3_node list, SPindex index);
-SP_API SPshort mt3_GetShortAt(const MT3_node list, SPindex index);
-SP_API SPint mt3_GetIntAt(const MT3_node list, SPindex index);
-SP_API SPlong mt3_GetLongAt(const MT3_node list, SPindex index);
-SP_API SPfloat mt3_GetFloatAt(const MT3_node list, SPindex index);
-SP_API SPdouble mt3_GetDoubleAt(const MT3_node list, SPindex index);
-SP_API const SPchar* mt3_GetStringAt(const MT3_node list, SPindex index);
-SP_API MT3_node* mt3_GetAt(const MT3_node list, SPindex index);
-
-//converts a contiguous list in memory to a linked list..
+//converts a contiguous array in memory to a linked list..
 SP_API MT3_node mt3_ToList(MT3_tag tag, SPsize length, const void* data);
-SP_API MT3_node mt3_Next(const MT3_node n);
-SP_API MT3_node mt3_Last(const MT3_node n);
-
-SP_API void mt3_RemoveAt(MT3_node list, SPindex pos);
+SP_API void mt3_RemoveAt(MT3_node* list, SPindex pos);
 
 /*<==========================================================>*/
 SP_API SPbuffer mt3_EncodeTree(const MT3_node node);

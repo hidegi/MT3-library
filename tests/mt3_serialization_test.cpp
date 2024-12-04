@@ -395,6 +395,7 @@ void test_encode_decode_trivial()
 	spBufferFree(&buffer);
 	mt3_Delete(&tree);
 	mt3_Delete(&deserialized_tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
 }
 
 void test_encode_decode_byte_list()
@@ -416,6 +417,7 @@ void test_encode_decode_byte_list()
 	
 	mt3_Delete(&tree);
 	mt3_Delete(&deserialized_tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
 }
 
 void test_encode_decode_string_list()
@@ -437,6 +439,7 @@ void test_encode_decode_string_list()
 	
 	mt3_Delete(&tree);
 	mt3_Delete(&deserialized_tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
 }
 
 void test_encode_decode_byte_multi_list()
@@ -463,6 +466,7 @@ void test_encode_decode_byte_multi_list()
 	
 	mt3_Delete(&byte_multi_list);
 	mt3_Delete(&tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
 }
 
 void test_encode_decode_byte_multi_multi_list()
@@ -501,6 +505,7 @@ void test_encode_decode_byte_multi_multi_list()
 	mt3_Delete(&byte_multi_list_2);
 	mt3_Delete(&byte_multi_multi_list);
 	mt3_Delete(&tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
 }
 
 void test_encode_decode_string_multi_multi_list()
@@ -538,6 +543,7 @@ void test_encode_decode_string_multi_multi_list()
 	mt3_Delete(&string_multi_list_2);
 	mt3_Delete(&string_multi_multi_list);
 	mt3_Delete(&tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
 }
 
 void test_encode_decode_string_multi_multi_multi_list()
@@ -577,6 +583,7 @@ void test_encode_decode_string_multi_multi_multi_list()
 	mt3_Delete(&string_multi_list_2);
 	mt3_Delete(&string_multi_multi_list);
 	mt3_Delete(&tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
 }
 
 void test_encode_decode_tree_list()
@@ -600,7 +607,9 @@ void test_encode_decode_tree_list()
     mt3_Delete(&main_tree);
     mt3_Delete(&tree_1);
     mt3_Delete(&list);
+    SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
 }
+
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);

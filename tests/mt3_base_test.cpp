@@ -618,12 +618,22 @@ void test_tree_list_insert()
 		mt3_Append(&list, subtree);
 		mt3_Delete(&subtree);
 	}
-	
-	mt3_Insert(&tree, "list", list);
+
+	MT3_node multi_list = NULL;
+	mt3_Append(&multi_list, list);
+	mt3_Append(&multi_list, list);
+
+	MT3_node multi_multi_list = mt3_AllocList();
+	mt3_Append(&multi_multi_list, multi_list);
+	mt3_Append(&multi_multi_list, multi_list);
+
+	mt3_Insert(&tree, "list", multi_multi_list);
 	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
 	mt3_Print(tree);
 	mt3_Delete(&tree);
 	mt3_Delete(&list);
+	mt3_Delete(&multi_list);
+	mt3_Delete(&multi_multi_list);
 }
 
 void test_byte_multi_list_insert()
@@ -738,12 +748,13 @@ void test_deletion()
 		mt3_InsertByte(&tree, std::string("byte_" + std::to_string(i + 1)).c_str(), byte_data_set_01[i]);
 	}
 	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
-	mt3_Remove(&tree, "byte_1");
-	mt3_Remove(&tree, "byte_2");
 	mt3_Remove(&tree, "byte_3");
-	mt3_Remove(&tree, "byte_4");
-	mt3_Remove(&tree, "byte_5");
+	mt3_Remove(&tree, "byte_2");
+	mt3_Remove(&tree, "byte_1");
 	mt3_Remove(&tree, "byte_6");
+	mt3_Remove(&tree, "byte_5");
+	mt3_Remove(&tree, "byte_4");
+	mt3_Remove(&tree, "byte_8");
 	SP_ASSERT_TRUE_WITH_ACTION(mt3_IsValidRBT(tree), mt3_Delete(&tree));
 	mt3_Print(tree);
 	mt3_Delete(&tree);
@@ -793,12 +804,29 @@ void test_replace()
 	mt3_Delete(&tree);
 }
 
+void test_list_iterate()
+{
+    MT3_node list = NULL;
+    mt3_AppendByte(&list, 1);
+    mt3_AppendByte(&list, 2);
+    mt3_AppendByte(&list, 3);
+    mt3_AppendByte(&list, 4);
+    mt3_AppendByte(&list, 5);
+    mt3_AppendByte(&list, 6);
+    mt3_AppendByte(&list, 7);
+    mt3_AppendInt(&list, 1667);
+    mt3_AppendString(&list, "hello");
+    mt3_RemoveAt(&list, 0);
+    mt3_Print(list);
+
+    mt3_Delete(&list);
+}
+
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
 	
 	//SP_TEST_ADD(test_simple);
-	/*
 	SP_TEST_ADD(test_byte_insert);
 	SP_TEST_ADD(test_short_insert);
 	SP_TEST_ADD(test_int_insert);
@@ -817,10 +845,10 @@ int main(int argc, char** argv)
 	SP_TEST_ADD(test_tree_list_insert);
 	SP_TEST_ADD(test_byte_multi_list_insert);
 	SP_TEST_ADD(test_string_multi_list_insert);
-	*/
-	//SP_TEST_ADD(test_deletion);
+	SP_TEST_ADD(test_deletion);
 	SP_TEST_ADD(test_string_list_insert);
-	//SP_TEST_ADD(test_replace);
+	SP_TEST_ADD(test_list_iterate);
+	SP_TEST_ADD(test_replace);
 	spTestRunAll();
 	spTestTerminate();
 	return 0;

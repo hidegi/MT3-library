@@ -354,7 +354,7 @@ SPbuffer mt3_EncodeTree(const MT3_node tree)
 	
 	if(!mt3_IsTree(tree))
 	{
-		errno = MT3_STATUS_BAD_VALUE;
+		errno = MT3_STATUS_NOT_A_TREE;
 		return buffer;
 	}
 	
