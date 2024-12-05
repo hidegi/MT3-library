@@ -35,7 +35,7 @@
 	{							\
 		if(*length < (n))				\
 		{						\
-			errno = MT3_STATUS_READ_ERROR;\
+			errno = MT3_STATUS_READ_ERROR;		\
 			fail;					\
 		}						\
 		*memory = scanner((dst), *memory, (n));		\
@@ -121,11 +121,11 @@ SPbuffer _mt3_compress(const void* memory, SPsize length)
 		return SP_BUFFER_INIT;
 	}
 
-    if(stream.avail_in != length)
-    {
-        errno = MT3_STATUS_WRITE_ERROR;
-        return buffer;
-    }
+    	if(stream.avail_in != length)
+    	{
+        	errno = MT3_STATUS_WRITE_ERROR;
+        	return buffer;
+    	}
 
 	do
 	{
