@@ -51,6 +51,8 @@ SPbool _mt3_is_list_equal(const MT3_node a, const MT3_node b);
 SPbool _mt3_is_root(const MT3_node node);
 SPbool _mt3_is_major(const MT3_node node);
 
+void _mt3_delete_tree_impl(MT3_node tree);
+void _mt3_delete_list_impl(MT3_node tree);
 void _mt3_fix_rbt_violations(MT3_node node, MT3_node* head);
 void _mt3_delete_node(MT3_node n);
 void _mt3_bst_delete_impl(MT3_node n, MT3_node* _r, MT3_node* _x, MT3_node* _w, MT3_node* head);

@@ -491,19 +491,19 @@ void _mt3_delete_node(MT3_node n)
 	}
 }
 
-static void _mt3_delete_tree_impl(MT3_node tree)
+void _mt3_delete_tree_impl(MT3_node tree)
 {
 	if(tree)
 	{	
 		MT3_node major = tree->major;
 		MT3_node minor = tree->minor;
 		_mt3_delete_node(tree);
-		_mt3_delete_tree_impl(tree->major);
-		_mt3_delete_tree_impl(tree->minor);
+		_mt3_delete_tree_impl(major);
+		_mt3_delete_tree_impl(minor);
 	}
 }
 
-static void _mt3_delete_list_impl(MT3_node list)
+void _mt3_delete_list_impl(MT3_node list)
 {
 	if(list)
 	{
@@ -519,7 +519,7 @@ static void _mt3_delete_list_impl(MT3_node list)
 
 void mt3_Delete(MT3_node* node)
 {
-	if(node)
+	if(node && *node)
 	{
 		if(!(mt3_IsTree(*node) || mt3_IsList(*node)))
 		{
