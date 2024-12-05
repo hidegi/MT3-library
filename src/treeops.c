@@ -392,7 +392,7 @@ static SPbool _mt3_transplant_rbt(MT3_node x, MT3_node w, MT3_node* head)
 		if(!w)
 		{
 			// following cases would expect w to have children
-	        // since double black cannot have children, return here
+	        	// since double black cannot have children, return here
 			return SP_TRUE;
 		}
 
@@ -455,13 +455,12 @@ static SPbool _mt3_transplant_proc_1(MT3_node x, MT3_node w, MT3_node* head)
             		{
                 		SP_ASSERT(w->parent == x->parent, "Replacement and sibling expected to have equal parent");
             		}
-
 			w->red = SP_FALSE;
 			w->parent->red = SP_TRUE;
 			MT3_node m = maj ? w->major : w->minor;
 			MT3_node p = maj ? _mt3_rotate_right(w->parent, head) : _mt3_rotate_left(w->parent, head);
 			SP_ASSERT(p, "Expeceted to have rotation replacement");
-            SP_ASSERT(p == w, "Rotation error");
+            		SP_ASSERT(p == w, "Rotation error");
 			p = maj ? p->major : p->minor;
 			SP_ASSERT(p, "Expected to have parent");
 			x = maj ? p->major : p->minor;
@@ -537,7 +536,7 @@ static SPbool _mt3_transplant_proc_3(MT3_node x, MT3_node w, MT3_node* head)
 			w->red = SP_TRUE;
 			w = maj ? _mt3_rotate_left(w, head) : _mt3_rotate_right(w, head);
 			SP_ASSERT(w, "Expected sibling");
-            SP_ASSERT(w->parent, "Expected parent");
+            		SP_ASSERT(w->parent, "Expected parent");
 			x = maj ? w->parent->major : w->parent->minor;
 			SP_ASSERT(w != x, "Sibling and replacement cannot be the same");
 			return _mt3_transplant_proc_4(x, w, head);
@@ -561,9 +560,9 @@ static SPbool _mt3_transplant_proc_4(MT3_node x, MT3_node w, MT3_node* head)
 		if(xBlack && c)
 		{
 			if(x)
-            {
-                SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
-            }
+            		{
+                		SP_ASSERT(x->parent == w->parent, "Replacement and sibling expected to have equal parent");
+            		}
 			SP_ASSERT(w->parent, "Expected to have parent");
 			w->red = w->parent->red;
 			w->parent->red = SP_FALSE;
