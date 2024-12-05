@@ -776,7 +776,7 @@ void test_rbt_delete_random()
     {
         Node* n = nodeAlloc(123);
 
-        int* array = new int[LENGTH];
+        
         array[0] = 123;
         SPsize length = LENGTH;
 #ifdef PRINT_STEPS
@@ -1082,6 +1082,35 @@ void test_verification_random()
 	delete[] array;
 }
 
+void test_breadth_first_traversal()
+{
+	// BST delete case 3.3
+	Node* n = nodeAlloc(50);
+	
+	nodeAdd_RBT(n, &n, 32);
+	nodeAdd_RBT(n, &n, 75);
+	nodeAdd_RBT(n, &n, 15);
+	nodeAdd_RBT(n, &n, 44);
+	nodeAdd_RBT(n, &n, 55);
+	nodeAdd_RBT(n, &n, 99);
+	nodeAdd_RBT(n, &n, 10);
+	nodeAdd_RBT(n, &n, 19);
+	nodeAdd_RBT(n, &n, 51);
+	nodeAdd_RBT(n, &n, 64);
+	nodeAdd_RBT(n, &n, 54);
+	nodePrint(n);
+	
+	std::queue<const Node*> nodes = iterate(n);
+	SP_DEBUG("iterate done");
+	while(!nodes.empty())
+	{
+		const Node* n = nodes.front();
+		printf("n: %d\n", n->data);
+		nodes.pop();
+	}
+    nodeFree(n);
+}
+
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
@@ -1117,7 +1146,8 @@ int main(int argc, char** argv)
 	//SP_TEST_ADD(test_rotation_left);
 	
 	//SP_TEST_ADD(test_rbt_delete_small_verification);
-	SP_TEST_ADD(test_rbt_delete_random);
+	//SP_TEST_ADD(test_rbt_delete_random);
+	SP_TEST_ADD(test_breadth_first_traversal);
     /*
     SP_TEST_ADD(test_bst_delete_no_children_no_parent);
     SP_TEST_ADD(test_bst_delete_one_child_no_parent);

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
-project(mt3 VERSION 1.1.1 LANGUAGES C CXX)
+project(mt3 VERSION 1.1.0 LANGUAGES C CXX)
 
 macro(sp_set_option var default type docstring)
 	if(NOT DEFINED ${var})
@@ -28,26 +28,24 @@ endif()
 
 message(STATUS "Installing project to ${CMAKE_INSTALL_PREFIX}")
 
-if(NOT SP_PARENT_DIRECTORY AND NOT CMAKE_BUILD_TYPE)
+if(NOT MT3_PARENT_DIRECTORY AND NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "choose a build type: Debug|Release|RelWithDebInfo|MinSizeRel" FORCE)
 endif()
 message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}")
 
-set(SP_VERSION_MAJOR ${playground_VERSION_MAJOR})
-set(SP_VERSION_MINOR ${playground_VERSION_MINOR})
-set(SP_VERSION_PATCH ${playground_VERSION_PATCH}) 
-set(SP_VERSION_FULL "${SP_VERSION_MAJOR}.${SP_VERSION_MINOR}.${SP_VERSION_PATCH}")
-set(SP_VERSION ${playground_VERSION})
-set(SP_PARENT_DIRECTORY PARENT_DIRECTORY)
-set(SP_LIB_NAME mt3)
-
-add_definitions(-DGLEW_STATIC)
+set(MT3_VERSION_MAJOR ${mt3_VERSION_MAJOR})
+set(MT3_VERSION_MINOR ${mt3_VERSION_MINOR})
+set(MT3_VERSION_PATCH ${mt3_VERSION_PATCH}) 
+set(MT3_VERSION_FULL "${MT3_VERSION_MAJOR}.${MT3_VERSION_MINOR}.${MT3_VERSION_PATCH}")
+set(MT3_VERSION ${mt3_VERSION_MAJOR}.${mt3_VERSION_MINOR})
+set(MT3_PARENT_DIRECTORY PARENT_DIRECTORY)
+set(MT3_LIB_NAME mt3)
 
 if(NOT BUILD_SHARED_LIBS)
 	set(SP_STATIC_BUILD 1)
 endif()
 
-set(SP_LIB_NAME_SUFFIX "")
+set(MT3_LIB_NAME_SUFFIX "")
 if(WIN32)
 	set(SP_PLATFORM_WINDOWS 1)
 	if(BUILD_SHARED_LIBS)
@@ -61,36 +59,27 @@ endif()
 
 if(APPLE)
 	set(SP_PLATFORM_MACOS 1)
+	set(CMAKE_MACOSX_RPATH 1)
 endif()
 
-
-sp_set_option(SP_OUTPUT_DEBUG OFF BOOL "Print the read and write procedures")
-
-if(SP_OUTPUT_DEBUG)
-	set(MT3_PRINT_OUTPUT_DEBUG 1)
-endif()
+sp_set_option(MT3_PRINT_OUTPUT_DEBUG OFF BOOL "Print the binary output while serializing")
+sp_set_option(MT3_HAVE_BST_MAJOR_INCLINED ON BOOL "Have binary search major inclined")
 
 configure_file(
-	"${CMAKE_SOURCE_DIR}/include/SP/config.h.in"
-	"${CMAKE_SOURCE_DIR}/include/SP/config.h" ESCAPE_QUOTES)
+	"${CMAKE_SOURCE_DIR}/include/platform.h.in"
+	"${CMAKE_SOURCE_DIR}/include/platform.h" ESCAPE_QUOTES)
 
 sp_set_option(BUILD_SHARED_LIBS OFF BOOL "Build shared libraries")
-sp_set_option(SP_BUILD_EXAMPLES ON BOOL "Build the MT3 example programs")
-sp_set_option(SP_BUILD_TESTS ON BOOL "Build tests")
+sp_set_option(MT3_BUILD_EXAMPLES ON BOOL "Build the MT3 example programs")
+sp_set_option(MT3_BUILD_TESTS ON BOOL "Build tests")
 
+include_directories(${CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES} ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/tests ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+add_library(mt3 src/mt3.c src/buffer.c src/unit.c src/treeops.c src/sdbm.c src/serialization.c)
 
-
-
-include_directories(${CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES} ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/tests ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-
-add_subdirectory(src)
-
-if(SP_BUILD_TESTS)	
+if(MT3_BUILD_TESTS)	
 	enable_testing()
 	add_subdirectory(tests)
 endif()
-
-find_package(OpenGL REQUIRED)
 find_package(ZLIB REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})

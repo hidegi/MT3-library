@@ -1,0 +1,627 @@
+#include "unit.h"
+#include "mt3.h"
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <random>
+static const SPbyte byte_data_set_01[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+static const SPbyte byte_data_set_02[] = {-31, -2, -74, -20, 15, -104, -67, 22, 36, -65, 118, -112, -22, -79, -7, -110, 59, -95, -70, 116};
+static const SPbyte byte_data_set_03[] = {-17, 39, 97, -82, -54, -109, 95, -33, -91, 125, -31, -97, 126, -70, -55, 18, 60, -111, 54, 71};
+static const SPbyte byte_data_set_04[] = {-91, 85, -124, -108, 126, 14, 125, 46, -64, 105, -70, 95, -31, -102, 91, 94, -126, -3, -10, 83};
+static const SPbyte byte_data_set_05[] = {-71, 69, -100, -97, -44, -54, -98, -105, 15, 93, -94, 19, 1, 109, 6, 85, 103, 104, -79, 11};
+static const SPbyte byte_data_set_06[] = {-22, -86, 63, 101, 61, -67, 51, 106, 35, -113, 100, 13, 52, -61, -116, 27, 97, 121, 89, -44};
+static const SPbyte byte_data_set_07[] = {-111, -39, -98, 89, -44, -87, 40, 10, 11, -63, -27, 120, -120, 87, 81, -18, 116, 5, -123, 57};
+static const SPbyte byte_data_set_08[] = {82, 70, -20, -14, 93, 69, -87, 85, -32, 11, 87, 81, -120, -2, -81, 115, -85, -65, 61, -78};
+static const SPbyte byte_data_set_09[] = {77, -7, -120, -18, -57, 85, 82, 34, 19, -86, 32, -39, -31, -54, -119, -68, 63, 45, -61, 55};
+static const SPbyte byte_data_set_10[] = {23, -60, -72, 104, -44, 105, 19, -55, 74, 3, 49, 70, -40, -122, 68, -80, 26, 90, -50, -35};
+static const SPbyte* byte_data_set_list[] =
+{
+	byte_data_set_01,
+	byte_data_set_02,
+	byte_data_set_03,
+	byte_data_set_04,
+	byte_data_set_05,
+	byte_data_set_06,
+	byte_data_set_07,
+	byte_data_set_08,
+	byte_data_set_09,
+	byte_data_set_10
+};
+static const SPsize byte_data_set_01_length = sizeof(byte_data_set_01) / sizeof(SPbyte);
+static const SPsize byte_data_set_02_length = sizeof(byte_data_set_02) / sizeof(SPbyte);
+static const SPsize byte_data_set_03_length = sizeof(byte_data_set_03) / sizeof(SPbyte);
+static const SPsize byte_data_set_04_length = sizeof(byte_data_set_04) / sizeof(SPbyte);
+static const SPsize byte_data_set_05_length = sizeof(byte_data_set_05) / sizeof(SPbyte);
+static const SPsize byte_data_set_06_length = sizeof(byte_data_set_06) / sizeof(SPbyte);
+static const SPsize byte_data_set_07_length = sizeof(byte_data_set_07) / sizeof(SPbyte);
+static const SPsize byte_data_set_08_length = sizeof(byte_data_set_08) / sizeof(SPbyte);
+static const SPsize byte_data_set_09_length = sizeof(byte_data_set_09) / sizeof(SPbyte);
+static const SPsize byte_data_set_10_length = sizeof(byte_data_set_10) / sizeof(SPbyte);
+
+static const SPshort short_data_set_01[] = {-9970, -4214, 17959, 20047, 32484, 10290, 32446, 19327, -6423, -3255, 1920, 20003, 24628, 23842, 1864, -7852, -22168, 18088, -5971, 4675};
+static const SPshort short_data_set_02[] = {-5222, 17523, 19205, 14039, -16510, -25556, 5895, -32488, -15138, -11870, 16265, -6802, -31782, 12602, 6402, 10169, -20033, 853, 23997, -18250};
+static const SPshort short_data_set_03[] = {3799, 9531, 657, 31379, 29183, -1750, -20988, -28684, -6469, 24463, 5695, 26213, 2325, -32494, 20938, 16572, -17872, 7269, 23434, 17202};
+static const SPshort short_data_set_04[] = {-10169, 28099, -2334, 11998, 18613, 9970, 16442, 24561, 18889, -18630, 15023, 22862, -16572, 25188, -16172, -2607, -706, 6437, 25857, -19396};
+static const SPshort short_data_set_05[] = {-26700, 4537, -10142, 5571, -665, 26223, 32738, 15864, 14111, 16074, 792, -13747, -16768, -27064, -7295, 1021, 675, 7094, 3420, 5196};
+static const SPshort short_data_set_06[] = {-29642, 17623, 18131, 8442, -5702, 6219, 12639, 1686, 4436, 4455, 10074, -27869, 3416, -18514, 31385, -9103, -18113, 747, -188, -26083};
+static const SPshort short_data_set_07[] = {24301, 6949, -5628, -6274, -8179, -28626, 7055, 21928, -29765, 15929, -19732, 30231, 2807, 27445, 26317, -5316, -31669, 10385, -8513, 30662};
+static const SPshort short_data_set_08[] = {-25981, -5385, 9287, 4385, -30978, -20640, 24906, 21803, -14982, -14871, 4360, 25812, 7236, 11114, 31758, 12472, -15651, 11744, -16765, 10694};
+static const SPshort short_data_set_09[] = {11019, 7217, 26993, 3658, -16006, 23650, -8744, 27974, -27817, -5098, 16863, -4450, -12004, 8923, 32058, 31182, 8158, 8915, -9988, 10787};
+static const SPshort short_data_set_10[] = {12714, -17237, -18551, 14435, 5552, 19356, 32550, 847, 2830, 29782, 3258, -2519, -11317, -30126, 24020, 20092, -1819, -31406, 24760, -15639};
+static const SPshort* short_data_set_list[] =
+{
+	short_data_set_01,
+	short_data_set_02,
+	short_data_set_03,
+	short_data_set_04,
+	short_data_set_05,
+	short_data_set_06,
+	short_data_set_07,
+	short_data_set_08,
+	short_data_set_09,
+	short_data_set_10
+};
+static const SPsize short_data_set_01_length = sizeof(short_data_set_01) / sizeof(SPshort);
+static const SPsize short_data_set_02_length = sizeof(short_data_set_02) / sizeof(SPshort);
+static const SPsize short_data_set_03_length = sizeof(short_data_set_03) / sizeof(SPshort);
+static const SPsize short_data_set_04_length = sizeof(short_data_set_04) / sizeof(SPshort);
+static const SPsize short_data_set_05_length = sizeof(short_data_set_05) / sizeof(SPshort);
+static const SPsize short_data_set_06_length = sizeof(short_data_set_06) / sizeof(SPshort);
+static const SPsize short_data_set_07_length = sizeof(short_data_set_07) / sizeof(SPshort);
+static const SPsize short_data_set_08_length = sizeof(short_data_set_08) / sizeof(SPshort);
+static const SPsize short_data_set_09_length = sizeof(short_data_set_09) / sizeof(SPshort);
+static const SPsize short_data_set_10_length = sizeof(short_data_set_10) / sizeof(SPshort);
+
+static const SPint int_data_set_01[] = {113509569, 212226681, 6774860, 87918185, 176696266, 97158013, 194371286, 65171540, 206851927, 87548538, 135515965, 117572157, 129648579, 33338548, 168840390, 153491841, 152125323, 178555076, 203763064, 133882281};
+static const SPint int_data_set_02[] = {28833948, 64812743, 72863600, 168940804, 136627751, 142783306, -19508558, 143993275, -5774899, 106999573, 46924012, 153462019, 111337531, 150535498, 130220584, 34541594, -12983482, 86002293, 161303719, 156715515};
+static const SPint int_data_set_03[] = {130894484, -12386078, -988447, 125708869, 110750013, 67956816, -11753695, 180108922, 92037258, 17641552, -18935896, -74392, 207803178, -1291304, 67116434, 208258830, 86541176, 109311164, 138130089, 38662875};
+static const SPint int_data_set_04[] = {91243157, 22733313, 201359381, 205310807, 23582495, 155112146, 211685170, 6691887, 102100009, 103172359, 89084886, 93161494, 209511339, 187094070, 80373009, 23102175, 197344984, 75252417, 32346582, 179817281};
+static const SPint int_data_set_05[] = {87299765, 138739701, 13146211, 19128807, 66340097, 165427886, 52460511, 60769335, 176299115, 210733496, 53282179, 152254584, 112542827, 35642481, 202462316, 59259107, 34999779, -850593, 47803401, 164147795};
+static const SPint int_data_set_06[] = {106902647, 4154595, 145425284, 179549669, 210973360, 41294626, 93073132, 64868312, 140788863, 9097229, 110898067, 151641556, 157975700, 76106597, 17828342, 106805016, 167805188, 202974503, 178332294, 75072987};
+static const SPint int_data_set_07[] = {128245597, 102032871, 176708784, 91765659, 17151859, 134424558, 51848008, 74112483, 133880458, 135579844, 195029448, 17632069, 119526086, 9488561, 72130008, -6369184, 161644389, 194487186, 133216091, -18698745};
+static const SPint int_data_set_08[] = {-18544729, 30392323, 17750456, 192816016, 132044157, 190954128, 33612772, 14173597, 195680121, 102559827, 94039161, -20398587, -11667362, 57138069, 112128490, 55099000, -3681791, 112330841, 211440759, 107522683};
+static const SPint int_data_set_09[] = {203252184, 187233535, 207719246, -20709504, 22837711, 209066850, 55230181, 86306318, 191937156, 166442606, 192550967, 182056920, 209792157, 19831670, 66055639, 25356260, 173441761, 67970368, 5114501, 181267632};
+static const SPint int_data_set_10[] = {117855890, 182888744, 32941750, 169714111, 50661912, 11542631, 55934713, 139276788, 114557224, 42357941, 100469035, 182720047, 210121714, -11409855, -13672268, -14011838, 183528958, 180201995, 5691654, 174634497};
+static const SPint* int_data_set_list[] =
+{
+	int_data_set_01,
+	int_data_set_02,
+	int_data_set_03,
+	int_data_set_04,
+	int_data_set_05,
+	int_data_set_06,
+	int_data_set_07,
+	int_data_set_08,
+	int_data_set_09,
+	int_data_set_10
+};
+static const SPsize int_data_set_01_length = sizeof(int_data_set_01) / sizeof(SPint);
+static const SPsize int_data_set_02_length = sizeof(int_data_set_02) / sizeof(SPint);
+static const SPsize int_data_set_03_length = sizeof(int_data_set_03) / sizeof(SPint);
+static const SPsize int_data_set_04_length = sizeof(int_data_set_04) / sizeof(SPint);
+static const SPsize int_data_set_05_length = sizeof(int_data_set_05) / sizeof(SPint);
+static const SPsize int_data_set_06_length = sizeof(int_data_set_06) / sizeof(SPint);
+static const SPsize int_data_set_07_length = sizeof(int_data_set_07) / sizeof(SPint);
+static const SPsize int_data_set_08_length = sizeof(int_data_set_08) / sizeof(SPint);
+static const SPsize int_data_set_09_length = sizeof(int_data_set_09) / sizeof(SPint);
+static const SPsize int_data_set_10_length = sizeof(int_data_set_10) / sizeof(SPint);
+
+static const SPlong long_data_set_01[] = {-53223493, -71864115, -16411365, 87570001, -3120436, 80489591, 29512253, 36060369, -11980516, -6666324, -41387253, 42097825, 64386482, -49058131, 57110268, -23297527, 82141980, 77956131, 14495604, 49816788};
+static const SPlong long_data_set_02[] = {25307910, -6200319, 3496003, -36274946, -5960661, -17646963, -80991862, 11027429, 89137390, 54631856, 4832324, -84787021, -39753390, 49206755, 25909950, 40270191, 56300000, 22772288, 68879403, 20100122};
+static const SPlong long_data_set_03[] = {-52400352, -18531308, -42288244, 60676139, 58370301, -74710365, -65177777, -19634280, 23037247, 45174689, 39462257, -66801273, 12144501, -3066676, -77116540, 79711285, -69914648, 7705266, -88868233, 27064471};
+static const SPlong long_data_set_04[] = {-13314160, 53727261, -58807355, 2505430, -19897301, -10007744, -80084319, 81571153, 65352165, 15489866, 61906918, -76334444, 68065314, -4675544, -38168099, -28785257, 4905652, 67760311, 16148973, -19371863};
+static const SPlong long_data_set_05[] = {84449015, -58705909, -31391171, -26314724, -3185042, -48314979, -6453689, -90377789, -15804292, -5701109, 83137612, 49934514, 41963315, 6779608, 65257102, 2192383, 12886437, -83357930, -79426806, 27742893};
+static const SPlong long_data_set_06[] = {28751396, 51561031, -70585134, 4766285, 30319714, 59496876, -19271176, -24211444, 41163786, 74744926, -8429868, -11969739, 57020063, 14020769, 9680535, 32314420, 28888851, -58683238, 63065751, 88164950};
+static const SPlong long_data_set_07[] = {-18124061, 75463552, -68943462, -53094412, 56682149, 26899051, 41097546, -59494137, -90870424, -50049408, 19271384, -26174608, -31908705, -83971825, 41568479, -56106163, -53596458, -60249674, 4538951, -13714173};
+static const SPlong long_data_set_08[] = {-58003671, -3624148, 75915963, -78493148, 14813202, 36080496, 45112209, 22475830, -14020894, 68346705, 33178293, 25136836, -52858132, -74038665, 24619492, 23548624, -60638564, -76125968, 79970745, 83820159};
+static const SPlong long_data_set_09[] = {-70090480, -19864519, -5144683, 83762217, 34556833, -68438001, 49302058, 51079023, -91290171, 3439294, -89055549, 50528504, 88768638, 87984280, 31011461, -33796386, 28359246, 61003101, -66429652, 23022119};
+static const SPlong long_data_set_10[] = {-21471739, -15098400, -62298243, 46683054, 10334509, 57718283, 16943244, 32117739, 75777497, -24579868, -32100225, 43870029, -18215653, 38443304, 189764, 84791833, -79446670, -24632513, -20374128, 9465076};
+static const SPlong* long_data_set_list[] =
+{
+	long_data_set_01,
+	long_data_set_02,
+	long_data_set_03,
+	long_data_set_04,
+	long_data_set_05,
+	long_data_set_06,
+	long_data_set_07,
+	long_data_set_08,
+	long_data_set_09,
+	long_data_set_10
+};
+static const SPsize long_data_set_01_length = sizeof(long_data_set_01) / sizeof(SPlong);
+static const SPsize long_data_set_02_length = sizeof(long_data_set_02) / sizeof(SPlong);
+static const SPsize long_data_set_03_length = sizeof(long_data_set_03) / sizeof(SPlong);
+static const SPsize long_data_set_04_length = sizeof(long_data_set_04) / sizeof(SPlong);
+static const SPsize long_data_set_05_length = sizeof(long_data_set_05) / sizeof(SPlong);
+static const SPsize long_data_set_06_length = sizeof(long_data_set_06) / sizeof(SPlong);
+static const SPsize long_data_set_07_length = sizeof(long_data_set_07) / sizeof(SPlong);
+static const SPsize long_data_set_08_length = sizeof(long_data_set_08) / sizeof(SPlong);
+static const SPsize long_data_set_09_length = sizeof(long_data_set_09) / sizeof(SPlong);
+static const SPsize long_data_set_10_length = sizeof(long_data_set_10) / sizeof(SPlong);
+
+SPfloat float_data_set_01[] = { 2.347e+09, -9.876e+09, 5.250e+08, 3.147e+09, -4.333e+08, -7.123e+09, 8.998e+08, 1.074e+10, -2.999e+09, 0.0 };
+SPfloat float_data_set_02[] = { -5.512e+08, 9.000e+09, -1.232e+10, 7.110e+09, 4.567e+09, -2.784e+09, 1.000e+09, -8.012e+09, 3.324e+09, -6.557e+09 };
+SPfloat float_data_set_03[] = { 6.256e+09, -7.456e+09, 4.445e+09, 0.0, -2.777e+09, 2.900e+09, -8.995e+09, 1.412e+10, 8.015e+08, -4.675e+09 };
+SPfloat float_data_set_04[] = { 9.999e+09, -1.000e+10, 1.234e+09, 5.432e+08, -6.789e+09, 3.258e+09, -1.111e+10, 7.802e+08, 6.290e+08, -2.110e+09 };
+SPfloat float_data_set_05[] = { -3.600e+09, 8.888e+09, 2.672e+09, -9.999e+09, 3.450e+09, 1.001e+10, -4.555e+09, 7.777e+08, 9.000e+08, -3.333e+09 };
+SPfloat float_data_set_06[] = { 1.004e+10, -2.222e+09, 5.555e+09, -4.444e+09, 3.141e+09, -9.888e+09, 0.0, -1.356e+10, 2.718e+09, 4.560e+09 };
+SPfloat float_data_set_07[] = { -1.000e+10, 3.345e+09, 6.105e+09, 4.201e+09, -3.981e+09, 7.454e+09, -2.293e+09, 2.583e+09, -8.499e+09, 5.789e+09 };
+SPfloat float_data_set_08[] = { 3.987e+09, -5.678e+09, -1.200e+10, 0.0, 9.001e+09, -4.321e+09, 8.860e+08, 7.800e+09, -9.015e+09, 2.371e+09 };
+SPfloat float_data_set_09[] = { 1.567e+09, -8.799e+09, 2.400e+09, 4.899e+09, -3.600e+09, 5.544e+08, -7.777e+09, 1.234e+10, -6.666e+09, 0.0 };
+SPfloat float_data_set_10[] = { -3.000e+09, 9.999e+09, -2.002e+09, 4.444e+09, -1.234e+10, 5.555e+09, 2.777e+09, -6.789e+09, 8.000e+08, 3.141e+09 };
+static const SPfloat* float_data_set_list[] =
+{
+	float_data_set_01,
+	float_data_set_02,
+	float_data_set_03,
+	float_data_set_04,
+	float_data_set_05,
+	float_data_set_06,
+	float_data_set_07,
+	float_data_set_08,
+	float_data_set_09,
+	float_data_set_10
+};
+static const SPsize float_data_set_01_length = sizeof(float_data_set_01) / sizeof(SPfloat);
+static const SPsize float_data_set_02_length = sizeof(float_data_set_02) / sizeof(SPfloat);
+static const SPsize float_data_set_03_length = sizeof(float_data_set_03) / sizeof(SPfloat);
+static const SPsize float_data_set_04_length = sizeof(float_data_set_04) / sizeof(SPfloat);
+static const SPsize float_data_set_05_length = sizeof(float_data_set_05) / sizeof(SPfloat);
+static const SPsize float_data_set_06_length = sizeof(float_data_set_06) / sizeof(SPfloat);
+static const SPsize float_data_set_07_length = sizeof(float_data_set_07) / sizeof(SPfloat);
+static const SPsize float_data_set_08_length = sizeof(float_data_set_08) / sizeof(SPfloat);
+static const SPsize float_data_set_09_length = sizeof(float_data_set_09) / sizeof(SPfloat);
+static const SPsize float_data_set_10_length = sizeof(float_data_set_10) / sizeof(SPfloat);
+
+SPdouble double_data_set_01[] = {1.23456789e9, -2.34567890e8, 3.45678901e9, -4.56789012e7, 5.67890123e9, -6.78901234e8, 7.89012345e9, -8.90123456e6, 9.01234567e9, -1.12345678e10};
+SPdouble double_data_set_02[] = {-1.67890123e8, 2.98765432e10, -3.87654321e9, 4.76543210e9, -5.65432109e10, 6.54321098e8, -7.43210987e9, 8.32109876e7, -9.21098765e9, 1.10987654e10};
+SPdouble double_data_set_03[] = {7.65432109e8, -8.54321098e9, 9.43210987e10, -1.32109876e9, 2.21098765e8, -3.10987654e10, 4.09876543e9, -5.98765432e8, 6.87654321e10, -7.76543210e7};
+SPdouble double_data_set_04[] = {8.01234567e9, -9.12345678e8, 1.23456789e10, -1.34567890e7, 2.45678901e10, -3.56789012e9, 4.67890123e8, -5.78901234e9, 6.89012345e8, -7.90123456e10};
+SPdouble double_data_set_05[] = {7.89012345e10, -6.54321098e9, 5.43210987e8, -4.32109876e10, 3.21098765e9, -2.10987654e9, 1.09876543e10, -9.98765432e8, 8.87654321e7, -7.76543210e10};
+SPdouble double_data_set_06[] = {0.0e0, 1.0e10, -1.0e10, 9.0e9, -9.0e9, 8.0e9, -8.0e9, 7.0e9, -7.0e9, 6.0e9};
+SPdouble double_data_set_07[] = {1.23456789e8, -1.12345678e9, 1.99999999e7, -2.88888888e6, 3.77777777e5, -4.66666666e4, 5.55555555e3, -6.44444444e2, 7.33333333e1, -8.22222222e0};
+SPdouble double_data_set_08[] = {9.87654321e10, -9.76543210e10, 8.65432109e9, -8.54321098e10, 7.43210987e9, -7.32109876e10, 6.21098765e8, -6.10987654e10, 5.09876543e7, -5.98765432e9};
+SPdouble double_data_set_09[] = {2.34678901e9, -3.45678901e10, 4.56789012e9, -5.67890123e6, 1.23456789e9, -3.21098765e10, 2.10987654e9, -8.34567890e8, 6.23456789e10, -2.56789012e9};
+SPdouble double_data_set_10[] = {9.01234567e0, -4.98765432e0, 0.0e0, 3.45678901e10, -7.89012345e6, 8.76543210e9, -1.01112131e8, 1.22233344e7, -2.34567890e9, 5.67890123e5};
+static const SPdouble* double_data_set_list[] =
+{
+	double_data_set_01,
+	double_data_set_02,
+	double_data_set_03,
+	double_data_set_04,
+	double_data_set_05,
+	double_data_set_06,
+	double_data_set_07,
+	double_data_set_08,
+	double_data_set_09,
+	double_data_set_10
+};
+static const SPsize double_data_set_01_length = sizeof(double_data_set_01) / sizeof(SPdouble);
+static const SPsize double_data_set_02_length = sizeof(double_data_set_02) / sizeof(SPdouble);
+static const SPsize double_data_set_03_length = sizeof(double_data_set_03) / sizeof(SPdouble);
+static const SPsize double_data_set_04_length = sizeof(double_data_set_04) / sizeof(SPdouble);
+static const SPsize double_data_set_05_length = sizeof(double_data_set_05) / sizeof(SPdouble);
+static const SPsize double_data_set_06_length = sizeof(double_data_set_06) / sizeof(SPdouble);
+static const SPsize double_data_set_07_length = sizeof(double_data_set_07) / sizeof(SPdouble);
+static const SPsize double_data_set_08_length = sizeof(double_data_set_08) / sizeof(SPdouble);
+static const SPsize double_data_set_09_length = sizeof(double_data_set_09) / sizeof(SPdouble);
+static const SPsize double_data_set_10_length = sizeof(double_data_set_10) / sizeof(SPdouble);
+
+
+static const SPchar* string_data_set_01[] = {
+    "Apple",
+    "Banana",
+    "Cherry",
+    "Date",
+    "Elderberry",
+    "Fig",
+    "Grape",
+    "Honeydew",
+    "Indian Fig",
+    "Jackfruit"
+};
+
+static const SPchar* string_data_set_02[] = {
+    "Kite",
+    "Lemon",
+    "Mango",
+    "Nectarine",
+    "Olive",
+    "Papaya",
+    "Quince",
+    "Raspberry",
+    "Strawberry",
+    "Tangerine"
+};
+
+static const SPchar* string_data_set_03[] = {
+    "Umbrella",
+    "Vanilla",
+    "Watermelon",
+    "Xigua",
+    "Yam",
+    "Zucchini",
+    "Avocado",
+    "Blueberry",
+    "Cantaloupe",
+    "Dragonfruit"
+};
+
+static const SPchar* string_data_set_04[] = {
+    "Elephant",
+    "Falcon",
+    "Giraffe",
+    "Hawk",
+    "Iguana",
+    "Jaguar",
+    "Kangaroo",
+    "Llama",
+    "Meerkat",
+    "Narwhal"
+};
+
+static const SPchar* string_data_set_05[] = {
+    "Ostrich",
+    "Penguin",
+    "Quokka",
+    "Raccoon",
+    "Squirrel",
+    "Turtle",
+    "Uakari",
+    "Vulture",
+    "Wolf",
+    "Xerus"
+};
+
+static const SPchar* string_data_set_06[] = {
+    "Apricot",
+    "Blackberry",
+    "Carrot",
+    "Dandelion",
+    "Eggplant",
+    "Fennel",
+    "Garlic",
+    "Herbs",
+    "Iris",
+    "Jasmine"
+};
+
+static const SPchar* string_data_set_07[] = {
+    "Kiwi",
+    "Lettuce",
+    "Mushroom",
+    "Nutmeg",
+    "Onion",
+    "Pumpkin",
+    "Quinoa",
+    "Radish",
+    "Spinach",
+    "Tomato"
+};
+
+static const SPchar* string_data_set_08[] = {
+    "Universe",
+    "Velocity",
+    "World",
+    "Xylophone",
+    "Yield",
+    "Zephyr",
+    "Acorn",
+    "Blossom",
+    "Cloud",
+    "Dew"
+};
+
+static const SPchar* string_data_set_09[] = {
+    "Eagle",
+    "Falcon",
+    "Gull",
+    "Heron",
+    "Ibex",
+    "Jaguar",
+    "Kite",
+    "Lynx",
+    "Mynah",
+    "Newt"
+};
+
+static const SPchar* string_data_set_10[] = {
+    "Onyx",
+    "Pine",
+    "Quartz",
+    "Ruby",
+    "Sapphire",
+    "Topaz",
+    "Uranium",
+    "Vermilion",
+    "Wisteria",
+    "Xenon"
+};
+static const SPchar** string_data_set_list[] =
+{
+	string_data_set_01,
+	string_data_set_02,
+	string_data_set_03,
+	string_data_set_04,
+	string_data_set_05,
+	string_data_set_06,
+	string_data_set_07,
+	string_data_set_08,
+	string_data_set_09,
+	string_data_set_10
+};
+static const SPsize string_data_set_01_length = sizeof(string_data_set_01) / sizeof(const SPchar*);
+static const SPsize string_data_set_02_length = sizeof(string_data_set_02) / sizeof(const SPchar*);
+static const SPsize string_data_set_03_length = sizeof(string_data_set_03) / sizeof(const SPchar*);
+static const SPsize string_data_set_04_length = sizeof(string_data_set_04) / sizeof(const SPchar*);
+static const SPsize string_data_set_05_length = sizeof(string_data_set_05) / sizeof(const SPchar*);
+static const SPsize string_data_set_06_length = sizeof(string_data_set_06) / sizeof(const SPchar*);
+static const SPsize string_data_set_07_length = sizeof(string_data_set_07) / sizeof(const SPchar*);
+static const SPsize string_data_set_08_length = sizeof(string_data_set_08) / sizeof(const SPchar*);
+static const SPsize string_data_set_09_length = sizeof(string_data_set_09) / sizeof(const SPchar*);
+static const SPsize string_data_set_10_length = sizeof(string_data_set_10) / sizeof(const SPchar*);
+
+void test_encode_decode_trivial()
+{
+	MT3_node tree = NULL;
+	MT3_node child = NULL;
+	
+	mt3_InsertString(&child, "str1", "motex");
+	mt3_InsertString(&child, "str2", "hidegi");
+	mt3_InsertString(&child, "str3", "fjiaw");
+	mt3_InsertString(&child, "str4", "betelgus");
+	
+	mt3_InsertByte(&tree, "byte_1", 127);
+	mt3_InsertShort(&tree, "short_1", 1667);
+	mt3_InsertInt(&tree, "int_1", -10);
+	mt3_InsertLong(&tree, "long_1", 123);
+	mt3_InsertFloat(&tree, "float_1", 135.f);
+	mt3_InsertDouble(&tree, "double_1", 123456789.10);
+	mt3_InsertString(&tree, "string_1", "motex");
+	mt3_Insert(&tree, "subtree", child);
+	
+	SP_ASSERT_NOT_NULL(tree);
+	
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+	
+	SP_DEBUG("expected:");
+	mt3_Print(tree);
+	
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	spBufferFree(&buffer);
+	mt3_Delete(&tree);
+	mt3_Delete(&deserialized_tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
+}
+
+void test_encode_decode_byte_list()
+{
+	MT3_node tree = NULL;
+	mt3_InsertByteList(&tree, "byte_list_1", byte_data_set_01_length, byte_data_set_01);
+	SP_ASSERT_NOT_NULL(tree);
+	
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+	
+	SP_DEBUG("expected:");
+	mt3_Print(tree);
+	
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	
+	spBufferFree(&buffer);
+	
+	mt3_Delete(&tree);
+	mt3_Delete(&deserialized_tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
+}
+
+void test_encode_decode_string_list()
+{
+	MT3_node tree = NULL;
+	mt3_InsertStringList(&tree, "string_list_1", string_data_set_01_length, string_data_set_01);
+	SP_ASSERT_NOT_NULL(tree);
+	
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+	
+	SP_DEBUG("expected:");
+	mt3_Print(tree);
+	
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	
+	spBufferFree(&buffer);
+	
+	mt3_Delete(&tree);
+	mt3_Delete(&deserialized_tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
+}
+
+void test_encode_decode_byte_multi_list()
+{
+	MT3_node tree = NULL;
+	MT3_node byte_multi_list = NULL;
+	
+	mt3_AppendByteList(&byte_multi_list, byte_data_set_01_length, byte_data_set_01);
+	mt3_AppendByteList(&byte_multi_list, byte_data_set_02_length, byte_data_set_02);
+	//mt3_AppendByteList(&byte_multi_list, byte_data_set_03_length, byte_data_set_03);
+	
+	mt3_Insert(&tree, "byte_multi_list", byte_multi_list);
+	SP_ASSERT_NOT_NULL(tree);
+	
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+	
+	SP_DEBUG("expected:");
+	mt3_Print(tree);
+	
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	spBufferFree(&buffer);
+	
+	mt3_Delete(&byte_multi_list);
+	mt3_Delete(&tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
+}
+
+void test_encode_decode_byte_multi_multi_list()
+{
+	MT3_node tree = NULL;
+	MT3_node byte_multi_multi_list = NULL;
+	
+	
+	MT3_node byte_multi_list_1 = NULL;
+	MT3_node byte_multi_list_2 = NULL;
+	
+	
+	mt3_AppendByteList(&byte_multi_list_1, byte_data_set_01_length, byte_data_set_01);
+	mt3_AppendByteList(&byte_multi_list_1, byte_data_set_01_length, byte_data_set_02);
+	mt3_AppendByteList(&byte_multi_list_2, byte_data_set_02_length, byte_data_set_03);
+	mt3_AppendByteList(&byte_multi_list_2, byte_data_set_02_length, byte_data_set_04);
+	
+	mt3_Append(&byte_multi_multi_list, byte_multi_list_1);
+	mt3_Append(&byte_multi_multi_list, byte_multi_list_2);
+	//mt3_AppendByteList(&byte_multi_list, byte_data_set_03_length, byte_data_set_03);
+	
+	mt3_Insert(&tree, "byte_multi_list", byte_multi_multi_list);
+	SP_ASSERT_NOT_NULL(tree);
+	
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+	
+	SP_DEBUG("expected:");
+	mt3_Print(tree);
+	
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	spBufferFree(&buffer);
+	
+	mt3_Delete(&byte_multi_list_1);
+	mt3_Delete(&byte_multi_list_2);
+	mt3_Delete(&byte_multi_multi_list);
+	mt3_Delete(&tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
+}
+
+void test_encode_decode_string_multi_multi_list()
+{
+	MT3_node tree = NULL;
+	MT3_node string_multi_multi_list = NULL;
+
+
+	MT3_node string_multi_list_1 = NULL;
+	MT3_node string_multi_list_2 = NULL;
+
+
+	mt3_AppendStringList(&string_multi_list_1, string_data_set_01_length, string_data_set_01);
+	mt3_AppendStringList(&string_multi_list_1, string_data_set_02_length, string_data_set_02);
+	mt3_AppendStringList(&string_multi_list_2, string_data_set_03_length, string_data_set_03);
+	mt3_AppendStringList(&string_multi_list_2, string_data_set_04_length, string_data_set_04);
+
+	mt3_Append(&string_multi_multi_list, string_multi_list_1);
+	mt3_Append(&string_multi_multi_list, string_multi_list_2);
+
+	mt3_Insert(&tree, "string_multi_list", string_multi_multi_list);
+	SP_ASSERT_NOT_NULL(tree);
+
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+
+	SP_DEBUG("expected:");
+	mt3_Print(tree);
+
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	spBufferFree(&buffer);
+
+	mt3_Delete(&string_multi_list_1);
+	mt3_Delete(&string_multi_list_2);
+	mt3_Delete(&string_multi_multi_list);
+	mt3_Delete(&tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
+}
+
+void test_encode_decode_string_multi_multi_multi_list()
+{
+	MT3_node tree = NULL;
+	MT3_node string_multi_multi_list = NULL;
+	MT3_node string_multi_multi_multi_list = NULL;
+
+	MT3_node string_multi_list_1 = NULL;
+	MT3_node string_multi_list_2 = NULL;
+
+
+	mt3_AppendIntList(&string_multi_list_1, int_data_set_01_length, int_data_set_01);
+	mt3_AppendIntList(&string_multi_list_1, int_data_set_02_length, int_data_set_02);
+	mt3_AppendStringList(&string_multi_list_2, string_data_set_03_length, string_data_set_03);
+	mt3_AppendStringList(&string_multi_list_2, string_data_set_04_length, string_data_set_04);
+
+	mt3_Append(&string_multi_multi_list, string_multi_list_1);
+	mt3_Append(&string_multi_multi_list, string_multi_list_2);
+    mt3_Append(&string_multi_multi_multi_list, string_multi_multi_list);
+    mt3_Append(&string_multi_multi_multi_list, string_multi_multi_list);
+
+	mt3_Insert(&tree, "string_multi_multi_list", string_multi_multi_multi_list);
+	SP_ASSERT_NOT_NULL(tree);
+
+	SPbuffer buffer = mt3_EncodeTree(tree);
+	MT3_node deserialized_tree = mt3_DecodeTree(buffer);
+
+	SP_DEBUG("expected:");
+	mt3_Print(tree);
+
+	SP_DEBUG("actual:");
+	mt3_Print(deserialized_tree);
+	spBufferFree(&buffer);
+
+	mt3_Delete(&string_multi_list_1);
+	mt3_Delete(&string_multi_list_2);
+	mt3_Delete(&string_multi_multi_list);
+	mt3_Delete(&tree);
+	SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
+}
+
+void test_encode_decode_tree_list()
+{
+    MT3_node tree_1 = NULL;
+
+    mt3_InsertString(&tree_1, "hda1", "hda1");
+    mt3_InsertString(&tree_1, "hda2", "hda2");
+    mt3_InsertString(&tree_1, "hda3", "hda3");
+    mt3_InsertString(&tree_1, "hda4", "hda4");
+
+    MT3_node list = NULL;
+    mt3_Append(&list, tree_1);
+    mt3_Append(&list, tree_1);
+    mt3_Append(&list, tree_1);
+    mt3_Append(&list, tree_1);
+
+    MT3_node main_tree = NULL;
+    mt3_Insert(&main_tree, "list", list);
+    mt3_Print(main_tree);
+    mt3_Delete(&main_tree);
+    mt3_Delete(&tree_1);
+    mt3_Delete(&list);
+    SP_ASSERT_TRUE(mt3_GetLastError() == MT3_STATUS_OK);
+}
+
+int main(int argc, char** argv)
+{
+	SP_TEST_INIT(argc, argv);
+	//SP_TEST_ADD(test_encode_decode_trivial);
+	//SP_TEST_ADD(test_encode_decode_byte_list);
+	SP_TEST_ADD(test_encode_decode_string_list);
+	SP_TEST_ADD(test_encode_decode_byte_multi_list);
+	SP_TEST_ADD(test_encode_decode_byte_multi_multi_list);
+	SP_TEST_ADD(test_encode_decode_string_multi_multi_list);
+	SP_TEST_ADD(test_encode_decode_string_multi_multi_multi_list);
+	SP_TEST_ADD(test_encode_decode_tree_list);
+	spTestRunAll();
+	spTestTerminate();
+	return 0;
+}

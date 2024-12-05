@@ -1,5 +1,37 @@
-#include "SP/test/unit.h"
+/*************************************************************************************************
+ * MT3 1.1 - MoTree Library
+ * A lightweight library for serializing and deserializing BTOs (Binary Tree Objects).
+ * 
+ * Copyright (c) 2024 Hidegi
+ * 
+ * This software is provided 'as-is', without any express or implied
+ * warranty.  In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ * 
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ * 
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ *
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ *
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ *************************************************************************************************/
+#include "types.h"
+#include "debug.h"
+#include "unit.h"
 #include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <memory.h>
+#include <assert.h>
+#include <string.h>
 #define SP_DEFAULT_LIST_CAP 16
 
 typedef struct
@@ -12,8 +44,6 @@ typedef struct
 	SPsize length;
 	SPsize capacity;
 	SPbool initialized;
-	SPint argLength;
-	SPchar** argList;
 } SP_action_list_head;
 
 static SP_action_list_head SP_TEST_GLOBAL = {0};
@@ -25,9 +55,6 @@ SPbool spTestInit(SPint argc, SPchar** argv)
 	{	
 		return SP_TRUE;
 	}
-	
-	SP_TEST_GLOBAL.argLength = argc;
-	SP_TEST_GLOBAL.argList = argv;
 	
 	SP_TEST_GLOBAL.initialized = SP_TRUE;
 	SP_TEST_GLOBAL.capacity = SP_DEFAULT_LIST_CAP;

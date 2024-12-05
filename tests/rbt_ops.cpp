@@ -949,6 +949,30 @@ void nodeAdd_RBT(Node* node, Node** head, unsigned long long value)
     }
 }
 
+void collect(const Node* head, std::queue<const Node*>& q)
+{
+	if(head)
+	{
+		
+		if(head->minor)
+			collect(head->minor, q);
+		
+		if(head->major)
+			collect(head->major, q);
+		q.push(head);
+	}
+}
+
+std::queue<const Node*> iterate(const Node* head)
+{
+	std::queue<const Node*> result;
+	if(head)
+	{
+		collect(head, result);
+	}
+	return result;
+}
+
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
 #pragma GCC diagnostic pop
 #endif

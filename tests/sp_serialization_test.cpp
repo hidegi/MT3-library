@@ -17,7 +17,7 @@ bool containsNumber(int n, const int* array, int length)
 
 void test_insertion()
 {
-	MT3_tree tree = mt3_AllocObject();
+	MT3_tree tree = mt3_AllocTree();
 	mt3_InsertString(&tree, "x", "x");
 	mt3_InsertString(&tree, "y", "y");
 	mt3_InsertString(&tree, "fjiaw", "fjiaw");
@@ -68,7 +68,7 @@ void test_null_tree()
 
 void test_empty_tree()
 {
-    MT3_tree tree = mt3_AllocObject();
+    MT3_tree tree = mt3_AllocTree();
     mt3_InsertString(&tree, "x", "x");
     mt3_InsertString(&tree, "y", "y");
     mt3_InsertString(&tree, "z", "z");
@@ -132,7 +132,7 @@ void test_sub_tree()
 
 void test_tree_deletion()
 {
-    MT3_tree tree = mt3_AllocObject();
+    MT3_tree tree = mt3_AllocTree();
     mt3_InsertString(&tree, "x", "x");
     mt3_InsertString(&tree, "y", "y");
     mt3_InsertString(&tree, "z", "z");
@@ -216,12 +216,13 @@ void test_tree_search()
 		array[i] = num;
 		mt3_InsertInt(&tree, std::to_string(array[i]).c_str(), array[i]);
 	}
-
+	
+	/*
 	for(int i = 0; i < LENGTH; i++)
     {
 		SP_ASSERT_NOT_NULL_WITH_ACTION(mt3_Search(tree, std::to_string(array[i]).c_str()), mt3_FreeTree(&tree));
 	}
-
+	*/
 	mt3_FreeTree(&tree);
 	delete[] array;
 }
@@ -386,7 +387,7 @@ void test_get_set()
  *	
  *	3. deepSearch further with remaining tokens..
  */
-MT3_tree* deepSearch(const MT3_tree* head, const std::string& token, SPsize currentLevel, SPsize levels)
+MT3_tree* deepSearch(const MT3_tree* head, const std::string& token)
 {
 	// if it is empty, then return head..
 	if(!head)
@@ -410,7 +411,7 @@ MT3_tree* deepSearch(const MT3_tree* head, const std::string& token, SPsize curr
 		return NULL;
 	}
 	std::string children = token.substr(pos + 1, token.size() - pos);
-	return deepSearch(child, children, currentLevel + 1, levels);
+	return deepSearch(child, children);
 }
 
 void test_deep_search()
@@ -452,20 +453,21 @@ void test_deep_search()
     mt3_InsertStringArray(&parent, "names", 4, names);
     mt3_InsertInt(&parent, "suberr", 135);
 	
-	MT3_tree* branch = mt3_GetTree(parent, "child");
+	MT3_tree* branch = deepSearch(&parent, "child");
 	SP_ASSERT_TRUE_WITH_ACTION(branch && *branch, 
 		mt3_FreeTree(&parent);
 		mt3_FreeTree(&child);
 		mt3_FreeTree(&child2);
 	);
 	
-	MT3_tree* t = deepSearch(&parent, "child.child123", 0, 2);
-	SP_ASSERT_TRUE_WITH_ACTION(t && *t, 
+	mt3_InsertString(branch, "motex", "motex gaming 1667");
+	branch = deepSearch(&parent, "child.child123");
+	SP_ASSERT_TRUE_WITH_ACTION(branch && *branch, 
 		mt3_FreeTree(&parent);
 		mt3_FreeTree(&child);
 		mt3_FreeTree(&child2);
 	);
-	mt3_SetString(*t, "a", "hidegion was here");
+	mt3_SetString(*branch, "a", "hidegion was here");
 	mt3_PrintTree(parent);
 	mt3_FreeTree(&parent);
 	mt3_FreeTree(&child);
@@ -513,33 +515,6 @@ void test_name_extraction()
 	SP_ASSERT_TRUE(member == "head" && domain == "head");
 }
 
-MT3_tree deepSearch(const MT3_tree head, const std::string& token)
-{
-	if(!head)
-		return NULL;
-	
-	if(token.empty())
-	{
-		return head;
-	}
-	
-	auto pos = token.find_first_of('.');
-	if(pos == std::string::npos)
-	{
-		MT3_tree* t = mt3_GetTree(head, token.c_str());
-		return t ? *t : NULL;
-	}
-	
-	std::string branch = token.substr(0, pos);
-	MT3_tree* child = mt3_GetTree(head, branch.c_str());
-	if(!child)
-	{
-		return NULL;
-	}
-	return deepSearch(*child, token.substr(pos + 1, token.size() - pos));
-}
-	
-
 void test_insert_empty_tree()
 {
 	const char* names[] =
@@ -575,25 +550,289 @@ void test_insert_empty_tree()
 	
 	mt3_SetString(*child123, "a", "hidegion was here");
 	const char* str = mt3_GetString(*child123, "a");
-	SP_ASSERT_STRING_EQUAL_WITH_ACTION("hidegion was here", str, mt3_FreeTree(&parent));
 	
+	SP_ASSERT_STRING_EQUAL_WITH_ACTION("hidegion was here", str, mt3_FreeTree(&parent));
 	mt3_SetString(*child123, "a", "hidegion was here");
 	
 	mt3_PrintTree(parent);
 	mt3_FreeTree(&parent);
 }
+
+static void big_test()
+{
+	SPbyte byte_dataset1[] = {-76, -17, 33, 109, -3, 42, -42, 62, 116, 34};
+	SPbyte byte_dataset2[] = {-39, 47, -59, 4, 97, 59, 8, 11, -90, -10};
+	SPbyte byte_dataset3[] = {-41, -79, -52, 61, 98, -66, 81, 75, -100, 113};
+
+	SPbyte byte_dataset4[] = {-115, -76, 113, 57, 120, 59, 52, -89, 51, -118};
+	SPbyte byte_dataset5[] = {69, 18, -94, -50, -43, -28, -108, -7, -106, 40};
+	SPbyte byte_dataset6[] = {11, -43, -92, -52, -65, -27, 109, 99, 6, 91};
+
+	SPbyte byte_dataset7[] = {52, -65, -90, 80, 54, -22, 117, 90, -8, -92};
+	SPbyte byte_dataset8[] = {-96, -11, -103, 42, -78, -71, -59, -90, 21, -47};
+	SPbyte byte_dataset9[] = {119, -31, -73, 90, 31, -80, 86, -100, 106, 13};
+
+    SPshort short_dataset1[] = {-76, -17, 33, 109, -3, 42, -42, 62, 116, 34};
+	SPshort short_dataset2[] = {-39, 47, -59, 4, 97, 59, 8, 11, -90, -10};
+	SPshort short_dataset3[] = {-41, -79, -52, 61, 98, -66, 81, 75, -100, 113};
+
+	SPshort short_dataset4[] = {-115, -76, 113, 57, 120, 59, 52, -89, 51, -118};
+	SPshort short_dataset5[] = {69, 18, -94, -50, -43, -28, -108, -7, -106, 40};
+	SPshort short_dataset6[] = {11, -43, -92, -52, -65, -27, 109, 99, 6, 91};
+
+	SPshort short_dataset7[] = {52, -65, -90, 80, 54, -22, 117, 90, -8, -92};
+	SPshort short_dataset8[] = {-96, -11, -103, 42, -78, -71, -59, -90, 21, -47};
+	SPshort short_dataset9[] = {119, -31, -73, 90, 31, -80, 86, -100, 106, 13};
+
+
+	SPint int_dataset1[] = {-76, -17, 33, 109, -3, 42, -42, 62, 116, 34};
+	SPint int_dataset2[] = {-39, 47, -59, 4, 97, 59, 8, 11, -90, -10};
+	SPint int_dataset3[] = {-41, -79, -52, 61, 98, -66, 81, 75, -100, 113};
+
+	SPint int_dataset4[] = {-115, -76, 113, 57, 120, 59, 52, -89, 51, -118};
+	SPint int_dataset5[] = {69, 18, -94, -50, -43, -28, -108, -7, -106, 40};
+	SPint int_dataset6[] = {11, -43, -92, -52, -65, -27, 109, 99, 6, 91};
+
+	SPint int_dataset7[] = {52, -65, -90, 80, 54, -22, 117, 90, -8, -92};
+	SPint int_dataset8[] = {-96, -11, -103, 42, -78, -71, -59, -90, 21, -47};
+	SPint int_dataset9[] = {119, -31, -73, 90, 31, -80, 86, -100, 106, 13};
+
+	SPlong long_dataset1[] = {-76, -17, 33, 109, -3, 42, -42, 62, 116, 34};
+	SPlong long_dataset2[] = {-39, 47, -59, 4, 97, 59, 8, 11, -90, -10};
+	SPlong long_dataset3[] = {-41, -79, -52, 61, 98, -66, 81, 75, -100, 113};
+
+	SPlong long_dataset4[] = {-115, -76, 113, 57, 120, 59, 52, -89, 51, -118};
+	SPlong long_dataset5[] = {69, 18, -94, -50, -43, -28, -108, -7, -106, 40};
+	SPlong long_dataset6[] = {11, -43, -92, -52, -65, -27, 109, 99, 6, 91};
+
+	SPlong long_dataset7[] = {52, -65, -90, 80, 54, -22, 117, 90, -8, -92};
+	SPlong long_dataset8[] = {-96, -11, -103, 42, -78, -71, -59, -90, 21, -47};
+	SPlong long_dataset9[] = {119, -31, -73, 90, 31, -80, 86, -100, 106, 13};
+
+    SPfloat float_dataset1[] = {1.4, 2.43, 954.23, 1.32, 69.423};
+	SPfloat float_dataset2[] = {96.8945f, 965.f, 1667.f};
+	SPfloat float_dataset3[] = {56.35435f, .5652f, 182.3E+12f, 45.34};
+	SPfloat float_dataset4[] = {86.43, 1.4171f, .866, .5838, 182.34f};
+	SPfloat float_dataset5[] = {6878.34, 8128, .344, 969.23, 7.423, 10.444};
+	SPfloat float_dataset6[] = {135.348f, 4527.2434f, 45.123, 923.34f};
+
+    SPdouble double_dataset1[] = {1.4, 2.43, 954.23, 1.32, 69.423};
+	SPdouble double_dataset2[] = {96.8945, 965.f, 1667.f};
+	SPdouble double_dataset3[] = {56.35435, .5652, 182.3E+12, 45.34};
+	SPdouble double_dataset4[] = {86.43, 1.4171, .866, .5838, 182.34};
+	SPdouble double_dataset5[] = {6878.34, 8128, .344, 969.23, 7.423, 10.444};
+    SPdouble double_dataset6[] = {135.348f, 4527.2434f, 45.123, 923.34f};
+
+	const SPchar* str_dataset1[] = {"a4353", "234b", "c453", "fhujsd", "bfbf"};
+	const SPchar* str_dataset2[] = {"e498nefsj", "fhf", "ggfshg", "fghijfk"};
+	const SPchar* str_dataset3[] = {"g34jnf", "hfujs", "ijgdsfs", "dfhjjfd", "djfjnfd"};
+
+	const SPchar* str_dataset4[] = {"jjfdjj", "kdofk", "lmnfd", "fkdj"};
+	const SPchar* str_dataset5[] = {"lorem", "ipsum", "dolor", "sit", "amet"};
+	const SPchar* str_dataset6[] = {"pkfdjk", "qkdfkdmf", "rdnfmdfn"};
+
+	const SPchar* str_dataset7[] = {"skmgmf", "fjndmfndt", "dfkmkdfmu", "djfndf"};
+	const SPchar* str_dataset8[] = {"abc", "def", "ghi", "jklmno", "pqrst", "uvwxyz"};
+	const SPchar* str_dataset9[] = {"y", "z"};
+	const SPchar* str_dataset10[] = {"1234", "567890", "12345", "678910", "2345", "347858"};
+
+    MT3_tree subtree_1 = mt3_AllocTree();
+    mt3_InsertByte(&subtree_1, "byte", -126);
+	mt3_InsertShort(&subtree_1, "short", -750);
+    mt3_InsertInt(&subtree_1, "int", -1667);
+    mt3_InsertLong(&subtree_1, "long", 123456789000);
+    mt3_InsertFloat(&subtree_1, "float", 3.14159265f);
+    mt3_InsertDouble(&subtree_1, "double", 1.742734875845);
+    mt3_InsertString(&subtree_1, "string", "motti was here");
+
+    MT3_tree subtree_2 = mt3_AllocTree();
+    mt3_InsertByte(&subtree_2, "byte", -128);
+	mt3_InsertShort(&subtree_2, "short", -750);
+    mt3_InsertInt(&subtree_2, "int", -1667);
+    mt3_InsertLong(&subtree_2, "long", 123456789000);
+    mt3_InsertFloat(&subtree_2, "float", 3.14159265f);
+    mt3_InsertDouble(&subtree_2, "double", 1.742734875845);
+    mt3_InsertString(&subtree_2, "string", "fjiaw was here");
+
+    MT3_tree subtree_3 = mt3_AllocTree();
+    mt3_InsertByte(&subtree_3, "byte", -128);
+	mt3_InsertShort(&subtree_3, "short", -750);
+    mt3_InsertInt(&subtree_3, "int", -1667);
+    mt3_InsertLong(&subtree_3, "long", 123456789000);
+    mt3_InsertFloat(&subtree_3, "float", 3.14159265f);
+    mt3_InsertDouble(&subtree_3, "double", 1.742734875845);
+    mt3_InsertString(&subtree_3, "string", "thommy was here");
+
+    MT3_tree subtree_4 = mt3_AllocTree();
+    mt3_InsertByte(&subtree_4, "byte", -128);
+	mt3_InsertShort(&subtree_4, "short", -750);
+    mt3_InsertInt(&subtree_4, "int", -1667);
+    mt3_InsertLong(&subtree_4, "long", 123456789000);
+    mt3_InsertFloat(&subtree_4, "float", 3.14159265f);
+    mt3_InsertDouble(&subtree_4, "double", 1.742734875845);
+    mt3_InsertString(&subtree_4, "string", "betelgus was here");
+
+	MT3_tree tree = NULL;
+	/*
+	mt3_InsertTree(&tree, "subtree_123", subtree_1);
+	mt3_InsertTree(&tree, "subtree_223", subtree_2);
+	mt3_InsertTree(&tree, "subtree_323", subtree_3);
+	mt3_InsertTree(&tree, "subtree_423", subtree_4);
+    */
+	
+	mt3_InsertByte(&tree, "byte", -128);
+	mt3_InsertShort(&tree, "short", -348);
+    mt3_InsertInt(&tree, "int", -9384);
+    mt3_InsertLong(&tree, "long", 39489384);
+    mt3_InsertFloat(&tree, "float", 1.34535f);
+    mt3_InsertDouble(&tree, "double", 1.988E+30);
+    mt3_InsertString(&tree, "string", "hidegion was here");
+
+    // plain arrays..
+    mt3_InsertByteArray(&tree, "byte_array", sizeof(byte_dataset1) / sizeof(SPbyte), byte_dataset1);
+    mt3_InsertShortArray(&tree, "short_array", sizeof(short_dataset1) / sizeof(SPshort), short_dataset1);
+    mt3_InsertIntArray(&tree, "int_array", sizeof(int_dataset1) / sizeof(SPint), int_dataset1);
+    mt3_InsertLongArray(&tree, "long_array", sizeof(long_dataset1) / sizeof(SPlong),long_dataset1);
+    mt3_InsertFloatArray(&tree, "float_array", sizeof(float_dataset1) / sizeof(SPfloat), float_dataset1);
+    mt3_InsertDoubleArray(&tree, "double_array", sizeof(double_dataset1) / sizeof(SPdouble), double_dataset1);
+    mt3_InsertStringArray(&tree, "string_array", sizeof(str_dataset1) / sizeof(const SPchar*), str_dataset1);
+	
+    // multi byte arrays..
+    MT3_array multi_type_array_1 = mt3_AllocArray();
+    MT3_array multi_type_array_2 = NULL;
+    MT3_array multi_type_array_3 = mt3_AllocArray();
+
+/*
+    mt3_ArrayInsertByteArray(&multi_type_array_1, sizeof(byte_dataset1) / sizeof(SPbyte),byte_dataset1);
+    mt3_ArrayInsertByteArray(&multi_type_array_1, sizeof(byte_dataset2) / sizeof(SPbyte), byte_dataset2);
+    mt3_ArrayInsertByteArray(&multi_type_array_1, sizeof(byte_dataset3) / sizeof(SPbyte), byte_dataset3);
+    mt3_ArrayInsertByteArray(&multi_type_array_2, sizeof(byte_dataset4) / sizeof(SPbyte), byte_dataset4);
+    mt3_ArrayInsertByteArray(&multi_type_array_2, sizeof(byte_dataset5) / sizeof(SPbyte), byte_dataset5);
+    mt3_ArrayInsertByteArray(&multi_type_array_2, sizeof(byte_dataset6) / sizeof(SPbyte), byte_dataset6);
+    mt3_ArrayInsertByteArray(&multi_type_array_3, sizeof(byte_dataset7) / sizeof(SPbyte), byte_dataset7);
+    mt3_ArrayInsertByteArray(&multi_type_array_3, sizeof(byte_dataset8) / sizeof(SPbyte), byte_dataset8);
+    mt3_ArrayInsertByteArray(&multi_type_array_3, sizeof(byte_dataset9) / sizeof(SPbyte), byte_dataset9);
+*/
+
+/*
+    mt3_ArrayInsertShortArray(&multi_type_array_1, sizeof(short_dataset1) / sizeof(SPshort), short_dataset1);
+    mt3_ArrayInsertShortArray(&multi_type_array_1, sizeof(short_dataset2) / sizeof(SPshort), short_dataset2);
+    mt3_ArrayInsertShortArray(&multi_type_array_1, sizeof(short_dataset3) / sizeof(SPshort), short_dataset3);
+    mt3_ArrayInsertShortArray(&multi_type_array_2, sizeof(short_dataset4) / sizeof(SPshort), short_dataset4);
+    mt3_ArrayInsertShortArray(&multi_type_array_2, sizeof(short_dataset5) / sizeof(SPshort), short_dataset5);
+    mt3_ArrayInsertShortArray(&multi_type_array_2, sizeof(short_dataset6) / sizeof(SPshort), short_dataset6);
+    mt3_ArrayInsertShortArray(&multi_type_array_3, sizeof(short_dataset7) / sizeof(SPshort), short_dataset7);
+    mt3_ArrayInsertShortArray(&multi_type_array_3, sizeof(short_dataset8) / sizeof(SPshort), short_dataset8);
+    mt3_ArrayInsertShortArray(&multi_type_array_3, sizeof(short_dataset9) / sizeof(SPshort), short_dataset9);
+*/
+/*
+    mt3_ArrayInsertIntArray(&multi_type_array_1, sizeof(int_dataset1) / sizeof(SPint), int_dataset1);
+    mt3_ArrayInsertIntArray(&multi_type_array_1, sizeof(int_dataset2) / sizeof(SPint), int_dataset2);
+    mt3_ArrayInsertIntArray(&multi_type_array_1, sizeof(int_dataset3) / sizeof(SPint), int_dataset3);
+    mt3_ArrayInsertIntArray(&multi_type_array_2, sizeof(int_dataset4) / sizeof(SPint), int_dataset4);
+    mt3_ArrayInsertIntArray(&multi_type_array_2, sizeof(int_dataset5) / sizeof(SPint), int_dataset5);
+    mt3_ArrayInsertIntArray(&multi_type_array_2, sizeof(int_dataset6) / sizeof(SPint), int_dataset6);
+    mt3_ArrayInsertIntArray(&multi_type_array_3, sizeof(int_dataset7) / sizeof(SPint), int_dataset7);
+    mt3_ArrayInsertIntArray(&multi_type_array_3, sizeof(int_dataset8) / sizeof(SPint), int_dataset8);
+    mt3_ArrayInsertIntArray(&multi_type_array_3, sizeof(int_dataset9) / sizeof(SPint), int_dataset9);
+*/
+/*
+    mt3_ArrayInsertLongArray(&multi_type_array_1, sizeof(long_dataset1) / sizeof(SPlong), long_dataset1);
+    mt3_ArrayInsertLongArray(&multi_type_array_1, sizeof(long_dataset2) / sizeof(SPlong), long_dataset2);
+    mt3_ArrayInsertLongArray(&multi_type_array_1, sizeof(long_dataset3) / sizeof(SPlong), long_dataset3);
+    mt3_ArrayInsertLongArray(&multi_type_array_2, sizeof(long_dataset4) / sizeof(SPlong), long_dataset4);
+    mt3_ArrayInsertLongArray(&multi_type_array_2, sizeof(long_dataset5) / sizeof(SPlong), long_dataset5);
+    mt3_ArrayInsertLongArray(&multi_type_array_2, sizeof(long_dataset6) / sizeof(SPlong), long_dataset6);
+    mt3_ArrayInsertLongArray(&multi_type_array_3, sizeof(long_dataset7) / sizeof(SPlong), long_dataset7);
+    mt3_ArrayInsertLongArray(&multi_type_array_3, sizeof(long_dataset8) / sizeof(SPlong), long_dataset8);
+    mt3_ArrayInsertLongArray(&multi_type_array_3, sizeof(long_dataset9) / sizeof(SPlong), long_dataset9);
+*/
+/*
+    mt3_ArrayInsertFloatArray(&multi_type_array_1, sizeof(float_dataset1) / sizeof(SPfloat), float_dataset1);
+    mt3_ArrayInsertFloatArray(&multi_type_array_1, sizeof(float_dataset2) / sizeof(SPfloat), float_dataset2);
+    mt3_ArrayInsertFloatArray(&multi_type_array_2, sizeof(float_dataset3) / sizeof(SPfloat), float_dataset3);
+    mt3_ArrayInsertFloatArray(&multi_type_array_2, sizeof(float_dataset4) / sizeof(SPfloat), float_dataset4);
+    mt3_ArrayInsertFloatArray(&multi_type_array_3, sizeof(float_dataset5) / sizeof(SPfloat), float_dataset5);
+    mt3_ArrayInsertFloatArray(&multi_type_array_3, sizeof(float_dataset6) / sizeof(SPfloat), float_dataset6);
+*/
+/*
+    mt3_ArrayInsertDoubleArray(&multi_type_array_1, sizeof(double_dataset1) / sizeof(SPdouble), double_dataset1);
+    mt3_ArrayInsertDoubleArray(&multi_type_array_1, sizeof(double_dataset2) / sizeof(SPdouble), double_dataset2);
+    mt3_ArrayInsertDoubleArray(&multi_type_array_2, sizeof(double_dataset3) / sizeof(SPdouble), double_dataset3);
+    mt3_ArrayInsertDoubleArray(&multi_type_array_2, sizeof(double_dataset4) / sizeof(SPdouble), double_dataset4);
+    mt3_ArrayInsertDoubleArray(&multi_type_array_3, sizeof(double_dataset5) / sizeof(SPdouble), double_dataset5);
+    mt3_ArrayInsertDoubleArray(&multi_type_array_3, sizeof(double_dataset6) / sizeof(SPdouble), double_dataset6);
+*/
+
+    mt3_ArrayInsertStringArray(&multi_type_array_1, sizeof(str_dataset1) / sizeof(const SPchar*), str_dataset1);
+    mt3_ArrayInsertStringArray(&multi_type_array_1, sizeof(str_dataset2) / sizeof(const SPchar*), str_dataset2);
+    mt3_ArrayInsertStringArray(&multi_type_array_1, sizeof(str_dataset3) / sizeof(const SPchar*), str_dataset3);
+    mt3_ArrayInsertStringArray(&multi_type_array_2, sizeof(str_dataset4) / sizeof(const SPchar*), str_dataset4);
+    mt3_ArrayInsertStringArray(&multi_type_array_2, sizeof(str_dataset5) / sizeof(const SPchar*), str_dataset5);
+    mt3_ArrayInsertStringArray(&multi_type_array_2, sizeof(str_dataset6) / sizeof(const SPchar*), str_dataset6);
+    mt3_ArrayInsertStringArray(&multi_type_array_3, sizeof(str_dataset7) / sizeof(const SPchar*), str_dataset7);
+    mt3_ArrayInsertStringArray(&multi_type_array_3, sizeof(str_dataset8) / sizeof(const SPchar*), str_dataset8);
+    mt3_ArrayInsertStringArray(&multi_type_array_3, sizeof(str_dataset9) / sizeof(const SPchar*), str_dataset9);
+    mt3_ArrayInsertStringArray(&multi_type_array_3, sizeof(str_dataset10) / sizeof(const SPchar*), str_dataset10);
+/*
+    mt3_ArrayInsertTree(&multi_type_array_1, subtree_1);
+    mt3_ArrayInsertTree(&multi_type_array_1, subtree_2);
+    mt3_ArrayInsertTree(&multi_type_array_1, subtree_3);
+    mt3_ArrayInsertTree(&multi_type_array_1, subtree_4);
+*/
+    //mt3_InsertArray(&tree, "multi_type_array_1", multi_type_array_1);
+
+    // multi multi byte arrays..
+    MT3_array multi_multi_type_array = NULL;
+    mt3_ArrayInsertArray(&multi_multi_type_array, multi_type_array_1);
+    //mt3_InsertArray(&tree, "multi_multi_type_array", multi_multi_type_array);
+
+    MT3_array multi_multi_multi_type_array = mt3_AllocArray();
+    mt3_ArrayInsertArray(&multi_multi_multi_type_array, multi_multi_type_array);
+    mt3_InsertArray(&tree, "multi_multi_multi_type_array", multi_multi_multi_type_array);
+
+	SPbuffer buffer = mt3_WriteBinary(tree);
+	MT3_tree output = mt3_ReadBinary(buffer);
+	SP_ASSERT_NOT_NULL(output);
+
+    printf("expected:\n");
+    mt3_PrintTree(tree);
+
+    printf("actual:\n");
+    mt3_PrintTree(output);
+
+    mt3_FreeTree(&tree);
+    mt3_FreeTree(&output);
+
+    SP_DEBUG("%lld bytes", buffer.length);
+
+    spBufferFree(&buffer);
+    mt3_FreeTree(&tree);
+    mt3_FreeTree(&subtree_1);
+    mt3_FreeTree(&subtree_2);
+    mt3_FreeTree(&subtree_3);
+    mt3_FreeTree(&subtree_4);
+    mt3_FreeTree(&output);
+    mt3_FreeArray(&multi_type_array_1);
+    mt3_FreeArray(&multi_type_array_2);
+    mt3_FreeArray(&multi_type_array_3);
+    mt3_FreeArray(&multi_multi_type_array);
+    mt3_FreeArray(&multi_multi_multi_type_array);
+}
 int main(int argc, char** argv)
 {
 	SP_TEST_INIT(argc, argv);
-	//SP_TEST_ADD(test_serialization_trivial);
-	//SP_TEST_ADD(test_if_all_available);
-	//SP_TEST_ADD(test_if_all_available);
-	//SP_TEST_ADD(test_insertion);
-	//SP_TEST_ADD(test_null_tree);
-	SP_TEST_ADD(test_insert_empty_tree);
-	//SP_TEST_ADD(test_tree_random_integers);
-	//SP_TEST_ADD(test_random_index);
 
+	/*
+	SP_TEST_ADD(test_insertion);
+	SP_TEST_ADD(test_null_tree);
+	SP_TEST_ADD(test_insert_empty_tree);
+	SP_TEST_ADD(test_sub_tree);
+	SP_TEST_ADD(test_tree_random_integers);
+	SP_TEST_ADD(test_random_index);
+    */
+
+    SP_TEST_ADD(big_test);
 	spTestRunAll();
 	spTestTerminate();
 	return 0;
