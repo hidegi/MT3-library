@@ -3,7 +3,7 @@
 *.log
 *.depend
 *.DS_Store
-include/SP/config.h
+include/platform.h
 metaphor/
 build/
 obj/
