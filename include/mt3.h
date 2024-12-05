@@ -160,6 +160,17 @@ SP_API const SPchar* mt3_ToString(const MT3_node object);
 SP_API void mt3_Print(const MT3_node object);
 
 /*!
+ *	@brief Compares the tag, colour, value and
+ *  weight between two nodes.
+ *
+ *	@return True, if @param a is virtually
+ *  equal to @param b.
+ *
+ *	@ingroup comparison
+ */
+SP_API SPbool mt3_IsEqual(const MT3_node a, const MT3_node b);
+
+/*!
  *	@brief Copies an tree-or list-node.
  *	
  *	Issues @ref MT3_STATUS_BAD_VALUE, 

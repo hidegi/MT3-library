@@ -48,6 +48,9 @@ void _mt3_encode_list(const MT3_node list, SPbuffer* buffer, int level);
 MT3_node _mt3_decode_tree(const SPubyte** memory, SPsize* length);
 SPbool _mt3_decode_list(MT3_node node, const SPubyte** memory, SPsize* length);
 
+SPbool _mt3_is_tree_equal(const MT3_node a, const MT3_node b);
+SPbool _mt3_is_list_equal(const MT3_node a, const MT3_node b);
+
 SPbool _mt3_is_root(const MT3_node node);
 SPbool _mt3_is_major(const MT3_node node);
 

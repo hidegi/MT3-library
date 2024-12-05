@@ -59,6 +59,7 @@ endif()
 
 if(APPLE)
 	set(SP_PLATFORM_MACOS 1)
+	set(CMAKE_MACOSX_RPATH 1)
 endif()
 
 sp_set_option(MT3_PRINT_OUTPUT_DEBUG OFF BOOL "Print serialization debugging output")

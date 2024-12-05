@@ -1,6 +1,7 @@
 #include "internal.h"
 #include <errno.h>
 #include <stdarg.h>
+#include <math.h>
 
 #define MT3_HAVE_BST_MAJOR_INCLINED
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
@@ -328,6 +329,127 @@ MT3_node mt3_Copy(const MT3_node n)
 		ret = mt3_IsTree(n) ? _mt3_copy_tree(n) : _mt3_copy_list(n);
 	}
 	return ret;
+}
+
+#define MT3_COMPARE_GENERIC(p) \
+    if(a->payload.p != b->payload.p) \
+        return SP_FALSE
+
+SPbool _mt3_decimal_almost_equal(SPdouble a, SPdouble b, SPsize places)
+{
+	return (fabs(a - b) < pow(10.0, (SPdouble) places));
+}
+
+SPbool _mt3_is_equal(const MT3_node a, const MT3_node b)
+{
+    if(!a && !b)
+        return SP_TRUE;
+
+    if((!a && b) || (a && !b))
+    {
+        SP_OUTPUT(stderr, "[SP-Test]", "exclusive null-ptr");
+        return SP_FALSE;
+    }
+
+    if(a->tag != b->tag)
+    {
+        SP_OUTPUT(stderr, "[SP-Test]", "tag not equal");
+        return SP_FALSE;
+    }
+    if(a->length != b->length)
+    {
+        SP_OUTPUT(stderr, "[SP-Test]", "length not equal");
+        return SP_FALSE;
+    }
+    if(a->weight != b->weight)
+    {
+        SP_OUTPUT(stderr, "[SP-Test]", "weight not equal");
+        return SP_FALSE;
+    }
+    if(a->red != b->red)
+    {
+        SP_OUTPUT(stderr, "[SP-Test]", "color not equal");
+        return SP_FALSE;
+    }
+
+    switch(a->tag)
+    {
+        case MT3_TAG_NULL: break;
+        case MT3_TAG_BYTE: MT3_COMPARE_GENERIC(tag_byte); break;
+        case MT3_TAG_SHORT: MT3_COMPARE_GENERIC(tag_short); break;
+        case MT3_TAG_INT: MT3_COMPARE_GENERIC(tag_int); break;
+        case MT3_TAG_LONG: MT3_COMPARE_GENERIC(tag_long); break;
+        case MT3_TAG_FLOAT:
+        {
+            if(!_mt3_decimal_almost_equal(a->payload.tag_float, b->payload.tag_float, 6))
+                return SP_FALSE;
+            break;
+        }
+        case MT3_TAG_DOUBLE:
+        {
+            if(!_mt3_decimal_almost_equal(a->payload.tag_double, b->payload.tag_double, 15))
+                return SP_FALSE;
+            break;
+        }
+
+        case MT3_TAG_STRING:
+        {
+            if(strncmp(a->payload.tag_string, b->payload.tag_string, a->length))
+                return SP_FALSE;
+            break;
+        }
+        case MT3_TAG_ROOT:
+        {
+            if(!_mt3_is_tree_equal(a->payload.tag_object, b->payload.tag_object))
+                return SP_FALSE;
+            break;
+        }
+
+        default:
+        {
+            if(!_mt3_is_list_equal(a->payload.tag_object, b->payload.tag_object))
+                return SP_FALSE;
+        }
+    }
+
+    return SP_TRUE;
+}
+
+SPbool _mt3_is_tree_equal(const MT3_node a, const MT3_node b)
+{
+    if(!_mt3_is_equal(a, b))
+        return SP_FALSE;
+
+    return (a && b) ? (_mt3_is_tree_equal(a->major, b->major) && _mt3_is_tree_equal(a->minor, b->minor)) : SP_TRUE;
+}
+
+SPbool _mt3_is_list_equal(const MT3_node a, const MT3_node b)
+{
+    MT3_node aCursor = a, bCursor = b;
+    for(; aCursor && bCursor; aCursor = aCursor->major, bCursor = bCursor->major)
+    {
+        if(!mt3_IsList(aCursor) || !mt3_IsList(bCursor))
+            return SP_FALSE;
+
+        if(!_mt3_is_equal(aCursor, bCursor))
+            return SP_FALSE;
+    }
+
+    return (!aCursor && !bCursor);
+}
+
+SPbool mt3_IsEqual(const MT3_node a, const MT3_node b)
+{
+    if(a == b)
+        return SP_TRUE;
+
+    if(mt3_IsTree(a) != mt3_IsTree(b))
+        return SP_FALSE;
+
+    if(mt3_IsList(a) != mt3_IsList(b))
+        return SP_FALSE;
+
+    return (mt3_IsTree(a) ? _mt3_is_tree_equal(a, b) : _mt3_is_list_equal(a, b));
 }
 
 void _mt3_delete_node(MT3_node n)
