@@ -4,7 +4,7 @@
 
 # The MT3-library (SP 1994)
 MT3 (short for MoTree) is a library for serializing and deserializing any plain structure to\
-binary and vice-versa (similar to Mojang's NBT format).
+binary and vice versa (similar to Mojang's NBT-format).
 
 MT3 introduces an open format, the so called Binary Tree Object (BTO), of which's properties\
 are explained overleaf.
@@ -24,16 +24,16 @@ The BTO-format has knowledge of following data types:
 | double | 7 | -2.3E-308 to +1.7E+308 | 8 |
 | string | 8 | N/A | n |
 
-The tag-byte tells exactly what type of data a node in a BTO stores.
-
-Consequently, all data types can be comprised as an array, where the first bit in the tag-byte (1 for array, 0 for plain type) tells whether or not some node stores an array of some type.\
-An array of root-objects will store a list of trees as a double-linked list of binary-trees, rather than a binary-tree of binary-trees.
+The tag tells exactly what type of data a node in a BTO stores.
 
 To distinguish between these types, each node (like NBT) is labeled with a tag.\
 However, the huge difference between NBT and BTO is that BTO uses an SDBM-hash to calculate the weight for a node.\
 The input type for a weighted value could be of any type, however MT3 uses a string to calculate a weight.
 
-The default compression strategy is the Fast-ZLIB-Compression, although, GZIP is also possible.\
+Consequently, all data types can be stored as a list, where the first bit in the tag\
+tells if some node stores a list of some type (1 for list, 0 for plain type).
+
+The compression strategy used is the Fast-ZLIB-Compression.\
 The internal layout of a BTO is a Red-Black-Tree (the color-bit is the 7th bit in the tag).
 
 ## How to build
