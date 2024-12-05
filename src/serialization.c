@@ -449,11 +449,9 @@ SPbool _mt3_decode_list(MT3_node node, const SPubyte** memory, SPsize* length)
 MT3_node mt3_DecodeTree(SPbuffer buffer)
 {
 	SPbuffer decompressed = _mt3_decompress(buffer.data, buffer.length);
-	const SPubyte** memory = (const SPubyte**) &decompressed.data;
-	SPsize length = decompressed.length;
-
-	MT3_node ret = _mt3_decode_tree(memory, &length);
-	//spBufferFree(&decompressed);
+	const SPubyte* memory = decompressed.data;
+	MT3_node ret = _mt3_decode_tree((const SPubyte**) &memory, &decompressed.length);
+	spBufferFree(&decompressed);
 	return ret;
 }
 

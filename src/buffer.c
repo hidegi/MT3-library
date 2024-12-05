@@ -31,15 +31,17 @@ static int _spLazyInit(SPbuffer* b)
 
 void spBufferFree(SPbuffer* b)
 {
-    SP_ASSERT(b, "Cannot free uninitialized buffer");
-    free(b->data);
-    b->data = NULL;
-    b->length = b->capacity = 0;
+	if(b->data)
+	{
+		free(b->data);
+		b->data = NULL;
+		b->length = b->capacity = 0;
+	}
 }
 
 SPbool spBufferReserve(SPbuffer* b, SPsize reserved)
 {
-    SP_ASSERT(b, "Cannot reserve for uninitialized buffer");
+    SP_ASSERT(b, "Cannot reserve for NULL");
     if(unlikely(!b->data) && unlikely(!_spLazyInit(b)))
     {
         return SP_FALSE;
@@ -63,7 +65,7 @@ SPbool spBufferReserve(SPbuffer* b, SPsize reserved)
 
 SPbool spBufferAppend(SPbuffer* b, const void* data, SPsize n)
 {
-    SP_ASSERT(b, "Cannot append to empty buffer");
+    SP_ASSERT(b, "Cannot append to NULL");
     if(unlikely(!b->data) && unlikely(!_spLazyInit(b)))
     {
         return SP_FALSE;
