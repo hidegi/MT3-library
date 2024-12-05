@@ -283,22 +283,22 @@ void _mt3_encode_tree(const MT3_node tree, SPbuffer* buffer, int level)
 
 void _mt3_encode_list(const MT3_node list, SPbuffer* buffer, int level)
 {
-    if(list)
-    {
-        SP_ASSERT(mt3_IsList(list), "Expected list to encode");
-        MT3_node cursor = NULL;
-        SPsize i = 0;
-
-        for(cursor = list; cursor != NULL; cursor = cursor->major)
-        {
-            if(cursor->tag & MT3_TAG_LIST)
-            {
-                //encode the tag, if it is a multi-list
-                SPuint8 tag = list->tag | ((list->red & 1) << 6);
-                _mt3_write_bytes(buffer, (const SPubyte*) &tag, sizeof(SPbyte), SP_FALSE, level);
-            }
-            _mt3_encode(cursor, buffer, level);
-        }
+    	if(list)
+    	{
+	        SP_ASSERT(mt3_IsList(list), "Expected list to encode");
+	        MT3_node cursor = NULL;
+	        SPsize i = 0;
+	
+	        for(cursor = list; cursor != NULL; cursor = cursor->major)
+	        {
+	            if(cursor->tag & MT3_TAG_LIST)
+	            {
+	                //encode the tag, if it is a multi-list
+	                SPuint8 tag = list->tag | ((list->red & 1) << 6);
+	                _mt3_write_bytes(buffer, (const SPubyte*) &tag, sizeof(SPbyte), SP_FALSE, level);
+	            }
+	            _mt3_encode(cursor, buffer, level);
+	        }
 	}
 }
 
@@ -349,7 +349,7 @@ static SPbool _mt3_decode(MT3_node node, const SPubyte** memory, SPsize* length)
 			
 			default:
 			{
-                _mt3_decode_list(node, memory, length);
+                		_mt3_decode_list(node, memory, length);
 				break;
 			}
 		}
