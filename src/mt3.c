@@ -281,12 +281,12 @@ static MT3_node _mt3_copy_tree(const MT3_node n)
         tree->length = n->length;
 
 
-		if(!_mt3_copy_payload_from_node(n, tree))
-		{
-			errno = MT3_STATUS_NO_MEMORY;
-			free(tree);
-			return NULL;
-		}
+	if(!_mt3_copy_payload_from_node(n, tree))
+	{
+		errno = MT3_STATUS_NO_MEMORY;
+		free(tree);
+		return NULL;
+	}
 		
         tree->major = _mt3_copy_tree(n->major);
         tree->minor = _mt3_copy_tree(n->minor);
@@ -1074,17 +1074,17 @@ static void _mt3_set_value(MT3_node tree, MT3_tag tag, const char* name, const v
 				const SPchar* newValue = (const SPchar*) value;
 				if(newValue)
 				{
-                    SPsize length = strlen(newValue) + 1;
-                    SPchar* newStr = realloc(n->payload.tag_string, length);
-                    if(!newStr)
-                    {
-                        errno = MT3_STATUS_NO_MEMORY;
-                        return;
-                    }
-                    n->payload.tag_string = newStr;
-                    memcpy(n->payload.tag_string, newValue, length - 1);
-                    n->payload.tag_string[length - 1] = 0;
-			    }
+		                	SPsize length = strlen(newValue) + 1;
+		                    	SPchar* newStr = realloc(n->payload.tag_string, length);
+		                    	if(!newStr)
+		                    	{
+		                        	errno = MT3_STATUS_NO_MEMORY;
+		                        	return;
+		                    	}
+		                    	n->payload.tag_string = newStr;
+		                    	memcpy(n->payload.tag_string, newValue, length - 1);
+		                    	n->payload.tag_string[length - 1] = 0;
+			    	}
 				break;
 			}
 		}
@@ -1141,9 +1141,9 @@ MT3_node mt3_ToList(MT3_tag tag, SPsize length, const void* data)
 			case MT3_TAG_DOUBLE: mt3_AppendDouble(&list, *(((const SPdouble*) data) + i)); break;
 			case MT3_TAG_STRING:
 			{
-			    if(*(((const SPchar**) data) + i))
-    			    mt3_AppendString(&list, *(((const SPchar**) data) + i));
-                break;
+			    	if(*(((const SPchar**) data) + i))
+    			    	mt3_AppendString(&list, *(((const SPchar**) data) + i));
+                		break;
 			}
 		}
 	}
@@ -1351,11 +1351,12 @@ SPbool mt3_Remove(MT3_node* tree, const SPchar* name)
 		return SP_FALSE;
 	}
 	
-    if(!mt3_IsTree(*tree))
-    {
-        errno = MT3_STATUS_NOT_A_TREE;
-        return SP_FALSE;
-    }
+    	if(!mt3_IsTree(*tree))
+    	{
+        	errno = MT3_STATUS_NOT_A_TREE;
+        	return SP_FALSE;
+    	}
+	
 	MT3_node n = _mt3_search(*tree, name);
 	if(n)
 	{
