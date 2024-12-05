@@ -62,6 +62,7 @@ if(APPLE)
 	set(CMAKE_MACOSX_RPATH 1)
 endif()
 
+# Binary Search Tree will search major inclined.
 sp_set_option(MT3_HAVE_BST_MAJOR_INCLINED ON BOOL "Have binary search major inclined")
 
 configure_file(
