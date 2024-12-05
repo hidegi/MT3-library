@@ -63,15 +63,15 @@ typedef enum
 
 typedef enum
 {
-	MT3_STATUS_OK = 0, 			/// No errors.
-	MT3_STATUS_NO_MEMORY, 		/// Out of memory.
-	MT3_STATUS_READ_ERROR,		/// Read error.
-	MT3_STATUS_WRITE_ERROR,		/// Rrite error.
-	MT3_STATUS_BAD_NAME,		/// Bad name, either taken, empty or null.
-	MT3_STATUS_BAD_VALUE,		/// Invalid value.
-	MT3_STATUS_NOT_A_TREE,      /// Given node is not a tree.
-	MT3_STATUS_NOT_A_LIST,      /// Given node is not a list.
-	MT3_STATUS_BAD_TAG,			/// Invalid tag.
+	MT3_STATUS_OK = 0, 	/// No errors.
+	MT3_STATUS_NO_MEMORY, 	/// Out of memory.
+	MT3_STATUS_READ_ERROR,	/// Read error.
+	MT3_STATUS_WRITE_ERROR,	/// Write error.
+	MT3_STATUS_BAD_NAME,	/// Bad name, either taken, empty or null.
+	MT3_STATUS_BAD_VALUE,	/// Invalid value.
+	MT3_STATUS_NOT_A_TREE,  /// Given node is not a tree.
+	MT3_STATUS_NOT_A_LIST,  /// Given node is not a list.
+	MT3_STATUS_BAD_TAG,	/// Invalid tag.
 } MT3_status;
 
 struct _MT3_node
@@ -158,10 +158,10 @@ SP_API void mt3_Print(const MT3_node object);
 
 /*!
  *	@brief Compares the tag, colour, value and
- *  weight between two nodes.
+ *  	weight between two nodes.
  *
  *	@return True, if @param a is virtually
- *  equal to @param b.
+ *  	equal to @param b.
  *
  *	@ingroup comparison
  */
