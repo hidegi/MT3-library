@@ -62,7 +62,7 @@ if(APPLE)
 	set(CMAKE_MACOSX_RPATH 1)
 endif()
 
-sp_set_option(MT3_PRINT_OUTPUT_DEBUG OFF BOOL "Print serialization debugging output")
+sp_set_option(MT3_PRINT_OUTPUT_DEBUG OFF BOOL "Print the binary output while serializing")
 sp_set_option(MT3_HAVE_BST_MAJOR_INCLINED ON BOOL "Have binary search major inclined")
 
 configure_file(

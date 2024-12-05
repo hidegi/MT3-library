@@ -982,7 +982,7 @@ TEST_F(MT3fixture, test_replace)
 	ASSERT_TRUE(mt3_IsValidRBT(tree));
 }
 
-TEST_F(MT3fixture, test_list_iterate)
+TEST_F(MT3fixture, test_list_element_removal)
 {
 	MT3_node list = mt3_AllocList();
     mt3_AppendByte(&list, 1);

@@ -694,6 +694,7 @@ static void _mt3_print(const MT3_node tree, SPbuffer* buffer, int level, SPbool 
 		
 		for(int i = 0; i < level; i++)
 			_mt3_bprintf(buffer, "\t");
+
 		switch(tree->tag)
 		{
 			case MT3_TAG_NULL:
@@ -775,7 +776,6 @@ static void _mt3_print(const MT3_node tree, SPbuffer* buffer, int level, SPbool 
 					_mt3_bprintf(buffer, "%s: %s\n", _mt3_tag_to_str(tree->tag), tree->payload.tag_string);
 				break;
 			}
-			
 			
 			default:
 			{
@@ -1381,7 +1381,7 @@ SPbool mt3_Remove(MT3_node* tree, const SPchar* name)
 		MT3_node r = NULL;
 		MT3_node x = NULL;
 		MT3_node w = NULL;
-		_mt3_bst_delete_impl(n, tree, &r, &x, &w);
+		_mt3_bst_delete_impl(n, &r, &x, &w, tree);
 
 		if(x && w)
 		{

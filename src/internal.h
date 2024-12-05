@@ -56,7 +56,7 @@ SPbool _mt3_is_major(const MT3_node node);
 
 void _mt3_fix_rbt_violations(MT3_node node, MT3_node* head);
 void _mt3_delete_node(MT3_node n);
-void _mt3_bst_delete_impl(MT3_node n, MT3_node* head, MT3_node* _r, MT3_node* _x, MT3_node* _w);
+void _mt3_bst_delete_impl(MT3_node n, MT3_node* _r, MT3_node* _x, MT3_node* _w, MT3_node* head);
 SPbool _mt3_fix_up_rbt(SPbool redBefore, MT3_node r, MT3_node x, MT3_node w, MT3_node* head);
 void _mt3_print_tree(const MT3_node tree, SPbuffer* buffer, int level);
 void _mt3_print_list(const MT3_node tree, SPbuffer* buffer, int level);

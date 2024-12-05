@@ -232,7 +232,7 @@ static MT3_node _mt3_rotate_right(MT3_node n, MT3_node* head)
 	return m;
 }
 
-void _mt3_bst_delete_impl(MT3_node n, MT3_node* head, MT3_node* _r, MT3_node* _x, MT3_node* _w)
+void _mt3_bst_delete_impl(MT3_node n, MT3_node* _r, MT3_node* _x, MT3_node* _w, MT3_node* head)
 {
 	if(n)
 	{
