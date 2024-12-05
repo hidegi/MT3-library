@@ -111,10 +111,6 @@
     if(a->payload.p != b->payload.p) 	\
         return SP_FALSE
 
-#define MT3_MAX(a, b) ((a) > (b) ? (a) : (b))
-#define ne2be _mt3_big_endian_to_native_endian
-#define be2ne _mt3_big_endian_to_native_endian
-
 SPbool mt3_IsTree(const MT3_node node)
 {
 	SPbool ret = SP_FALSE;
