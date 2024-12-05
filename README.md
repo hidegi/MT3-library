@@ -51,5 +51,5 @@ You can of course use any CMake-Generator of choice, as well as have any other n
 When the project has been built, you should be able to run the tests, located under\
 ```MT3-library/[your-build-directory]/tests```\
 \
-Be advised that under Windows, you need to copy the ```libmot.dll``` to your tests-folder, when specifying\
+Be advised that under Windows, you need to copy the ```libmt3.dll``` to your tests-folder, when specifying\
 ```-D BUILD_SHARED_LIBS=ON```..
