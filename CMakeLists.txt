@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
-project(mt3 VERSION 1.1.0 LANGUAGES C CXX)
+project(mt3 VERSION 1.2.1 LANGUAGES C CXX)
 
 macro(sp_set_option var default type docstring)
 	if(NOT DEFINED ${var})
