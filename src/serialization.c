@@ -452,7 +452,9 @@ MT3_node mt3_DecodeTree(SPbuffer buffer)
 	const SPubyte** memory = (const SPubyte**) &decompressed.data;
 	SPsize length = decompressed.length;
 
-	return _mt3_decode_tree(memory, &length);
+	MT3_node ret = _mt3_decode_tree(memory, &length);
+	//spBufferFree(&decompressed);
+	return ret;
 }
 
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
