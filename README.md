@@ -14,8 +14,6 @@ All numeric values are always of a signed type.\
 The BTO-format has knowledge of following data types:
 | Data type | Tag | Range | Size in Bytes |
 | :---: | :---: | :---: | :---: |
-| null | 0 | N/A | 0 |
-| root | 1 | N/A | n |
 | byte | 2 | -128 to +127 | 1 |
 | short | 3 | -32,768 to +32,767 | 2|
 | int | 4 | -2,147,483,648 to +2,147,483,647| 4 |
