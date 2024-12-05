@@ -1011,6 +1011,7 @@ TEST(test_serialization, checksSerialization)
     EXPECT_TRUE(mt3_IsEqual(tree1, tree2));
     mt3_Delete(&tree1);
     mt3_Delete(&tree2);
+    spBufferFree(&buffer);
 }
 
 int main(int argc, char** argv)

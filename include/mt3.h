@@ -171,7 +171,7 @@ SP_API void mt3_Print(const MT3_node object);
 SP_API SPbool mt3_IsEqual(const MT3_node a, const MT3_node b);
 
 /*!
- *	@brief Copies an tree-or list-node.
+ *	@brief Copies a tree-or list-node.
  *	
  *	Issues @ref MT3_STATUS_BAD_VALUE, 
  *	if @param object is not a head-node.
