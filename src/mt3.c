@@ -35,19 +35,20 @@
 	SPhash hash = 0;					\
 	do							\
 	{							\
-	    	if(!tree)\
+	    	if(!tree)					\
 	    	{                                           	\
 	        	errno = MT3_STATUS_BAD_VALUE;		\
 	       		return;                                 \
 	    	}                                           	\
-			else\
-			{\
-				if((*tree) && ((*tree)->parent || (*tree)->red))\
-				{\
-					errno = MT3_STATUS_NOT_A_TREE;\
-					return;\
-				}\
-			}\
+		else						\
+		{						\
+			if((*tree) && 				\
+			((*tree)->parent || (*tree)->red))	\
+			{					\
+				errno = MT3_STATUS_NOT_A_TREE;	\
+				return;				\
+			}					\
+		}						\
 	    	if(!_name)                                  	\
 	    	{                                           	\
 	        	errno = MT3_STATUS_BAD_NAME;		\
@@ -56,38 +57,38 @@
 		    hash = _mt3_sdbm((_name));			\
 		    if(hash == 0)                           	\
 		    {                                       	\
-		        errno = MT3_STATUS_BAD_NAME;    		\
+		        errno = MT3_STATUS_BAD_NAME;    	\
 		        return;                             	\
 		    }                                       	\
 	} while(0)
 
-#define MT3_CHECK_OBJECT()\
-    MT3_tag tag = MT3_TAG_NULL;\
-    if(!value)\
-    {\
-        errno = MT3_STATUS_BAD_VALUE;\
-        return;\
-    }\
-    if(value->tag == MT3_TAG_NULL)\
-    {\
-        errno = MT3_STATUS_BAD_TAG;\
-        return;\
-    }\
-    if(!mt3_IsList(value) && !mt3_IsTree(value))\
-    {\
-        errno = MT3_STATUS_BAD_VALUE;\
-        return;\
-    }\
-    if(mt3_IsTree(value))\
-    {\
-        tag = MT3_TAG_ROOT;\
-    }\
-    else\
-    {\
-        if(value->tag & MT3_TAG_LIST)\
-            tag = MT3_TAG_LIST;\
-        else\
-            tag = MT3_TAG_LIST | value->tag;\
+#define MT3_CHECK_OBJECT()					\
+    MT3_tag tag = MT3_TAG_NULL;					\
+    if(!value)							\
+    {								\
+        errno = MT3_STATUS_BAD_VALUE;				\
+        return;							\
+    }								\
+    if(value->tag == MT3_TAG_NULL)				\
+    {								\
+        errno = MT3_STATUS_BAD_TAG;				\
+        return;							\
+    }								\
+    if(!mt3_IsList(value) && !mt3_IsTree(value))		\
+    {								\
+        errno = MT3_STATUS_BAD_VALUE;				\
+        return;							\
+    }								\
+    if(mt3_IsTree(value))					\
+    {								\
+        tag = MT3_TAG_ROOT;					\
+    }								\
+    else							\
+    {								\
+        if(value->tag & MT3_TAG_LIST)				\
+            tag = MT3_TAG_LIST;					\
+        else							\
+            tag = MT3_TAG_LIST | value->tag;			\
     }
 
 
@@ -105,7 +106,11 @@
 
 #define MT3_FOR_EACH(node, cursor)\
 	for((cursor) = (node); (cursor) != NULL; (cursor) = (cursor)->major)
-		
+
+#define MT3_COMPARE_GENERIC(p) 		\
+    if(a->payload.p != b->payload.p) 	\
+        return SP_FALSE
+
 #define MT3_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define ne2be _mt3_big_endian_to_native_endian
 #define be2ne _mt3_big_endian_to_native_endian
@@ -299,7 +304,6 @@ static MT3_node _mt3_copy_tree(const MT3_node n)
     return tree;	
 }
 
-
 static MT3_node _mt3_copy_list(const MT3_node n)
 {
 	MT3_node list = NULL;
@@ -353,10 +357,6 @@ MT3_node mt3_Copy(const MT3_node n)
 	return ret;
 }
 
-#define MT3_COMPARE_GENERIC(p) \
-    if(a->payload.p != b->payload.p) \
-        return SP_FALSE
-
 SPbool _mt3_decimal_almost_equal(SPdouble a, SPdouble b, SPsize places)
 {
 	return (fabs(a - b) < pow(10.0, (SPdouble) places));
@@ -368,31 +368,19 @@ SPbool _mt3_is_equal(const MT3_node a, const MT3_node b)
         return SP_TRUE;
 
     if((!a && b) || (a && !b))
-    {
-        SP_OUTPUT(stderr, "[SP-Test]", "exclusive null-ptr");
         return SP_FALSE;
-    }
 
     if(a->tag != b->tag)
-    {
-        SP_OUTPUT(stderr, "[SP-Test]", "tag not equal");
         return SP_FALSE;
-    }
+	
     if(a->length != b->length)
-    {
-        SP_OUTPUT(stderr, "[SP-Test]", "length not equal");
         return SP_FALSE;
-    }
+    
     if(a->weight != b->weight)
-    {
-        SP_OUTPUT(stderr, "[SP-Test]", "weight not equal");
         return SP_FALSE;
-    }
+    
     if(a->red != b->red)
-    {
-        SP_OUTPUT(stderr, "[SP-Test]", "color not equal");
         return SP_FALSE;
-    }
 
     switch(a->tag)
     {
@@ -506,6 +494,7 @@ void _mt3_delete_node(MT3_node n)
 		free(n);
 	}
 }
+
 static void _mt3_delete_tree_impl(MT3_node tree)
 {
 	if(tree)
