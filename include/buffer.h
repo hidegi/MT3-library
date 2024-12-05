@@ -1,6 +1,3 @@
-#ifndef SP_BUFFER_H
-#define SP_BUFFER_H
-#include "platform.h"
 /*
  * -----------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
@@ -10,6 +7,10 @@
  * it, you can buy us a beer in return.
  * -----------------------------------------------------------------------------
  */
+#ifndef SP_BUFFER_H
+#define SP_BUFFER_H
+#include "platform.h"
+
 #include "types.h"
 #include <stddef.h>
 
