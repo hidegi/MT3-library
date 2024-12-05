@@ -45,20 +45,6 @@
 #define ne2be _mt3_big_endian_to_native_endian
 #define be2ne _mt3_big_endian_to_native_endian
 
-void _mt3_print_binary(const unsigned char *byteArray, size_t size, int level)
-{
-	for (size_t i = 0; i < size; i++)
-	{
-		SPubyte byte = byteArray[i];
-		for(int i = 0; i < level; i++)
-			printf("\t");
-		printf("    ");
-		for (int j = 7; j >= 0; j--)
-			printf("%d", (byte >> j) & 1);
-		printf("\n");
-	}
-}
-
 static SPbool _mt3_is_little_endian()
 {
 	SPuint16 t = 0x0001;
@@ -218,19 +204,6 @@ static void* _mt3_alloc_chunk(SPsize size)
 	return ptr;
 }
 
-#ifdef MT3_PRINT_OUTPUT_DEBUG
-#define _mt3_print_indent(ntabs, msg, ...)\
-	do\
-	{\
-		for(int i = 0; i < ntabs; i++)\
-			printf("\t");\
-		printf((msg), ##__VA_ARGS__);\
-		printf("\n");\
-	} while(0)
-#else
-#define _mt3_print_indent(ntabs, msg, ...)
-#endif
-
 static void _mt3_write_bytes(SPbuffer* buffer, const SPubyte* src, SPsize length, SPbool toNativeEndian, int level)
 {
 	SPubyte* chunk = _mt3_alloc_chunk(length);
@@ -245,9 +218,6 @@ static void _mt3_write_bytes(SPbuffer* buffer, const SPubyte* src, SPsize length
 		errno = MT3_STATUS_WRITE_ERROR;
 		return;
 	}
-#ifdef MT3_PRINT_OUTPUT_DEBUG
-	_mt3_print_binary(src, length, level);
-#endif
 	free(chunk);
 }
 
@@ -257,33 +227,29 @@ static void _mt3_encode(const MT3_node node, SPbuffer* buffer, int level)
 	{
 		switch(node->tag)
 		{
-			case MT3_TAG_BYTE: _mt3_print_indent(level, "data: (%lld byte(s))", sizeof(SPbyte)); _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_byte, sizeof(SPbyte), SP_TRUE, level); break;
-			case MT3_TAG_SHORT: _mt3_print_indent(level, "data: (%lld byte(s))", sizeof(SPshort)); _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_short, sizeof(SPshort), SP_TRUE, level); break;
-			case MT3_TAG_INT: _mt3_print_indent(level, "data: (%lld byte(s))", sizeof(SPint)); _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_int, sizeof(SPint), SP_TRUE, level); break;
-			case MT3_TAG_LONG: _mt3_print_indent(level, "data: (%lld byte(s))", sizeof(SPlong)); _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_long, sizeof(SPlong), SP_TRUE, level); break;
-			case MT3_TAG_FLOAT: _mt3_print_indent(level, "data: (%lld byte(s))", sizeof(SPfloat)); _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_float, sizeof(SPfloat), SP_TRUE, level); break;
-			case MT3_TAG_DOUBLE: _mt3_print_indent(level, "data: (%lld byte(s))", sizeof(SPdouble)); _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_double, sizeof(SPdouble), SP_TRUE, level); break;
+			case MT3_TAG_BYTE: _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_byte, sizeof(SPbyte), SP_TRUE, level); break;
+			case MT3_TAG_SHORT: _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_short, sizeof(SPshort), SP_TRUE, level); break;
+			case MT3_TAG_INT: _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_int, sizeof(SPint), SP_TRUE, level); break;
+			case MT3_TAG_LONG: _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_long, sizeof(SPlong), SP_TRUE, level); break;
+			case MT3_TAG_FLOAT: _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_float, sizeof(SPfloat), SP_TRUE, level); break;
+			case MT3_TAG_DOUBLE: _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_double, sizeof(SPdouble), SP_TRUE, level); break;
 			case MT3_TAG_STRING:
 			{
 				SP_ASSERT(node->payload.tag_string, "Node %lld has invalid data to write", node->weight);
 
-				_mt3_print_indent(level, "length: %lld", node->length);
 				_mt3_write_bytes(buffer, (const SPubyte*) &node->length, sizeof(SPsize), SP_TRUE, level);
-				_mt3_print_indent(level, "data: (%lld byte(s))", node->length);
 				_mt3_write_bytes(buffer, (const SPubyte*) node->payload.tag_string, node->length, SP_FALSE, level);
 				break;
 			}
 			
 			case MT3_TAG_ROOT:
 			{
-				_mt3_print_indent(level + 1, "root");
 				_mt3_encode_tree(node->payload.tag_object, buffer, level + 1);
 				break;
 			}
 			
 			default:
 			{
-				_mt3_print_indent(level, "length: %lld", node->length);
 				_mt3_write_bytes(buffer, (const SPubyte*) &node->length, sizeof(SPsize), SP_TRUE, level);
 				_mt3_encode_list(node->payload.tag_object, buffer, level);
 				break;
@@ -303,19 +269,15 @@ void _mt3_encode_tree(const MT3_node tree, SPbuffer* buffer, int level)
 	
 	//encode the tag
 	SPuint8 tag = tree->tag | ((tree->red & 1) << 6);
-	_mt3_print_indent(level, "tag (%s):", _mt3_tag_to_str(tree->tag));
 	_mt3_write_bytes(buffer, (const SPubyte*) &tag, sizeof(SPbyte), SP_FALSE, level);
 
 	//encode the weight
-	_mt3_print_indent(level, "weight (%lld):", tree->weight);
 	_mt3_write_bytes(buffer, (const SPubyte*) &tree->weight, sizeof(SPlong), SP_TRUE, level);
 
 	//encode generic
 	_mt3_encode(tree, buffer, level);
-	
-	_mt3_print_indent(level + 1, "major:");
+
 	_mt3_encode_tree(tree->major, buffer, level + 1);
-	_mt3_print_indent(level + 1, "minor:");
 	_mt3_encode_tree(tree->minor, buffer, level + 1);
 }
 
@@ -332,7 +294,6 @@ void _mt3_encode_list(const MT3_node list, SPbuffer* buffer, int level)
             if(cursor->tag & MT3_TAG_LIST)
             {
                 //encode the tag, if it is a multi-list
-                _mt3_print_indent(level, "tag (%s):", _mt3_tag_to_str(list->tag));
                 SPuint8 tag = list->tag | ((list->red & 1) << 6);
                 _mt3_write_bytes(buffer, (const SPubyte*) &tag, sizeof(SPbyte), SP_FALSE, level);
             }
@@ -341,35 +302,6 @@ void _mt3_encode_list(const MT3_node list, SPbuffer* buffer, int level)
 	}
 }
 
-/*
- *------------------------------------------------------------------------------------------------------------------
- *   writing rule
- *------------------------------------------------------------------------------------------------------------------
- *  for all nodes:
- *  1. write current tag
- *  2. write weight
- *  3. write data (explained below)
- *  4. for major and minor repeat step 1 if not NULL, otherwise write MT3_TAG_NULL as tag respectively
- *
- *  for root nodes:
- *  skip step 3
- *
- *  for scalar nodes:
- *  write data
- *  (you neither need length nor stride, since type is known by tag)
- *
- *  for number array nodes:
- *  write length
- *  write data
- *  (stride is known by tag, counts for byte, short, int long, float double and string)
- *
- *  for string array nodes:
- *  write length (how many strings)
- *  write length (string length)
- *  write data (char data)
- *  write null (end)
- *  due to this, the number types have to be known, therefore more concrete tags needed
- */
 SPbuffer mt3_EncodeTree(const MT3_node tree)
 {
 	SPbuffer buffer = SP_BUFFER_INIT;
