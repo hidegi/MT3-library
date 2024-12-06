@@ -35,13 +35,13 @@ static SPhash _mt3_sdbm_impl(const SPchar *str)
 SPhash _mt3_sdbm(const SPchar* str)
 {
 	SPhash hash = _mt3_sdbm_impl(str);
-	SPubyte buffer[4];
-
+	SPubyte buffer[8];
 	for(SPsize i = 0; i < 8; i++)
 	{
 		buffer[i] = (hash >> (i * 8)) & 0xFF;
 	}
+	
 	SPhash output = 0;
-	memcpy(&output, buffer, sizeof(SPbyte) * 4);
+	memcpy(&output, buffer, sizeof(SPbyte) * 8);
 	return output;
 }
