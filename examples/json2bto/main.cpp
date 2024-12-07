@@ -123,7 +123,6 @@ MT3_node readFromJson(const char* path)
 
 static void parse(const char* key, JSON node, MT3_node* object)
 {
-	
 	SP_ASSERT(object, "Cannot parse tree from NULL");
 	MT3_tag tag = getTag(node);
 	
