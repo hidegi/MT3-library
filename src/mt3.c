@@ -613,36 +613,25 @@ static MT3_node _mt3_insert_data(MT3_node* head, MT3_node node, SPhash weight, M
 
 const char* _mt3_tag_to_str(MT3_tag tag)
 {
-	if(tag & MT3_TAG_LIST)
+	switch(tag)
 	{
-		MT3_tag scalar = tag & ~MT3_TAG_LIST;
-		switch(scalar)
-		{
-			case MT3_TAG_NULL: return "multi-list";
-			case MT3_TAG_BYTE: return "byte-list";
-			case MT3_TAG_SHORT: return "short-list";
-			case MT3_TAG_INT: return "int-list";
-			case MT3_TAG_LONG: return "long-list";
-			case MT3_TAG_FLOAT: return "float-list";
-			case MT3_TAG_DOUBLE: return "double-list";
-			case MT3_TAG_STRING: return "string-list";
-			case MT3_TAG_ROOT: return "tree-list";
-		}
-	}
-	else
-	{
-		switch(tag)
-		{
-			case MT3_TAG_BYTE: return "byte";
-			case MT3_TAG_SHORT: return "short";
-			case MT3_TAG_INT: return "int";
-			case MT3_TAG_LONG: return "long";
-			case MT3_TAG_FLOAT: return "float";
-			case MT3_TAG_DOUBLE: return "double";
-			case MT3_TAG_STRING: return "string";
-			case MT3_TAG_LIST: return "list";
-			case MT3_TAG_ROOT: return "tree";
-		}
+		case MT3_TAG_ROOT: return "tree";
+		case MT3_TAG_BYTE: return "byte";
+		case MT3_TAG_SHORT: return "short";
+		case MT3_TAG_INT: return "int";
+		case MT3_TAG_LONG: return "long";
+		case MT3_TAG_FLOAT: return "float";
+		case MT3_TAG_DOUBLE: return "double";
+		case MT3_TAG_STRING: return "string";
+		case MT3_TAG_LIST: return "multi-list";
+		case MT3_TAG_ROOT_LIST: return "tree-list";
+		case MT3_TAG_BYTE_LIST: return "byte-list";
+		case MT3_TAG_SHORT_LIST: return "short-list";
+		case MT3_TAG_INT_LIST: return "int-list";
+		case MT3_TAG_LONG_LIST: return "long-list";
+		case MT3_TAG_FLOAT_LIST: return "float-list";
+		case MT3_TAG_DOUBLE_LIST: return "double-list";
+		case MT3_TAG_STRING_LIST: return "string-list";
 	}
 	return "NULL";
 }

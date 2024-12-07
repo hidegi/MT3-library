@@ -959,7 +959,6 @@ TEST_F(MT3fixture, test_replace)
 	mt3_SetLong(tree, "long_1", 1667);
 	ASSERT_EQ(1667, mt3_GetLong(tree, "long_1"));
 	
-	
 	ASSERT_EQ(17, mt3_GetNumber(tree, "byte_1"));
 	ASSERT_EQ(1667, mt3_GetNumber(tree, "short_1"));
 	ASSERT_EQ(1667, mt3_GetNumber(tree, "int_1"));
