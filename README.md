@@ -3,7 +3,7 @@
 </p>
 
 # The MT3-library (SP 1994)
-MT3 (short for MoTree) is a library for serializing and deserializing any plain structure to\
+MT3 (short for MoTree) is a library lightweight for serializing and deserializing any plain structure to\
 binary and vice versa (similar to Mojang's NBT-format).
 
 MT3 introduces an open format, the so called Binary Tree Object (BTO), of which's properties\
