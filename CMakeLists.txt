@@ -80,6 +80,10 @@ if(MT3_BUILD_TESTS)
 	enable_testing()
 	add_subdirectory(tests)
 endif()
+
+if(MT3_BUILD_EXAMPLES)
+	add_subdirectory(examples)
+endif()
 find_package(ZLIB REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})

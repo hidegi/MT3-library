@@ -844,7 +844,6 @@ const SPchar* mt3_ToString(const MT3_node node)
 		if(mt3_IsTree(node))
 		{
 			_mt3_print_tree(node, &buffer, 0);
-			_mt3_bprintf(&buffer, "%s", buffer.data);
 			_mt3_bprintf(&buffer, "\n~ ... Root\n");
 			_mt3_bprintf(&buffer, "+ ... Major\n");
 			_mt3_bprintf(&buffer, "- ... Minor\n");
