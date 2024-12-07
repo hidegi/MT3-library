@@ -30,7 +30,7 @@
 {							\
 	fprintf((stream), "%-16s", (notif));		\
 	fprintf((stream), msg, ##__VA_ARGS__);		\
-	fprintf((stream), "..\n");			\
+	fprintf((stream), "\n");			\
 }
 
 #define SP_WARNING(msg, ...)				\
