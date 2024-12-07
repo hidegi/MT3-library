@@ -156,7 +156,6 @@ static void parse(const char* key, JSON node, MT3_node* object)
 	{
 		case MT3_TAG_NULL: break;
 		case MT3_TAG_BYTE: mt3_InsertByte(object, key, node.get<SPbyte>()); break;
-		/*
 		case MT3_TAG_SHORT: mt3_InsertShort(object, key, node.get<SPshort>()); break;
 		case MT3_TAG_INT: mt3_InsertInt(object, key, node.get<SPint>()); break;
 		case MT3_TAG_LONG: mt3_InsertLong(object, key, node.get<SPlong>()); break;
@@ -191,7 +190,6 @@ static void parse(const char* key, JSON node, MT3_node* object)
 			mt3_Insert(object, key, list);
 			mt3_Delete(&list);
 		}
-		*/
 	}
 }
 
