@@ -26,7 +26,7 @@ int main(int argc, char** argv)
             case 0:
                 break;
             case 'v':
-                SP_INFO("MT3 json2bto parser v1.0.0");
+                SP_INFO("MT3 printbto v1.0.0");
                 return EXIT_SUCCESS;
             case 'h':
                 SP_INFO("Usage: ./printbto [bto file]");
