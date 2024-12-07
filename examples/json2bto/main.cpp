@@ -19,7 +19,7 @@ static MT3_tag getDecimalTag(SPdouble node);
 static MT3_tag getListTag(JSON node);
 
 static void parse(const char* key, JSON node, MT3_node* object);
-static void parseList(MT3_tag tag, JSON node, MT3_node* object);
+static void parseList(JSON node, MT3_node* object);
 
 int main(int argc, char** argv)
 {
@@ -81,13 +81,12 @@ void convert(const char* input, const char* output)
 	    return;
 	}
 
-	//SPbuffer buffer = mt3_EncodeTree(node);
-    //sp::writeData(output, buffer.data, buffer.length);
+	SPbuffer buffer = mt3_EncodeTree(node);
+    std::ofstream file(output, std::ios::binary | std::ios::trunc);
+    file.write(reinterpret_cast<const char*>(buffer.data), buffer.length);
     
-    mt3_Print(node);
-    
-	//SP_INFO("Written to \"%s\" (%lld B)", output, buffer.length);
-	//spBufferFree(&buffer);
+	SP_INFO("Written to \"%s\" (%lld B)", output, buffer.length);
+	spBufferFree(&buffer);
     mt3_Delete(&node);
 }
 
@@ -110,6 +109,7 @@ MT3_node readFromJson(const char* path)
 		SP_WARNING("Failed to read from %s", path);
 		return NULL;
 	}
+	
 	MT3_node result = NULL;
 	for(auto& element : doc.items())
 	{
@@ -121,37 +121,13 @@ MT3_node readFromJson(const char* path)
 	return result;
 }
 
-static const char* tag2str(MT3_tag tag)
-{
-	switch(tag)
-	{
-		case MT3_TAG_ROOT: return "tree";
-		case MT3_TAG_BYTE: return "byte";
-		case MT3_TAG_SHORT: return "short";
-		case MT3_TAG_INT: return "int";
-		case MT3_TAG_LONG: return "long";
-		case MT3_TAG_FLOAT: return "float";
-		case MT3_TAG_DOUBLE: return "double";
-		case MT3_TAG_STRING: return "string";
-		case MT3_TAG_LIST: return "multi-list";
-		case MT3_TAG_ROOT_LIST: return "tree-list";
-		case MT3_TAG_BYTE_LIST: return "byte-list";
-		case MT3_TAG_SHORT_LIST: return "short-list";
-		case MT3_TAG_INT_LIST: return "int-list";
-		case MT3_TAG_LONG_LIST: return "long-list";
-		case MT3_TAG_FLOAT_LIST: return "float-list";
-		case MT3_TAG_DOUBLE_LIST: return "double-list";
-		case MT3_TAG_STRING_LIST: return "string-list";
-	}
-	return "NULL";
-}
 static void parse(const char* key, JSON node, MT3_node* object)
 {
 	
-	SP_ASSERT(object, "Cannot parse from NULL");
+	SP_ASSERT(object, "Cannot parse tree from NULL");
 	MT3_tag tag = getTag(node);
 	
-	SP_ASSERT(tag != MT3_TAG_NULL, "Expected object");
+	SP_ASSERT(tag != MT3_TAG_NULL, "Cannot parse tree from MT3_TAG_NULL");
 	switch(tag)
 	{
 		case MT3_TAG_NULL: break;
@@ -159,7 +135,7 @@ static void parse(const char* key, JSON node, MT3_node* object)
 		case MT3_TAG_SHORT: mt3_InsertShort(object, key, node.get<SPshort>()); break;
 		case MT3_TAG_INT: mt3_InsertInt(object, key, node.get<SPint>()); break;
 		case MT3_TAG_LONG: mt3_InsertLong(object, key, node.get<SPlong>()); break;
-		case MT3_TAG_FLOAT: mt3_InsertFloat(object, key, node.get<SPlong>()); break;
+		case MT3_TAG_FLOAT: mt3_InsertFloat(object, key, node.get<SPfloat>()); break;
 		case MT3_TAG_DOUBLE: mt3_InsertDouble(object, key, node.get<SPdouble>()); break;
 		case MT3_TAG_STRING: mt3_InsertString(object, key, node.get<std::string>().c_str()); break;
 		
@@ -184,7 +160,7 @@ static void parse(const char* key, JSON node, MT3_node* object)
 			
 			for(SPsize i = 0; i < node.size(); i++)
 			{
-				parseList(tag, node[i], &list);
+				parseList(node[i], &list);
 			}
 			
 			mt3_Insert(object, key, list);
@@ -193,12 +169,12 @@ static void parse(const char* key, JSON node, MT3_node* object)
 	}
 }
 
-static void parseList(MT3_tag tag, JSON node, MT3_node* object)
+static void parseList(JSON node, MT3_node* object)
 {
-	SP_ASSERT(object, "Cannot parse from NULL");
-	SP_ASSERT(tag != MT3_TAG_NULL, "Cannot parse from MT3_TAG_NULL");
-	tag = (MT3_tag)(tag & ~MT3_TAG_LIST);
+	SP_ASSERT(object, "Cannot parse list from NULL");
 	
+	MT3_tag tag = getTag(node);
+	SP_ASSERT(tag != MT3_TAG_NULL, "Cannot parse list from MT3_TAG_NULL");
 	switch(tag)
 	{
 		case MT3_TAG_BYTE: mt3_AppendByte(object, node.get<SPbyte>()); break;
@@ -222,14 +198,14 @@ static void parseList(MT3_tag tag, JSON node, MT3_node* object)
 			break;
 		}
 		
-		case MT3_TAG_NULL:
+		default:
 		{
 			SP_ASSERT(node.is_array(), "Expected node to be array");
 			MT3_node list = mt3_AllocList();
 			
 			for(SPsize i = 0; i < node.size(); i++)
 			{
-				parseList(tag, node[i], &list);
+				parseList(node[i], &list);
 			}
 			
 			mt3_Append(object, list);

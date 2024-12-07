@@ -787,7 +787,10 @@ void _mt3_print_list(const MT3_node list, SPbuffer* buffer, int level)
 
 				case MT3_TAG_ROOT:
 				{
-					_mt3_print_tree(cursor->payload.tag_object, buffer, level);
+					for(int i = 0; i < level; i++)
+						_mt3_bprintf(buffer, "\t");
+					_mt3_bprintf(buffer, "%s:\n", _mt3_tag_to_str(cursor->tag));
+					_mt3_print_tree(cursor->payload.tag_object, buffer, level + 1);
 					break;
 				}
 				
