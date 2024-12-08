@@ -27,7 +27,7 @@
 #endif
 
 #define SP_OUTPUT(stream, notif, msg, ...)\
-{							\
+{\
 	fprintf((stream), "%-16s", (notif));\
 	fprintf((stream), msg, ##__VA_ARGS__);\
 	fprintf((stream), "\n");\
@@ -54,7 +54,8 @@ if(!(c))\
 			  msg, ##__VA_ARGS__)
 			  
 #define SP_PRINT(notif, msg, ...)\
-	SP_OUTPUT(stdout, notif, msg, ##__VA_ARGS__)\
+	SP_OUTPUT(stdout, notif, msg, ##__VA_ARGS__)
+	
 #else
 #define SP_INFO(msg, ...) ;
 #define SP_DEBUG(msg, ...) ;
