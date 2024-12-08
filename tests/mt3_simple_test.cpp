@@ -345,16 +345,16 @@ static const SPchar* string_data_set_10[] = {
 };
 static const SPchar** string_data_set_list[] =
 {
-	string_data_set_01,
-	string_data_set_02,
-	string_data_set_03,
-	string_data_set_04,
-	string_data_set_05,
-	string_data_set_06,
-	string_data_set_07,
-	string_data_set_08,
-	string_data_set_09,
-	string_data_set_10
+    string_data_set_01,
+    string_data_set_02,
+    string_data_set_03,
+    string_data_set_04,
+    string_data_set_05,
+    string_data_set_06,
+    string_data_set_07,
+    string_data_set_08,
+    string_data_set_09,
+    string_data_set_10
 };
 static const SPsize string_data_set_01_length = sizeof(string_data_set_01) / sizeof(const SPchar*);
 static const SPsize string_data_set_02_length = sizeof(string_data_set_02) / sizeof(const SPchar*);
@@ -369,42 +369,42 @@ static const SPsize string_data_set_10_length = sizeof(string_data_set_10) / siz
 
 class MT3fixture : public testing::Test
 {
-    public:
-        MT3fixture()
-        {
-        }
+    	public:
+	        MT3fixture()
+	        {
+        	}
 
-       ~MT3fixture()
-        {
-        }
-    protected:
-        void SetUp() override
-        {
-            tree = mt3_AllocTree();
-        }
+       	~MT3fixture()
+        	{
+        	}
+    	protected:
+        	void SetUp() override
+        	{
+            		tree = mt3_AllocTree();
+        	}
 
-        void TearDown() override
-        {
-            mt3_Delete(&tree);
-        }
+        	void TearDown() override
+        	{
+			mt3_Delete(&tree);
+        	}
 
-    public:
-        MT3_node tree;
+    	public:
+        	MT3_node tree;
 };
 
 static MT3_node createMock()
 {
 	MT3_node subtree = NULL;
-    mt3_InsertString(&subtree, "str1", "motex");
-    mt3_InsertString(&subtree, "str2", "gaming");
-    mt3_InsertString(&subtree, "str3", "is");
-    mt3_InsertString(&subtree, "str4", "ugly");
+    	mt3_InsertString(&subtree, "str1", "motex");
+    	mt3_InsertString(&subtree, "str2", "gaming");
+    	mt3_InsertString(&subtree, "str3", "is");
+    	mt3_InsertString(&subtree, "str4", "ugly");
 
-    MT3_node list = NULL;
-    mt3_Append(&list, subtree);
-    mt3_Append(&list, subtree);
-    mt3_Append(&list, subtree);
-    mt3_Append(&list, subtree);
+    	MT3_node list = NULL;
+    	mt3_Append(&list, subtree);
+    	mt3_Append(&list, subtree);
+    	mt3_Append(&list, subtree);
+    	mt3_Append(&list, subtree);
 
 	MT3_node tree = NULL;
 
@@ -446,7 +446,7 @@ static MT3_node createMock()
 	SPlong long_array[] = {1, 2, 3, 4, 5, -6, -7, -8, -9};
 	SPfloat float_array[] = {1.3f, 2.4f, 5.4f, 252.f, 19.f, 43.f, 74.f};
 	SPdouble double_array[] = {1.3, 2.4, 5.4, 252.0, 19.0, 43.0, 74.0};
-    const SPchar* string_array[] = {"hda1666", "sp1667", "fjiaw", "betel"};
+    	const SPchar* string_array[] = {"hda1666", "sp1667", "fjiaw", "betel"};
 
 	MT3_node byte_list = NULL;
 	mt3_AppendByteList(&byte_list, sizeof(byte_array) / sizeof(SPbyte), byte_array);
@@ -583,35 +583,35 @@ TEST(mt3_validation_test_4, checksTree)
 
 TEST(mt3_equality_test_1, determinesEquality)
 {
-    MT3_node treeA = NULL, treeB = NULL;
+    	MT3_node treeA = NULL, treeB = NULL;
 
-    mt3_InsertByte(&treeA, "byte1", 1);
-    mt3_InsertByte(&treeA, "byte2", 2);
-    mt3_InsertByte(&treeA, "byte3", 3);
-    mt3_InsertByte(&treeA, "byte4", 4);
-    mt3_InsertByte(&treeA, "byte5", 5);
-    mt3_InsertByte(&treeA, "byte6", 6);
+    	mt3_InsertByte(&treeA, "byte1", 1);
+    	mt3_InsertByte(&treeA, "byte2", 2);
+    	mt3_InsertByte(&treeA, "byte3", 3);
+    	mt3_InsertByte(&treeA, "byte4", 4);
+    	mt3_InsertByte(&treeA, "byte5", 5);
+    	mt3_InsertByte(&treeA, "byte6", 6);
 
-    mt3_InsertByte(&treeB, "byte1", 1);
-    mt3_InsertByte(&treeB, "byte2", 2);
-    mt3_InsertByte(&treeB, "byte3", 3);
-    mt3_InsertByte(&treeB, "byte4", 4);
-    mt3_InsertByte(&treeB, "byte5", 5);
-    mt3_InsertByte(&treeB, "byte6", 6);
+    	mt3_InsertByte(&treeB, "byte1", 1);
+    	mt3_InsertByte(&treeB, "byte2", 2);
+    	mt3_InsertByte(&treeB, "byte3", 3);
+    	mt3_InsertByte(&treeB, "byte4", 4);
+    	mt3_InsertByte(&treeB, "byte5", 5);
+    	mt3_InsertByte(&treeB, "byte6", 6);
 
-    EXPECT_TRUE(mt3_IsEqual(treeA, treeB));
-    mt3_Delete(&treeA);
-    mt3_Delete(&treeB);
+    	EXPECT_TRUE(mt3_IsEqual(treeA, treeB));
+    	mt3_Delete(&treeA);
+    	mt3_Delete(&treeB);
 }
 
 TEST(mt3_equality_test_2, determinesEquality)
 {
-    MT3_node tree1 = createMock();
-    MT3_node tree2 = createMock();
-    ASSERT_TRUE(tree1 && tree2);
-    EXPECT_TRUE(mt3_IsEqual(tree1, tree2));
-    mt3_Delete(&tree1);
-    mt3_Delete(&tree2);
+    	MT3_node tree1 = createMock();
+    	MT3_node tree2 = createMock();
+    	ASSERT_TRUE(tree1 && tree2);
+    	EXPECT_TRUE(mt3_IsEqual(tree1, tree2));
+    	mt3_Delete(&tree1);
+    	mt3_Delete(&tree2);
 }
 
 TEST_F(MT3fixture, test_byte_insertion)
@@ -903,9 +903,9 @@ const char* printTree(MT3_node tree)
 #define LENGTH 100
 TEST_F(MT3fixture, test_random_deletion)
 {
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dst(1, LENGTH);
+    	std::random_device dev;
+    	std::mt19937 rng(dev());
+    	std::uniform_int_distribution<std::mt19937::result_type> dst(1, LENGTH);
 	int* array = new int[LENGTH];
 	for(int i = 0; i < LENGTH; i++)
 	{
@@ -984,16 +984,16 @@ TEST_F(MT3fixture, test_replace)
 TEST_F(MT3fixture, test_list_element_removal)
 {
 	MT3_node list = mt3_AllocList();
-    mt3_AppendByte(&list, 1);
-    mt3_AppendByte(&list, 2);
-    mt3_AppendByte(&list, 3);
-    mt3_AppendByte(&list, 4);
-    mt3_AppendByte(&list, 5);
-    mt3_AppendByte(&list, 6);
-    mt3_AppendByte(&list, 7);
-    mt3_AppendInt(&list, 1667);
-    mt3_AppendString(&list, "hello");
-    mt3_RemoveAt(&list, 0);
+    	mt3_AppendByte(&list, 1);
+    	mt3_AppendByte(&list, 2);
+    	mt3_AppendByte(&list, 3);
+    	mt3_AppendByte(&list, 4);
+    	mt3_AppendByte(&list, 5);
+    	mt3_AppendByte(&list, 6);
+    	mt3_AppendByte(&list, 7);
+    	mt3_AppendInt(&list, 1667);
+    	mt3_AppendString(&list, "hello");
+    	mt3_RemoveAt(&list, 0);
 	for(MT3_node cursor = list; cursor != NULL; cursor = cursor->major)
 	{
 		EXPECT_NE(1, cursor->payload.tag_byte);
