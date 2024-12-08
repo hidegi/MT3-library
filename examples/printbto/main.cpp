@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        SP_INFO("Usage: ./printbto [bto file]");
+	    SP_INFO("Usage: ./printbto [bto file]");
     }
 
     return 0;
