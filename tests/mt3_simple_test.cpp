@@ -933,7 +933,7 @@ TEST_F(MT3fixture, test_random_deletion)
 	ASSERT_TRUE(mt3_IsValidRBT(tree));
 }
 
-TEST_F(MT3fixture, test_replace)
+TEST_F(MT3fixture, test_replace_1)
 {
 	MT3_node tree = NULL;
 	mt3_InsertByte(&tree, "byte_1", 1);
@@ -972,6 +972,40 @@ TEST_F(MT3fixture, test_replace)
 	mt3_SetString(tree, "string_1", "fjiaw");
 	ASSERT_STREQ("fjiaw", mt3_GetString(tree, "string_1"));
 	ASSERT_TRUE(mt3_IsValidRBT(tree));
+}
+
+TEST_F(MT3fixture, test_replace_2)
+{
+	mt3_Delete(&tree);
+	tree = createMock();
+	
+	mt3_SetString(tree, "string_2", "haha");
+	ASSERT_STREQ("haha", mt3_GetString(tree, "string_2"));
+	
+	mt3_SetByte(tree, "byte_1", 2);
+	ASSERT_EQ(2, mt3_GetByte(tree, "byte_1"));
+	ASSERT_EQ(2, mt3_GetNumber(tree, "byte_1"));
+	
+	mt3_SetShort(tree, "short_1", 3);
+	ASSERT_EQ(3, mt3_GetShort(tree, "short_1"));
+	ASSERT_EQ(3, mt3_GetNumber(tree, "short_1"));
+	
+	
+	mt3_SetInt(tree, "int_1", 4);
+	ASSERT_EQ(4, mt3_GetInt(tree, "int_1"));
+	ASSERT_EQ(4, mt3_GetNumber(tree, "int_1"));
+	
+	mt3_SetLong(tree, "long_1", 5);
+	ASSERT_EQ(5, mt3_GetLong(tree, "long_1"));
+	ASSERT_EQ(5, mt3_GetNumber(tree, "long_1"));
+	
+	mt3_SetFloat(tree, "float_1", 123.456f);
+	ASSERT_NEAR(123.456f, mt3_GetFloat(tree, "float_1"), 6);
+	ASSERT_NEAR(123.456f, mt3_GetDecimal(tree, "float_1"), 6);
+	
+	mt3_SetDouble(tree, "double_2", 3.141592654);
+	ASSERT_NEAR(3.141592654, mt3_GetDouble(tree, "double_2"), 15);
+	ASSERT_NEAR(3.141592654, mt3_GetDecimal(tree, "double_2"), 15);
 }
 
 TEST_F(MT3fixture, test_list_element_removal)
