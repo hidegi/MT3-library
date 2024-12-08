@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     if (optind < argc)
     {
         /* Make sure a file was given */
-		convert(argv[optind], argv[optind + 1]);
+	convert(argv[optind], argv[optind + 1]);
     }
     else
     {
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 
 void convert(const char* input, const char* output)
 {
-    MT3_node node = readFromJson(input);
+    	MT3_node node = readFromJson(input);
 	if(!node)
 	{
 	    SP_WARNING("Failed to read from file \"%s\"", input);
@@ -82,12 +82,12 @@ void convert(const char* input, const char* output)
 	}
 
 	SPbuffer buffer = mt3_EncodeTree(node);
-    std::ofstream file(output, std::ios::binary | std::ios::trunc);
-    file.write(reinterpret_cast<const char*>(buffer.data), buffer.length);
+    	std::ofstream file(output, std::ios::binary | std::ios::trunc);
+    	file.write(reinterpret_cast<const char*>(buffer.data), buffer.length);
     
 	SP_INFO("Written to \"%s\" (%lld B)", output, buffer.length);
 	spBufferFree(&buffer);
-    mt3_Delete(&node);
+    	mt3_Delete(&node);
 }
 
 MT3_node readFromJson(const char* path)
