@@ -1006,6 +1006,15 @@ TEST_F(MT3fixture, test_replace_2)
 	mt3_SetDouble(tree, "double_2", 3.141592654);
 	ASSERT_NEAR(3.141592654, mt3_GetDouble(tree, "double_2"), 15);
 	ASSERT_NEAR(3.141592654, mt3_GetDecimal(tree, "double_2"), 15);
+	
+	MT3_node* multi_list = mt3_Get(tree, "multi_list");
+	ASSERT_TRUE(multi_list != NULL);
+	
+	MT3_node* multi_multi_list = mt3_Get(tree, "multi_multi_list");
+	ASSERT_TRUE(multi_multi_list != NULL);
+	
+	MT3_node* multi_multi_multi_list = mt3_Get(tree, "multi_multi_multi_list");
+	ASSERT_TRUE(multi_multi_multi_list != NULL);
 }
 
 TEST_F(MT3fixture, test_list_element_removal)
