@@ -48,6 +48,8 @@ typedef enum
 	MT3_TAG_FLOAT 	= 6,
 	MT3_TAG_DOUBLE  = 7,
 	MT3_TAG_STRING 	= 8,
+	MT3_TAG_MAX 	= MT3_TAG_STRING,
+	
 	MT3_TAG_LIST	= 0x80,
 	
 	/// List-type tags.

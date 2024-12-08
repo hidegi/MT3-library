@@ -366,7 +366,8 @@ MT3_node _mt3_decode_tree(const SPubyte** memory, SPsize* length)
 	
 	SPbool redness = (tag >> 6) & 1;
 	tag &= ~0x40;
-	
+	SP_ASSERT(((tag & ~MT3_TAG_LIST) <= MT3_TAG_MAX), "Invalid tag has been found (stopping)")
+		
 	if(tag == MT3_TAG_NULL)
 		return NULL;
 

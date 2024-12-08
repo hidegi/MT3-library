@@ -73,6 +73,13 @@ static void print(const char* path)
 	
 	file.read(reinterpret_cast<char*>(buffer.data), length);
 	MT3_node node = mt3_DecodeTree(buffer);
+	
+	if(!node)
+	{
+		SP_WARNING("Failed to read \"%s\" (not bto-encoded)", path);
+		return;
+	}
+	
 	mt3_Print(node);
 	mt3_Delete(&node);
 	spBufferFree(&buffer);
