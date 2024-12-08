@@ -285,7 +285,7 @@ static MT3_tag getListTag(JSON node)
 			JSON front = node[0];
 			
 			if(front.is_boolean())
-				return (MT3_tag) (tag | MT3_TAG_BYTE);
+				return (MT3_tag)(tag | MT3_TAG_BYTE);
 			
 			if(front.is_number())
 				return (MT3_tag)(tag | getNumberTag(front));
