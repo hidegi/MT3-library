@@ -6,52 +6,52 @@
 static void print(const char* path);
 int main(int argc, char** argv)
 {
-    int c;
+	int c;
 
-    for (;;)
-    {
-        static struct option long_options[] =
-        {
-            {"version", no_argument, NULL, 'v'},
-            {NULL,      no_argument, NULL, 0}
-        };
+    	for (;;)
+    	{
+        	static struct option long_options[] =
+        	{
+            		{"version", no_argument, NULL, 'v'},
+            		{NULL,      no_argument, NULL, 0}
+        	};
 
-        int option_index = 0;
+        	int option_index = 0;
 
-        if ((c = getopt_long(argc, argv, "hv", long_options, &option_index)) < 0)
-            break;
+        	if ((c = getopt_long(argc, argv, "hv", long_options, &option_index)) < 0)
+            		break;
 
-        switch (c)
-        {
-            case 0:
-                break;
-            case 'v':
-                SP_INFO("MT3 printbto v1.0.0");
-                return EXIT_SUCCESS;
-            case 'h':
-                SP_INFO("Usage: ./printbto [bto file]");
-                return EXIT_SUCCESS;
-            case '?':
-                SP_INFO("Usage: ./printbto [bto file]");
-                break;
-        }
-    }
+        	switch (c)
+        	{
+        	    	case 0: 
+				break;
+            		case 'v': 
+				SP_INFO("MT3 printbto v1.0.0");
+                		return EXIT_SUCCESS;
+            		case 'h':
+                		SP_INFO("Usage: ./printbto [bto file]");
+                		return EXIT_SUCCESS;
+            		case '?':
+                		SP_INFO("Usage: ./printbto [bto file]");
+                		break;
+        	}
+    	}
 
-    if(argc != 2)
-    {
-        SP_INFO("Usage: ./printbto [bto file]");
-        return EXIT_SUCCESS;
-    }
-    if (optind < argc)
-    {
+    	if(argc != 2)
+    	{
+        	SP_INFO("Usage: ./printbto [bto file]");
+        	return EXIT_SUCCESS;
+    	}
+	if (optind < argc)
+    	{
 		print(argv[optind]);
-    }
-    else
-    {
-	    SP_INFO("Usage: ./printbto [bto file]");
-    }
+    	}
+    	else
+    	{
+	    	SP_INFO("Usage: ./printbto [bto file]");
+    	}
 
-    return 0;
+    	return 0;
 }
 
 static void print(const char* path)
