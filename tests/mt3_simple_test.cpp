@@ -978,15 +978,15 @@ TEST_F(MT3fixture, test_list_element_removal)
 {
 	MT3_node list = mt3_AllocList();
 	mt3_AppendByte(&list, 1);
-    mt3_AppendByte(&list, 2);
-    mt3_AppendByte(&list, 3);
-    mt3_AppendByte(&list, 4);
-    mt3_AppendByte(&list, 5);
-    mt3_AppendByte(&list, 6);
-    mt3_AppendByte(&list, 7);
-    mt3_AppendInt(&list, 1667);
-    mt3_AppendString(&list, "hello");
-    mt3_RemoveAt(&list, 0);
+    	mt3_AppendByte(&list, 2);
+    	mt3_AppendByte(&list, 3);
+    	mt3_AppendByte(&list, 4);
+    	mt3_AppendByte(&list, 5);
+    	mt3_AppendByte(&list, 6);
+    	mt3_AppendByte(&list, 7);
+    	mt3_AppendInt(&list, 1667);
+    	mt3_AppendString(&list, "hello");
+    	mt3_RemoveAt(&list, 0);
     	
 	for(MT3_node cursor = list; cursor != NULL; cursor = cursor->major)
 	{
