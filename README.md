@@ -28,9 +28,6 @@ To distinguish between these types, each node (like NBT) is labeled with a tag.\
 The nodes are lexicographically ordered by their name, however, the length of a name\
 should not exceed 255 characters.
 
-The input type for a weighted value could be of any type, however MT3 uses a string\
-to calculate a weight.
-
 Consequently, all data types can be stored as a list, where the first bit in the tag\
 tells if some node stores a list of some type (1 for list, 0 for plain type).
 
