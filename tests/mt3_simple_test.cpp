@@ -893,14 +893,6 @@ bool containsNumber(int n, const int* array, int length)
     return false;
 }
 
-const char* printTree(MT3_node tree)
-{
-	const char* str = mt3_ToString(tree); 
-	fprintf(stderr, "%s", str);
-	free((void*)str);
-	return "";
-}
-
 #define LENGTH 100
 TEST_F(MT3fixture, test_random_deletion)
 {
@@ -985,16 +977,16 @@ TEST_F(MT3fixture, test_replace)
 TEST_F(MT3fixture, test_list_element_removal)
 {
 	MT3_node list = mt3_AllocList();
-    	mt3_AppendByte(&list, 1);
-    	mt3_AppendByte(&list, 2);
-    	mt3_AppendByte(&list, 3);
-    	mt3_AppendByte(&list, 4);
-    	mt3_AppendByte(&list, 5);
-    	mt3_AppendByte(&list, 6);
-    	mt3_AppendByte(&list, 7);
-    	mt3_AppendInt(&list, 1667);
-    	mt3_AppendString(&list, "hello");
-    	mt3_RemoveAt(&list, 0);
+	mt3_AppendByte(&list, 1);
+    mt3_AppendByte(&list, 2);
+    mt3_AppendByte(&list, 3);
+    mt3_AppendByte(&list, 4);
+    mt3_AppendByte(&list, 5);
+    mt3_AppendByte(&list, 6);
+    mt3_AppendByte(&list, 7);
+    mt3_AppendInt(&list, 1667);
+    mt3_AppendString(&list, "hello");
+    mt3_RemoveAt(&list, 0);
     	
 	for(MT3_node cursor = list; cursor != NULL; cursor = cursor->major)
 	{
@@ -1006,13 +998,13 @@ TEST_F(MT3fixture, test_list_element_removal)
 
 TEST(test_serialization, checksSerialization)
 {
-    MT3_node tree1 = createMock();
-    SPbuffer buffer = mt3_EncodeTree(tree1);
-    MT3_node tree2 = mt3_DecodeTree(buffer);
-    EXPECT_TRUE(mt3_IsEqual(tree1, tree2));
-    mt3_Delete(&tree1);
-    mt3_Delete(&tree2);
-    spBufferFree(&buffer);
+	MT3_node tree1 = createMock();
+	SPbuffer buffer = mt3_EncodeTree(tree1);
+	MT3_node tree2 = mt3_DecodeTree(buffer);
+	EXPECT_TRUE(mt3_IsEqual(tree1, tree2));
+	mt3_Delete(&tree1);
+	mt3_Delete(&tree2);
+	spBufferFree(&buffer);
 }
 
 int main(int argc, char** argv)
