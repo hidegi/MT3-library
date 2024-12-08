@@ -64,7 +64,7 @@ static void* _mt3_swap_bytes(void* s, SPsize length)
 	return s;
 }
 
-static void* _mt3_big_endian_to_native_endian(void* s, size_t len)
+static void* _mt3_big_endian_to_native_endian(void* s, SPsize len)
 {
 	return _mt3_is_little_endian() ? _mt3_swap_bytes(s, len) : s;
 }

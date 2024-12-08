@@ -600,7 +600,7 @@ static MT3_node _mt3_search_impl(const MT3_node tree, const SPchar* name)
 	return NULL;
 }
 
-MT3_node _mt3_search(const MT3_node tree, const char* name)
+MT3_node _mt3_search(const MT3_node tree, const SPchar* name)
 {
 	MT3_node ret = NULL;
 	if(mt3_IsTree(tree))
@@ -665,7 +665,7 @@ static MT3_node _mt3_insert_data(MT3_node* head, MT3_node node, const SPchar* na
 	return primary;
 }
 
-const char* _mt3_tag_to_str(MT3_tag tag)
+const SPchar* _mt3_tag_to_str(MT3_tag tag)
 {
 	switch(tag)
 	{
@@ -715,7 +715,7 @@ static void _mt3_print(const MT3_node tree, SPbuffer* buffer, int level, SPbool 
 	{
 		SPchar color = tree->red ? 'R' : 'B';
 		SPchar rank = _mt3_is_root(tree) ? '~' : (_mt3_is_major(tree) ? '+' : '-');
-		const char* format = printTreeData ? "(%c%c) %s (%lld elements) (%lld):\n" : "%s (%lld elements):\n";
+		const SPchar* format = printTreeData ? "(%c%c) %s (%lld elements) (%lld):\n" : "%s (%lld elements):\n";
 		
 		for(int i = 0; i < level; i++)
 			_mt3_bprintf(buffer, "\t");
@@ -960,7 +960,7 @@ void mt3_InsertString(MT3_node* tree, const SPchar* name, const SPchar* value)
 	_mt3_insert_data(tree, *tree, name, MT3_TAG_STRING, strlen(value), value, SP_TRUE);
 }
 
-static void _mt3_insert_list(MT3_node* tree, const char* name, MT3_tag tag, SPsize length, const void* values)
+static void _mt3_insert_list(MT3_node* tree, const SPchar* name, MT3_tag tag, SPsize length, const void* values)
 {
     MT3_CHECK_INPUT(name);
 	if(!values || length <= 0)
@@ -974,42 +974,42 @@ static void _mt3_insert_list(MT3_node* tree, const char* name, MT3_tag tag, SPsi
 	_mt3_insert_data(tree, *tree, name, tag, _mt3_length_of_list(list), list, SP_FALSE);
 }
 
-void mt3_InsertByteList(MT3_node* tree, const char* name, SPsize length, const SPbyte* values)
+void mt3_InsertByteList(MT3_node* tree, const SPchar* name, SPsize length, const SPbyte* values)
 {
 	_mt3_insert_list(tree, name, MT3_TAG_BYTE_LIST, length, values);
 }
 
-void mt3_InsertShortList(MT3_node* tree, const char* name, SPsize length, const SPshort* values)
+void mt3_InsertShortList(MT3_node* tree, const SPchar* name, SPsize length, const SPshort* values)
 {
     _mt3_insert_list(tree, name, MT3_TAG_SHORT_LIST, length, values);
 }
 
-void mt3_InsertIntList(MT3_node* tree, const char* name, SPsize length, const SPint* values)
+void mt3_InsertIntList(MT3_node* tree, const SPchar* name, SPsize length, const SPint* values)
 {
     _mt3_insert_list(tree, name, MT3_TAG_INT_LIST, length, values);
 }
 
-void mt3_InsertLongList(MT3_node* tree, const char* name, SPsize length, const SPlong* values)
+void mt3_InsertLongList(MT3_node* tree, const SPchar* name, SPsize length, const SPlong* values)
 {
     _mt3_insert_list(tree, name, MT3_TAG_LONG_LIST, length, values);
 }
 
-void mt3_InsertFloatList(MT3_node* tree, const char* name, SPsize length, const SPfloat* values)
+void mt3_InsertFloatList(MT3_node* tree, const SPchar* name, SPsize length, const SPfloat* values)
 {
     _mt3_insert_list(tree, name, MT3_TAG_FLOAT_LIST, length, values);
 }
 
-void mt3_InsertDoubleList(MT3_node* tree, const char* name, SPsize length, const SPdouble* values)
+void mt3_InsertDoubleList(MT3_node* tree, const SPchar* name, SPsize length, const SPdouble* values)
 {
     _mt3_insert_list(tree, name, MT3_TAG_DOUBLE_LIST, length, values);
 }
 
-void mt3_InsertStringList(MT3_node* tree, const char* name, SPsize length, const SPchar** values)
+void mt3_InsertStringList(MT3_node* tree, const SPchar* name, SPsize length, const SPchar** values)
 {
     _mt3_insert_list(tree, name, MT3_TAG_STRING_LIST, length, values);
 }
 
-void mt3_Insert(MT3_node* tree, const char* name, const MT3_node value)
+void mt3_Insert(MT3_node* tree, const SPchar* name, const MT3_node value)
 {
     MT3_CHECK_INPUT(name);
     MT3_CHECK_OBJECT();
@@ -1101,7 +1101,7 @@ const SPchar* mt3_GetString(const MT3_node tree, const SPchar* name)
 	return (n && n->tag == MT3_TAG_STRING) ? n->payload.tag_string : NULL;
 }
 
-static void _mt3_set_value(MT3_node tree, MT3_tag tag, const char* name, const void* value)
+static void _mt3_set_value(MT3_node tree, MT3_tag tag, const SPchar* name, const void* value)
 {
 	MT3_node n = _mt3_search(tree, name);
 	if(n && n->tag == tag)
@@ -1136,37 +1136,37 @@ static void _mt3_set_value(MT3_node tree, MT3_tag tag, const char* name, const v
 	}
 }
 
-void mt3_SetByte(MT3_node tree, const char* name, SPbyte value)
+void mt3_SetByte(MT3_node tree, const SPchar* name, SPbyte value)
 {
 	_mt3_set_value(tree, MT3_TAG_BYTE, name, &value);
 }
 
-void mt3_SetShort(MT3_node tree, const char* name, SPshort value)
+void mt3_SetShort(MT3_node tree, const SPchar* name, SPshort value)
 {
 	_mt3_set_value(tree, MT3_TAG_SHORT, name, &value);
 }
 
-void mt3_SetInt(MT3_node tree, const char* name, SPint value)
+void mt3_SetInt(MT3_node tree, const SPchar* name, SPint value)
 {
 	_mt3_set_value(tree, MT3_TAG_INT, name, &value);
 }
 
-void mt3_SetLong(MT3_node tree, const char* name, SPlong value)
+void mt3_SetLong(MT3_node tree, const SPchar* name, SPlong value)
 {
 	_mt3_set_value(tree, MT3_TAG_LONG, name, &value);
 }
 
-void mt3_SetFloat(MT3_node tree, const char* name, SPfloat value)
+void mt3_SetFloat(MT3_node tree, const SPchar* name, SPfloat value)
 {
 	_mt3_set_value(tree, MT3_TAG_FLOAT, name, &value);
 }
 
-void mt3_SetDouble(MT3_node tree, const char* name, SPdouble value)
+void mt3_SetDouble(MT3_node tree, const SPchar* name, SPdouble value)
 {
 	_mt3_set_value(tree, MT3_TAG_DOUBLE, name, &value);
 }
 
-void mt3_SetString(MT3_node tree, const char* name, const SPchar* value)
+void mt3_SetString(MT3_node tree, const SPchar* name, const SPchar* value)
 {
 	_mt3_set_value(tree, MT3_TAG_STRING, name, value);
 }
@@ -1428,7 +1428,7 @@ MT3_status mt3_GetLastError()
     return status;
 }
 
-const char* mt3_GetErrorInfo(MT3_status status)
+const SPchar* mt3_GetErrorInfo(MT3_status status)
 {
     switch(status)
     {

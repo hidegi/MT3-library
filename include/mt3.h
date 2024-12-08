@@ -216,7 +216,7 @@ SP_API SPbool mt3_IsTree(const MT3_node tree);
  *	
  *	@ingroup tree-insertion
  */
-SP_API void mt3_Insert(MT3_node* tree, const char* name, const MT3_node value);
+SP_API void mt3_Insert(MT3_node* tree, const SPchar* name, const MT3_node value);
 
 /*!
  *	@brief Inserts a byte-node to the given tree.
@@ -232,7 +232,7 @@ SP_API void mt3_Insert(MT3_node* tree, const char* name, const MT3_node value);
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertByte(MT3_node* tree, const char* name, SPbyte value);
+SP_API void mt3_InsertByte(MT3_node* tree, const SPchar* name, SPbyte value);
 
 /*!
  *	@brief Inserts a short-node to the given tree.
@@ -248,7 +248,7 @@ SP_API void mt3_InsertByte(MT3_node* tree, const char* name, SPbyte value);
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertShort(MT3_node* tree, const char* name, SPshort value);
+SP_API void mt3_InsertShort(MT3_node* tree, const SPchar* name, SPshort value);
 
 /*!
  *	@brief Inserts an int-node to the given tree.
@@ -259,7 +259,7 @@ SP_API void mt3_InsertShort(MT3_node* tree, const char* name, SPshort value);
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertInt(MT3_node* tree, const char* name, SPint value);
+SP_API void mt3_InsertInt(MT3_node* tree, const SPchar* name, SPint value);
 
 /*!
  *	@brief Inserts a long-node to the given tree.
@@ -275,7 +275,7 @@ SP_API void mt3_InsertInt(MT3_node* tree, const char* name, SPint value);
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertLong(MT3_node* tree, const char* name, SPlong value);
+SP_API void mt3_InsertLong(MT3_node* tree, const SPchar* name, SPlong value);
 
 /*!
  *	@brief Inserts a float-node to the given tree.
@@ -291,7 +291,7 @@ SP_API void mt3_InsertLong(MT3_node* tree, const char* name, SPlong value);
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertFloat(MT3_node* tree, const char* name, SPfloat value);
+SP_API void mt3_InsertFloat(MT3_node* tree, const SPchar* name, SPfloat value);
 
 /*!
  *	@brief Inserts a double-node to the given tree.
@@ -307,7 +307,7 @@ SP_API void mt3_InsertFloat(MT3_node* tree, const char* name, SPfloat value);
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertDouble(MT3_node* tree, const char* name, SPdouble value);
+SP_API void mt3_InsertDouble(MT3_node* tree, const SPchar* name, SPdouble value);
 
 /*!
  *	@brief Inserts a string-node to the given tree.
@@ -325,7 +325,7 @@ SP_API void mt3_InsertDouble(MT3_node* tree, const char* name, SPdouble value);
  *	
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertString(MT3_node* tree, const char* name, const SPchar* value);
+SP_API void mt3_InsertString(MT3_node* tree, const SPchar* name, const SPchar* value);
 
 /*!
  *	@brief Inserts a byte-list-node to the given tree.
@@ -345,7 +345,7 @@ SP_API void mt3_InsertString(MT3_node* tree, const char* name, const SPchar* val
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertByteList(MT3_node* tree, const char* name, SPsize length, const SPbyte* values);
+SP_API void mt3_InsertByteList(MT3_node* tree, const SPchar* name, SPsize length, const SPbyte* values);
 
 /*!
  *	@brief Inserts a short-list-node to the given tree.
@@ -365,7 +365,7 @@ SP_API void mt3_InsertByteList(MT3_node* tree, const char* name, SPsize length, 
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertShortList(MT3_node* tree, const char* name, SPsize length, const SPshort* values);
+SP_API void mt3_InsertShortList(MT3_node* tree, const SPchar* name, SPsize length, const SPshort* values);
 
 /*!
  *	@brief Inserts an int-list-node to the given tree.
@@ -384,7 +384,7 @@ SP_API void mt3_InsertShortList(MT3_node* tree, const char* name, SPsize length,
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertIntList(MT3_node* tree, const char* name, SPsize length, const SPint* values);
+SP_API void mt3_InsertIntList(MT3_node* tree, const SPchar* name, SPsize length, const SPint* values);
 
 /*!
  *	@brief Inserts a long-list-node to the given tree.
@@ -404,7 +404,7 @@ SP_API void mt3_InsertIntList(MT3_node* tree, const char* name, SPsize length, c
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertLongList(MT3_node* tree, const char* name, SPsize length, const SPlong* values);
+SP_API void mt3_InsertLongList(MT3_node* tree, const SPchar* name, SPsize length, const SPlong* values);
 
 /*!
  *	@brief Inserts a float-list-node to the given tree.
@@ -424,7 +424,7 @@ SP_API void mt3_InsertLongList(MT3_node* tree, const char* name, SPsize length, 
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertFloatList(MT3_node* tree, const char* name, SPsize length, const SPfloat* values);
+SP_API void mt3_InsertFloatList(MT3_node* tree, const SPchar* name, SPsize length, const SPfloat* values);
 
 /*!
  *	@brief Inserts a double-list-node to the given tree.
@@ -444,7 +444,7 @@ SP_API void mt3_InsertFloatList(MT3_node* tree, const char* name, SPsize length,
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertDoubleList(MT3_node* tree, const char* name, SPsize length, const SPdouble* values);
+SP_API void mt3_InsertDoubleList(MT3_node* tree, const SPchar* name, SPsize length, const SPdouble* values);
 
 /*!
  *	@brief Inserts a string-list-node to the given tree.
@@ -465,7 +465,7 @@ SP_API void mt3_InsertDoubleList(MT3_node* tree, const char* name, SPsize length
  *
  *	@ingroup tree-insertion
  */
-SP_API void mt3_InsertStringList(MT3_node* tree, const char* name, SPsize length, const SPchar** values);
+SP_API void mt3_InsertStringList(MT3_node* tree, const SPchar* name, SPsize length, const SPchar** values);
 
 /*!
  *	@brief Returns the value stored in any integer-type nodes
@@ -601,37 +601,37 @@ SP_API MT3_node* mt3_Get(const MT3_node tree, const SPchar* name);
  *	@brief Sets the value stored in a byte-node found by @param name.
  *	@ingroup tree-setters
  */
-SP_API void mt3_SetByte(MT3_node tree, const char* name, SPbyte value);
+SP_API void mt3_SetByte(MT3_node tree, const SPchar* name, SPbyte value);
 
 /*!
  *	@brief Sets the value stored in a short-node found by @param name.
  *	@ingroup tree-setters
  */
-SP_API void mt3_SetShort(MT3_node tree, const char* name, SPshort value);
+SP_API void mt3_SetShort(MT3_node tree, const SPchar* name, SPshort value);
 
 /*!
  *	@brief Sets the value stored in an int-node found by @param name.
  *	@ingroup tree-setters
  */
-SP_API void mt3_SetInt(MT3_node tree, const char* name, SPint value);
+SP_API void mt3_SetInt(MT3_node tree, const SPchar* name, SPint value);
 
 /*!
  *	@brief Sets the value stored in a long-node found by @param name.
  *	@ingroup tree-setters
  */
-SP_API void mt3_SetLong(MT3_node tree, const char* name, SPlong value);
+SP_API void mt3_SetLong(MT3_node tree, const SPchar* name, SPlong value);
 
 /*!
  *	@brief Sets the value stored in a float-node found by @param name.
  *	@ingroup tree-setters
  */
-SP_API void mt3_SetFloat(MT3_node tree, const char* name, SPfloat value);
+SP_API void mt3_SetFloat(MT3_node tree, const SPchar* name, SPfloat value);
 
 /*!
  *	@brief Sets the value stored in a double-node found by @param name.
  *	@ingroup tree-setters
  */
-SP_API void mt3_SetDouble(MT3_node tree, const char* name, SPdouble value);
+SP_API void mt3_SetDouble(MT3_node tree, const SPchar* name, SPdouble value);
 
 /*!
  *	@brief Sets the value stored in a long-node found by @param name.
@@ -640,7 +640,7 @@ SP_API void mt3_SetDouble(MT3_node tree, const char* name, SPdouble value);
  *
  *	@ingroup tree-setters
  */
-SP_API void mt3_SetString(MT3_node tree, const char* name, const SPchar* value);
+SP_API void mt3_SetString(MT3_node tree, const SPchar* name, const SPchar* value);
 
 /*!
  *	@brief Removes a node from a tree.
@@ -1013,7 +1013,7 @@ SP_API MT3_status mt3_GetLastError();
  *
  *	@ingroup error-signaling
  */
-SP_API const char* mt3_GetErrorInfo(MT3_status status);
+SP_API const SPchar* mt3_GetErrorInfo(MT3_status status);
 #ifdef __cplusplus
 }
 #endif
