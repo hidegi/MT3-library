@@ -48,6 +48,8 @@ typedef enum
 	MT3_TAG_FLOAT 	= 6,
 	MT3_TAG_DOUBLE  = 7,
 	MT3_TAG_STRING 	= 8,
+	MT3_TAG_MAX 	= MT3_TAG_STRING,
+	
 	MT3_TAG_LIST	= 0x80,
 	
 	/// List-type tags.
@@ -80,7 +82,12 @@ struct _MT3_node
 	// (Causes undefined behaviour)
 	SPhash weight;
 	MT3_tag tag;
-	SPsize length;
+	
+	SPubyte nameLength; // Name should not exceed 255 characters.
+	SPchar* name; // The name of the node.
+	
+	SPsize length; // The length of the payload in bytes.
+	
 	SPbool red; // Signals the node's color, encoded in the 7th bit of the tag.
 	struct _MT3_node* parent;
 	struct _MT3_node* major;

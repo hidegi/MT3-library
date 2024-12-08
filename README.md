@@ -25,11 +25,8 @@ The BTO-format has knowledge of following data types:
 The tag tells exactly what type of data a node in a BTO stores.
 
 To distinguish between these types, each node (like NBT) is labeled with a tag.\
-However, the huge difference between NBT and BTO is that BTO uses an SDBM-hash\
-to calculate the weight for a node.
-
-The input type for a weighted value could be of any type, however MT3 uses a string\
-to calculate a weight.
+The nodes are lexicographically ordered by their name, however, the length of a name\
+should not exceed 255 characters.
 
 Consequently, all data types can be stored as a list, where the first bit in the tag\
 tells if some node stores a list of some type (1 for list, 0 for plain type).

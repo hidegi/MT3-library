@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
-project(mt3 VERSION 1.2.2 LANGUAGES C CXX)
+project(mt3 VERSION 2.2.0 LANGUAGES C CXX)
 
 macro(sp_set_option var default type docstring)
 	if(NOT DEFINED ${var})
@@ -11,6 +11,7 @@ endmacro()
 if(POLICY CMP0079)
 	cmake_policy(SET CMP0079 NEW)
 endif()
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 99)
@@ -74,7 +75,7 @@ sp_set_option(MT3_BUILD_EXAMPLES ON BOOL "Build the MT3 example programs")
 sp_set_option(MT3_BUILD_TESTS ON BOOL "Build tests")
 
 include_directories(${CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES} ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/tests ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-add_library(mt3 src/mt3.c src/buffer.c src/treeops.c src/sdbm.c src/serialization.c)
+add_library(mt3 src/mt3.c src/buffer.c src/treeops.c src/serialization.c)
 
 if(MT3_BUILD_TESTS)	
 	enable_testing()
