@@ -30,16 +30,16 @@
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
 
-#define MT3_READ_GENERIC(dst, n, scanner, fail)     		\
-	do							\
-	{							\
-		if(*length < (n))				\
-		{						\
-			errno = MT3_STATUS_READ_ERROR;		\
-			fail;					\
-		}						\
-		*memory = scanner((dst), *memory, (n));		\
-		*length -= n;					\
+#define MT3_READ_GENERIC(dst, n, scanner, fail)\
+	do\
+	{\
+		if(*length < (n))\
+		{\
+			errno = MT3_STATUS_READ_ERROR;\
+			fail;\
+		}\
+		*memory = scanner((dst), *memory, (n));\
+		*length -= n;\
 	} while(0)
 		
 #define ne2be _mt3_big_endian_to_native_endian

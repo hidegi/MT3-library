@@ -32,8 +32,6 @@
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
 
-//MT3_tag checkTree(const MT3_node tree);
-
 #define MT3_CHECK_INPUT(_name)\
 	do\
 	{\
@@ -45,7 +43,7 @@
 		else\
 		{\
 			if((*tree) && ((*tree)->parent || (*tree)->red))\
-			{					\
+			{\
 				errno = MT3_STATUS_NOT_A_TREE;\
 				return;\
 			}\
