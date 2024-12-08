@@ -24,14 +24,14 @@
 #define MT3_INTERNAL_IMPL_H
 #include "mt3.h"
 #include "platform.h"
-#define MT3_CHECKED_CALLOC(ptr, n, size, on_error)		\
-	do							\
-	{							\
-		if(!((ptr) = calloc(n, size)))			\
-		{						\
-			errno = MT3_STATUS_NO_MEMORY;		\
-			on_error;				\
-		}						\
+#define MT3_CHECKED_CALLOC(ptr, n, size, on_error)\
+	do\
+	{\
+		if(!((ptr) = calloc(n, size)))\
+		{\
+			errno = MT3_STATUS_NO_MEMORY;\
+			on_error;\
+		}\
 	} while(0)
 
 const SPchar* _mt3_tag_to_str(MT3_tag tag);

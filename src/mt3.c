@@ -31,64 +31,37 @@
 #pragma GCC diagnostic ignored "-Wswitch"
 #pragma GCC diagnostic ignored "-Wformat"
 #endif
-#define MT3_CHECK_INPUT(_name)					\
-	do							\
-	{							\
-	    	if(!tree)					\
-	    	{                                           	\
-	        	errno = MT3_STATUS_BAD_VALUE;		\
-	       		return;                                 \
-	    	}                                           	\
-		else						\
-		{						\
-			if((*tree) && 				\
-			((*tree)->parent || (*tree)->red))	\
-			{					\
-				errno = MT3_STATUS_NOT_A_TREE;	\
-				return;				\
-			}					\
-		}						\
-		    if(!_mt3_is_name_valid(_name)) \
-		    {                                       	\
-		        errno = MT3_STATUS_BAD_NAME;    	\
-		        return;                             	\
-		    }                                       	\
-	} while(0)
 
-#define MT3_CHECK_OBJECT()					\
-    MT3_tag tag = MT3_TAG_NULL;					\
-    if(!value)							\
-    {								\
-        errno = MT3_STATUS_BAD_VALUE;				\
-        return;							\
-    }								\
-    if(value->tag == MT3_TAG_NULL)				\
-    {								\
-        errno = MT3_STATUS_BAD_TAG;				\
-        return;							\
-    }								\
-    if(!mt3_IsList(value) && !mt3_IsTree(value))		\
-    {								\
-        errno = MT3_STATUS_BAD_VALUE;				\
-        return;							\
-    }								\
-    if(mt3_IsTree(value))					\
-    {								\
-        tag = MT3_TAG_ROOT;					\
-    }								\
-    else							\
-    {								\
-        if(value->tag & MT3_TAG_LIST)				\
-            tag = MT3_TAG_LIST;					\
-        else							\
-            tag = MT3_TAG_LIST | value->tag;			\
-    }
+//MT3_tag checkTree(const MT3_node tree);
+
+#define MT3_CHECK_INPUT(_name)\
+	do\
+	{\
+		if(!tree)\
+		{\
+			errno = MT3_STATUS_BAD_VALUE;\
+	   		return;\
+	  	}\
+		else\
+		{\
+			if((*tree) && ((*tree)->parent || (*tree)->red))\
+			{					\
+				errno = MT3_STATUS_NOT_A_TREE;\
+				return;\
+			}\
+		}\
+		if(!_mt3_is_name_valid(_name))\
+		{\
+			errno = MT3_STATUS_BAD_NAME;\
+			return;\
+		}\
+	} while(0)
 
 #define MT3_FOR_EACH(node, cursor)\
 	for((cursor) = (node); (cursor) != NULL; (cursor) = (cursor)->major)
 
-#define MT3_COMPARE_GENERIC(p) 		\
-    if(a->payload.p != b->payload.p) 	\
+#define MT3_COMPARE_GENERIC(p)\
+    if(a->payload.p != b->payload.p)\
         return SP_FALSE
 
 SPbool mt3_IsTree(const MT3_node node)
@@ -118,6 +91,32 @@ SPbool _mt3_is_name_valid(const SPchar* name)
 		
 	SPsize length = strlen(name);
 	return (length > 0) && (length <= ((SPubyte)0xFF));
+}
+
+static MT3_tag _mt3_get_object_tag(const MT3_node value)
+{
+	MT3_tag tag = MT3_TAG_NULL;
+	if(value)
+	{
+		if(value->tag != MT3_TAG_NULL)
+		{
+			if(mt3_IsList(value) || mt3_IsTree(value))
+			{
+				if(mt3_IsTree(value))
+				{
+					tag = MT3_TAG_ROOT;
+				}
+				else
+				{
+					if(value->tag & MT3_TAG_LIST)
+						tag = MT3_TAG_LIST;
+					else
+						tag = MT3_TAG_LIST | value->tag;
+				}	
+			}
+		}
+	}
+	return tag;
 }
 
 static MT3_node _mt3_alloc_node(MT3_tag tag, const SPchar* name, SPsize length, const void* value, SPbool copyValue)
@@ -619,7 +618,6 @@ static MT3_node _mt3_insert_data(MT3_node* head, MT3_node node, const SPchar* na
 	}
 	
 	SPint cmp; 
-	
 	if(node->name)
 	{
 		cmp = _mt3_strcmp(name, node->name);
@@ -1012,7 +1010,14 @@ void mt3_InsertStringList(MT3_node* tree, const SPchar* name, SPsize length, con
 void mt3_Insert(MT3_node* tree, const SPchar* name, const MT3_node value)
 {
     MT3_CHECK_INPUT(name);
-    MT3_CHECK_OBJECT();
+    MT3_tag tag = _mt3_get_object_tag(value);
+    
+    if(tag == MT3_TAG_NULL)
+    {
+    	errno = MT3_STATUS_BAD_TAG;
+    	return;
+    }
+    
 	_mt3_insert_data(tree, *tree, name, tag, mt3_IsList(value) ? _mt3_length_of_list(value) : 0, value, SP_TRUE);
 }
 
@@ -1030,7 +1035,6 @@ SPsize _mt3_length_of_list(const MT3_node list)
 
 SPlong mt3_GetNumber(const MT3_node tree, const SPchar* name)
 {
-	
 	MT3_node n = _mt3_search(tree, name);
 	if(n)
 	{
@@ -1086,7 +1090,7 @@ SPlong mt3_GetLong(const MT3_node tree, const SPchar* name)
 SPfloat mt3_GetFloat(const MT3_node tree, const SPchar* name)
 {
 	MT3_node n = _mt3_search(tree, name);
-	return (n && n->tag == MT3_TAG_FLOAT) ? n->payload.tag_float : 0.0;
+	return (n && n->tag == MT3_TAG_FLOAT) ? n->payload.tag_float : 0.f;
 }
 
 SPdouble mt3_GetDouble(const MT3_node tree, const SPchar* name)
@@ -1119,17 +1123,17 @@ static void _mt3_set_value(MT3_node tree, MT3_tag tag, const SPchar* name, const
 				const SPchar* newValue = (const SPchar*) value;
 				if(newValue)
 				{
-		                	SPsize length = strlen(newValue) + 1;
-		                    	SPchar* newStr = realloc(n->payload.tag_string, length);
-		                    	if(!newStr)
-		                    	{
-		                        	errno = MT3_STATUS_NO_MEMORY;
-		                        	return;
-		                    	}
-		                    	n->payload.tag_string = newStr;
-		                    	memcpy(n->payload.tag_string, newValue, length - 1);
-		                    	n->payload.tag_string[length - 1] = 0;
-			    	}
+					SPsize length = strlen(newValue) + 1;
+					SPchar* newStr = realloc(n->payload.tag_string, length);
+					if(!newStr)
+					{
+						errno = MT3_STATUS_NO_MEMORY;
+						return;
+					}
+					n->payload.tag_string = newStr;
+					memcpy(n->payload.tag_string, newValue, length - 1);
+					n->payload.tag_string[length - 1] = 0;
+				}
 				break;
 			}
 		}
@@ -1186,9 +1190,9 @@ MT3_node mt3_ToList(MT3_tag tag, SPsize length, const void* data)
 			case MT3_TAG_DOUBLE: mt3_AppendDouble(&list, *(((const SPdouble*) data) + i)); break;
 			case MT3_TAG_STRING:
 			{
-			    	if(*(((const SPchar**) data) + i))
-    			    	mt3_AppendString(&list, *(((const SPchar**) data) + i));
-                		break;
+				if(*(((const SPchar**) data) + i))
+					mt3_AppendString(&list, *(((const SPchar**) data) + i));
+				break;
 			}
 		}
 	}
@@ -1384,7 +1388,12 @@ void mt3_AppendStringList(MT3_node* list, SPsize length, const SPchar** values)
 
 void mt3_Append(MT3_node* list, const MT3_node value)
 {
-    MT3_CHECK_OBJECT();
+    MT3_tag tag = _mt3_get_object_tag(value);
+    if(tag == MT3_TAG_NULL)
+    {
+    	errno = MT3_STATUS_BAD_TAG;
+    	return;
+    }
     _mt3_insert_multi_list(list, tag, mt3_IsTree(value) ? 0 : _mt3_length_of_list(value), value, SP_TRUE);
 }
 
@@ -1396,11 +1405,11 @@ SPbool mt3_Remove(MT3_node* tree, const SPchar* name)
 		return SP_FALSE;
 	}
 	
-    	if(!mt3_IsTree(*tree))
-    	{
-        	errno = MT3_STATUS_NOT_A_TREE;
-        	return SP_FALSE;
-    	}
+	if(!mt3_IsTree(*tree))
+	{
+		errno = MT3_STATUS_NOT_A_TREE;
+		return SP_FALSE;
+	}
 	
 	MT3_node n = _mt3_search(*tree, name);
 	if(n)
