@@ -51,7 +51,7 @@ typedef enum
 	MT3_TAG_LIST	= 0x80,
 	
 	/// List-type tags.
-	MT3_TAG_ROOT_LIST	= MT3_TAG_LIST | MT3_TAG_ROOT,
+	MT3_TAG_ROOT_LIST   = MT3_TAG_LIST | MT3_TAG_ROOT,
 	MT3_TAG_BYTE_LIST   = MT3_TAG_LIST | MT3_TAG_BYTE,
 	MT3_TAG_SHORT_LIST  = MT3_TAG_LIST | MT3_TAG_SHORT,
 	MT3_TAG_INT_LIST    = MT3_TAG_LIST | MT3_TAG_INT,
@@ -63,7 +63,7 @@ typedef enum
 
 typedef enum
 {
-	MT3_STATUS_OK = 0, 		/// No errors.
+	MT3_STATUS_OK = 0, 	/// No errors.
 	MT3_STATUS_NO_MEMORY, 	/// Out of memory.
 	MT3_STATUS_READ_ERROR,	/// Read error.
 	MT3_STATUS_WRITE_ERROR,	/// Write error.
@@ -71,7 +71,7 @@ typedef enum
 	MT3_STATUS_BAD_VALUE,	/// Invalid value.
 	MT3_STATUS_NOT_A_TREE,  /// Given node is not a tree.
 	MT3_STATUS_NOT_A_LIST,  /// Given node is not a list.
-	MT3_STATUS_BAD_TAG,		/// Invalid tag.
+	MT3_STATUS_BAD_TAG,	/// Invalid tag.
 } MT3_status;
 
 struct _MT3_node
