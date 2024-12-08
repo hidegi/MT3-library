@@ -82,9 +82,9 @@ struct _MT3_node
 	MT3_tag tag;
 	
 	SPubyte nameLength; // Name should not exceed 255 characters.
-	SPchar* name;
+	SPchar* name; // The name of the node.
 	
-	SPsize length;
+	SPsize length; // The length of the payload in bytes.
 	
 	SPbool red; // Signals the node's color, encoded in the 7th bit of the tag.
 	struct _MT3_node* parent;

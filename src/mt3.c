@@ -196,7 +196,7 @@ MT3_node mt3_AllocList()
 	return list;
 }
 
-SPint _mt3_strequal(const SPchar* a, const SPchar* b)
+SPint _mt3_strcmp(const SPchar* a, const SPchar* b)
 {	
 	// Compare the strings lexicographically.
 	// Longer strings are majored, shorter strings are minored.
@@ -461,7 +461,7 @@ SPbool _mt3_is_tree_equal(const MT3_node a, const MT3_node b)
 	if(a && b)
 	{
 		SP_ASSERT(a->name && b->name, "Expected nodes to compare to have names");
-		if(_mt3_strequal(a->name, b->name) != 0)
+		if(_mt3_strcmp(a->name, b->name) != 0)
 		{
 		    return SP_FALSE;
 		}
@@ -588,7 +588,7 @@ static MT3_node _mt3_search_impl(const MT3_node tree, const SPchar* name)
 	if(tree)
 	{
 		SP_ASSERT(tree->name, "Expected tree to have name");		
-		SPint cmp = _mt3_strequal(name, tree->name);
+		SPint cmp = _mt3_strcmp(name, tree->name);
 		if(cmp == 0)
 			return tree;
 		
@@ -622,7 +622,7 @@ static MT3_node _mt3_insert_data(MT3_node* head, MT3_node node, const SPchar* na
 	
 	if(node->name)
 	{
-		cmp = _mt3_strequal(name, node->name);
+		cmp = _mt3_strcmp(name, node->name);
 		if(cmp == 0)
 		{
 			errno = MT3_STATUS_BAD_NAME;
@@ -646,7 +646,7 @@ static MT3_node _mt3_insert_data(MT3_node* head, MT3_node node, const SPchar* na
 		return *head;
 	}
 	
-	cmp = _mt3_strequal(name, node->name);
+	cmp = _mt3_strcmp(name, node->name);
 	SPbool maj = cmp > 0;
 	MT3_node primary  = maj ? node->major : node->minor;
 
@@ -1443,7 +1443,6 @@ const char* mt3_GetErrorInfo(MT3_status status)
     }
     return "Ok";
 }
-
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
 #pragma GCC diagnostic pop
 #endif

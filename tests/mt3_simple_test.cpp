@@ -6,6 +6,7 @@
 #include <time.h>
 #include <random>
 
+// Data set arrangement.
 static const SPbyte byte_data_set_01[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 static const SPbyte byte_data_set_02[] = {-31, -2, -74, -20, 15, -104, -67, 22, 36, -65, 118, -112, -22, -79, -7, -110, 59, -95, -70, 116};
 static const SPbyte byte_data_set_03[] = {-17, 39, 97, -82, -54, -109, 95, -33, -91, 125, -31, -97, 126, -70, -55, 18, 60, -111, 54, 71};

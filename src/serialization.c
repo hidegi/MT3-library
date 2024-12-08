@@ -460,7 +460,6 @@ MT3_node mt3_DecodeTree(SPbuffer buffer)
 	spBufferFree(&decompressed);
 	return ret;
 }
-
 #if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
 #pragma GCC diagnostic pop
 #endif

@@ -25,7 +25,8 @@ The BTO-format has knowledge of following data types:
 The tag tells exactly what type of data a node in a BTO stores.
 
 To distinguish between these types, each node (like NBT) is labeled with a tag.\
-The nodes are lexicographically ordered by their name.
+The nodes are lexicographically ordered by their name, however, the length of a name\
+should not exceed 255 characters.
 
 The input type for a weighted value could be of any type, however MT3 uses a string\
 to calculate a weight.
