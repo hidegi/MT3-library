@@ -34,8 +34,8 @@
 		}						\
 	} while(0)
 
-const char* _mt3_tag_to_str(MT3_tag tag);
-MT3_node _mt3_search(const MT3_node tree, const char* name);
+const SPchar* _mt3_tag_to_str(MT3_tag tag);
+MT3_node _mt3_search(const MT3_node tree, const SPchar* name);
 SPbool _mt3_is_name_valid(const SPchar* name);
 SPint _mt3_strcmp(const SPchar* a, const SPchar* b);
 void _mt3_strncpy(SPchar** dst, const SPchar* src, SPsize length);
