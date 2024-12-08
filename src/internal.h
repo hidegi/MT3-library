@@ -36,7 +36,10 @@
 
 const char* _mt3_tag_to_str(MT3_tag tag);
 MT3_node _mt3_search(const MT3_node tree, const char* name);
-SPhash _mt3_sdbm(const SPchar* str);
+
+SPbool _mt3_is_name_valid(const SPchar* name);
+SPint _mt3_strequal(const SPchar* a, const SPchar* b);
+void _mt3_strncpy(SPchar** dst, const SPchar* src, SPsize length);
 
 SPbuffer _mt3_compress(const void* memory, SPsize length);
 SPbuffer _mt3_decompress(const void* memory, SPsize length);

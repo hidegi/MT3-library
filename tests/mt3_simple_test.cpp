@@ -994,6 +994,7 @@ TEST_F(MT3fixture, test_list_element_removal)
     	mt3_AppendInt(&list, 1667);
     	mt3_AppendString(&list, "hello");
     	mt3_RemoveAt(&list, 0);
+    	
 	for(MT3_node cursor = list; cursor != NULL; cursor = cursor->major)
 	{
 		EXPECT_NE(1, cursor->payload.tag_byte);

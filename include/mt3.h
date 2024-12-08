@@ -80,7 +80,12 @@ struct _MT3_node
 	// (Causes undefined behaviour)
 	SPhash weight;
 	MT3_tag tag;
+	
+	SPubyte nameLength; // Name should not exceed 255 characters.
+	SPchar* name;
+	
 	SPsize length;
+	
 	SPbool red; // Signals the node's color, encoded in the 7th bit of the tag.
 	struct _MT3_node* parent;
 	struct _MT3_node* major;

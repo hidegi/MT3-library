@@ -235,7 +235,7 @@ static void _mt3_encode(const MT3_node node, SPbuffer* buffer, int level)
 			case MT3_TAG_DOUBLE: _mt3_write_bytes(buffer, (const SPubyte*) &node->payload.tag_double, sizeof(SPdouble), SP_TRUE, level); break;
 			case MT3_TAG_STRING:
 			{
-				SP_ASSERT(node->payload.tag_string, "Node %lld has invalid data to write", node->weight);
+				SP_ASSERT(node->payload.tag_string, "Node %s has invalid data to write", node->name);
 
 				_mt3_write_bytes(buffer, (const SPubyte*) &node->length, sizeof(SPsize), SP_TRUE, level);
 				_mt3_write_bytes(buffer, (const SPubyte*) node->payload.tag_string, node->length, SP_FALSE, level);
@@ -271,8 +271,9 @@ void _mt3_encode_tree(const MT3_node tree, SPbuffer* buffer, int level)
 	SPuint8 tag = tree->tag | ((tree->red & 1) << 6);
 	_mt3_write_bytes(buffer, (const SPubyte*) &tag, sizeof(SPbyte), SP_FALSE, level);
 
-	//encode the weight
-	_mt3_write_bytes(buffer, (const SPubyte*) &tree->weight, sizeof(SPlong), SP_TRUE, level);
+	//encode the name
+	_mt3_write_bytes(buffer, &tree->nameLength, sizeof(SPubyte), SP_FALSE, level);
+	_mt3_write_bytes(buffer, (const SPubyte*) tree->name, tree->nameLength, SP_FALSE, level);
 
 	//encode generic
 	_mt3_encode(tree, buffer, level);
@@ -336,8 +337,9 @@ static SPbool _mt3_decode(MT3_node node, const SPubyte** memory, SPsize* length)
 				MT3_READ_GENERIC(&node->length, sizeof(SPlong), _mt3_swapped_memcpy, return SP_FALSE);
 				if(node->length)
 				{
-					MT3_CHECKED_CALLOC(node->payload.tag_string, node->length, sizeof(SPbyte), return SP_FALSE);
+					MT3_CHECKED_CALLOC(node->payload.tag_string, node->length + 1, sizeof(SPbyte), return SP_FALSE);
 					MT3_READ_GENERIC(node->payload.tag_string, node->length, _mt3_memcpy, return SP_FALSE);
+					node->payload.tag_string[node->length] = 0;
 				}
 				break;
 			}
@@ -370,7 +372,11 @@ MT3_node _mt3_decode_tree(const SPubyte** memory, SPsize* length)
 
 	MT3_node tree;
 	MT3_CHECKED_CALLOC(tree, 1, sizeof(struct _MT3_node), return NULL);
-	MT3_READ_GENERIC(&tree->weight, sizeof(SPlong), _mt3_swapped_memcpy, return NULL);
+	
+	MT3_READ_GENERIC(&tree->nameLength, sizeof(SPubyte), _mt3_memcpy, return NULL);
+	MT3_CHECKED_CALLOC(tree->name, tree->nameLength + 1, sizeof(SPchar), return NULL);
+	MT3_READ_GENERIC(tree->name, tree->nameLength, _mt3_memcpy, return NULL);
+	tree->name[tree->nameLength] = 0;
 
 	tree->red = redness;
 	tree->tag = tag;
