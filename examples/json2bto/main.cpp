@@ -113,7 +113,7 @@ MT3_node readFromJson(const char* path)
 	MT3_node result = NULL;
 	for(auto& element : doc.items())
 	{
-		parse(element.key().c_str(), element.value(), &result);
+	    parse(element.key().c_str(), element.value(), &result);
 	}
 	
 	SP_ASSERT(result, "Failed to create root-node");

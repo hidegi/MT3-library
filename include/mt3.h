@@ -975,7 +975,7 @@ SP_API void mt3_RemoveAt(MT3_node* list, SPindex pos);
 SP_API SPbuffer mt3_EncodeTree(const MT3_node tree);
 
 /*!
- *	@brief Dumps a tree to binary.
+ *	@brief Reads a tree from binary.
  *	
  *	Issues @ref MT3_STATUS_NOT_A_TREE, if @param is not a tree.
  *
