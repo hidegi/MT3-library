@@ -1039,6 +1039,19 @@ TEST_F(MT3fixture, test_list_element_removal)
 	mt3_Delete(&list);
 }
 
+TEST_F(MT3fixture, test_update)
+{
+	MT3_node list = mt3_AllocList();
+	MT3_node head = NULL;
+	mt3_Insert(&head, "list", list);
+	MT3_node* listRef = mt3_Get(head, "list");
+	mt3_AppendInt(listRef, 1);
+	mt3_AppendInt(listRef, 2);
+	mt3_AppendInt(listRef, 3);
+	SPbuffer buffer = mt3_EncodeTree(head);
+	spBufferFree(&buffer);
+}
+
 TEST(test_serialization, checksSerialization)
 {
 	MT3_node tree1 = createMock();

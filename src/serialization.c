@@ -250,6 +250,8 @@ static void _mt3_encode(const MT3_node node, SPbuffer* buffer, int level)
 			
 			default:
 			{
+				SPsize length = _mt3_length_of_list(node->payload.tag_object);
+				SP_ASSERT(node->length == length, "Expected length of %lld for list but got length of %lld", length, node->length);
 				_mt3_write_bytes(buffer, (const SPubyte*) &node->length, sizeof(SPsize), SP_TRUE, level);
 				_mt3_encode_list(node->payload.tag_object, buffer, level);
 				break;
@@ -313,6 +315,7 @@ SPbuffer mt3_EncodeTree(const MT3_node tree)
 		return buffer;
 	}
 	
+	_mt3_update(tree);
 	_mt3_encode_tree(tree, &buffer, 0);
 	SPbuffer compressed = _mt3_compress(buffer.data, buffer.length);
 	spBufferFree(&buffer);
@@ -351,7 +354,7 @@ static SPbool _mt3_decode(MT3_node node, const SPubyte** memory, SPsize* length)
 			
 			default:
 			{
-                		_mt3_decode_list(node, memory, length);
+                _mt3_decode_list(node, memory, length);
 				break;
 			}
 		}
