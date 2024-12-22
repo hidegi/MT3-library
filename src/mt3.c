@@ -233,18 +233,6 @@ static void _mt3_update_impl(MT3_node node)
 {
 	if(node)
 	{	
-		/*
-		if(node->tag == MT3_TAG_NULL)
-		{
-			if(mt3_IsTree(node->payload.tag_object) || mt3_IsList(node->payload.tag_object))
-			{
-				node->tag = _mt3_get_object_tag(node->payload.tag_object);
-				node->length = _mt3_length_of_list(node->payload.tag_object);
-				return;
-			}
-		}
-		*/
-		
 		if(node->tag == MT3_TAG_STRING)
 		{
 			node->length = strlen(node->payload.tag_string);
