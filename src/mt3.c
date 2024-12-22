@@ -306,6 +306,8 @@ static SPbool _mt3_copy_payload_from_node(const MT3_node src, MT3_node dst)
 			}
 			default:
 			{
+				SPsize length = _mt3_length_of_list(src->payload.tag_object);
+				SP_ASSERT(src->length == length, "Expected length of %lld for list but got length of %lld", length, src->length);
 				dst->payload.tag_object = mt3_Copy(src->payload.tag_object);
 				break;
 			}
