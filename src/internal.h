@@ -23,7 +23,6 @@
 #ifndef MT3_INTERNAL_IMPL_H
 #define MT3_INTERNAL_IMPL_H
 #include "mt3.h"
-#include "platform.h"
 #define MT3_CHECKED_CALLOC(ptr, n, size, on_error)\
 	do\
 	{\
@@ -34,6 +33,10 @@
 		}\
 	} while(0)
 
+
+void _mt3_update(MT3_node node);
+void _mt3_update_tree(MT3_node node);
+void _mt3_update_list(MT3_node node);
 const SPchar* _mt3_tag_to_str(MT3_tag tag);
 MT3_node _mt3_search(const MT3_node tree, const SPchar* name);
 SPbool _mt3_is_name_valid(const SPchar* name);

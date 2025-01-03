@@ -200,9 +200,9 @@ SP_API MT3_node mt3_Copy(const MT3_node object);
 SP_API SPbool mt3_IsTree(const MT3_node tree);
 
 /*!
- *	@brief Inserts a tree-or list-node to the given tree.
+ *	@brief Inserts an empty tree-node to the given tree.
  *	If @param tree points to NULL, a new tree will be created.
- *	 
+ *	
  *	Issues @ref MT3_STATUS_BAD_VALUE, if @param tree is NULL.
  *
  *	Issues @ref MT3_STATUS_NOT_A_TREE, if the object pointed
@@ -210,9 +210,38 @@ SP_API SPbool mt3_IsTree(const MT3_node tree);
  *
  *	Issues @ref MT3_STATUS_BAD_NAME, if @param name is NULL,
  *	empty or already taken.
+ *	
+ *	@ingroup tree-insertion
+ */
+SP_API void mt3_CreateTree(MT3_node* tree, const SPchar* name);
+
+/*!
+ *	@brief Inserts an empty list-node to the given tree.
+ *	If @param tree points to NULL, a new tree will be created.
+ *	
+ *	Issues @ref MT3_STATUS_BAD_VALUE, if @param tree is NULL.
  *
- *	Issues @ref MT3_STATUS_BAD_VALUE, if @param value
- *	is neither a tree-nor a list-node or NULL.
+ *	Issues @ref MT3_STATUS_NOT_A_TREE, if the object pointed
+ *	to by @param tree is not NULL and not a tree.
+ *
+ *	Issues @ref MT3_STATUS_BAD_NAME, if @param name is NULL,
+ *	empty or already taken.
+ *	
+ *	@ingroup tree-insertion
+ */ 
+SP_API void mt3_CreateList(MT3_node* tree, const SPchar* name);
+
+/*!
+ *	@brief Inserts a tree-or list-node to the given tree.
+ *	If @param tree points to NULL, a new tree will be created.
+ *	
+ *	Issues @ref MT3_STATUS_BAD_VALUE, if @param tree is NULL.
+ *
+ *	Issues @ref MT3_STATUS_NOT_A_TREE, if the object pointed
+ *	to by @param tree is not NULL and not a tree.
+ *
+ *	Issues @ref MT3_STATUS_BAD_NAME, if @param name is NULL,
+ *	empty or already taken.
  *	
  *	@ingroup tree-insertion
  */
@@ -595,7 +624,7 @@ SP_API const SPchar* mt3_GetString(const MT3_node tree, const SPchar* name);
  *
  *	@ingroup tree-getters
  */
-SP_API MT3_node* mt3_Get(const MT3_node tree, const SPchar* name);
+SP_API MT3_node mt3_Get(const MT3_node tree, const SPchar* name);
 
 /*!
  *	@brief Sets the value stored in a byte-node found by @param name.
@@ -975,7 +1004,7 @@ SP_API void mt3_RemoveAt(MT3_node* list, SPindex pos);
 SP_API SPbuffer mt3_EncodeTree(const MT3_node tree);
 
 /*!
- *	@brief Reads a tree from binary.
+ *	@brief Dumps a tree to binary.
  *	
  *	Issues @ref MT3_STATUS_NOT_A_TREE, if @param is not a tree.
  *

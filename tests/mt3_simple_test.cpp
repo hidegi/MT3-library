@@ -447,7 +447,7 @@ static MT3_node createMock()
 	SPlong long_array[] = {1, 2, 3, 4, 5, -6, -7, -8, -9};
 	SPfloat float_array[] = {1.3f, 2.4f, 5.4f, 252.f, 19.f, 43.f, 74.f};
 	SPdouble double_array[] = {1.3, 2.4, 5.4, 252.0, 19.0, 43.0, 74.0};
-    	const SPchar* string_array[] = {"hda1666", "sp1667", "fjiaw", "betel"};
+    const SPchar* string_array[] = {"hda1666", "sp1667", "fjiaw", "betel"};
 
 	MT3_node byte_list = NULL;
 	mt3_AppendByteList(&byte_list, sizeof(byte_array) / sizeof(SPbyte), byte_array);
@@ -1007,14 +1007,14 @@ TEST_F(MT3fixture, test_replace_2)
 	ASSERT_NEAR(3.141592654, mt3_GetDouble(tree, "double_2"), 15);
 	ASSERT_NEAR(3.141592654, mt3_GetDecimal(tree, "double_2"), 15);
 	
-	MT3_node* multi_list = mt3_Get(tree, "multi_list");
-	ASSERT_TRUE(multi_list != NULL);
+	MT3_node multi_list = mt3_Get(tree, "multi_list");
+	ASSERT_TRUE(multi_list && multi_list->payload.tag_object != NULL);
 	
-	MT3_node* multi_multi_list = mt3_Get(tree, "multi_multi_list");
-	ASSERT_TRUE(multi_multi_list != NULL);
+	MT3_node multi_multi_list = mt3_Get(tree, "multi_multi_list");
+	ASSERT_TRUE(multi_multi_list && multi_multi_list->payload.tag_object != NULL);
 	
-	MT3_node* multi_multi_multi_list = mt3_Get(tree, "multi_multi_multi_list");
-	ASSERT_TRUE(multi_multi_multi_list != NULL);
+	MT3_node multi_multi_multi_list = mt3_Get(tree, "multi_multi_multi_list");
+	ASSERT_TRUE(multi_multi_multi_list && multi_multi_multi_list->payload.tag_object != NULL);
 }
 
 TEST_F(MT3fixture, test_list_element_removal)

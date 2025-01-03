@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 
 static void print(const char* path)
 {
-	std::ifstream file(path);
+	std::ifstream file(path, std::ios::binary);
 	if(!file.is_open())
 	{
 		SP_WARNING("Failed to open file \"%s\"", path);
