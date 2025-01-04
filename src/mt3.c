@@ -189,7 +189,7 @@ MT3_node mt3_AllocList()
 {
 	MT3_node list = mt3_AllocTree();
 	list->red = SP_TRUE;
-	list->tag |= MT3_TAG_LIST;
+	
 	return list;
 }
 
