@@ -163,7 +163,6 @@ static void parse(const char* key, JSON node, MT3_node* object)
 			}
 			
 			mt3_Insert(object, key, list);
-			
 			mt3_Delete(&list);
 		}
 	}
@@ -186,16 +185,15 @@ static void parseList(JSON node, MT3_node* object)
 		case MT3_TAG_STRING: mt3_AppendString(object, node.get<std::string>().c_str()); break;
 		case MT3_TAG_ROOT:
 		{
-			MT3_node subtree = mt3_AllocTree();	
+			MT3_node subtree = mt3_AllocTree();
+			
 			for(auto& element : node.items())
 			{
 				parse(element.key().c_str(), element.value(), &subtree);
 			}
 			
 			mt3_Append(object, subtree);
-			mt3_Print(*object);
 			mt3_Delete(&subtree);
-			
 			break;
 		}
 		
@@ -279,7 +277,6 @@ static MT3_tag getDecimalTag(SPdouble value)
 static MT3_tag getListTag(JSON node)
 {
 	MT3_tag tag = MT3_TAG_NULL;
-	
 	if(node.is_array())
 	{
 		tag = MT3_TAG_LIST;
@@ -297,9 +294,7 @@ static MT3_tag getListTag(JSON node)
 				return (MT3_tag)(tag | MT3_TAG_STRING);
 			
 			if(front.is_object())
-			{
 				return (MT3_tag)(tag | MT3_TAG_ROOT);
-			}
 		}
 	}
 	
