@@ -137,6 +137,11 @@ MT3_node readFromJson(const char* path)
 	}
 	
 	MT3_node result = NULL;
+	if(doc.is_array())
+	{
+	    SP_WARNING("Binary Tree Objects cannot be parsed from an array");
+	    return NULL;
+	}
 	for(auto& element : doc.items())
 	{
 	    parse(element.key().c_str(), element.value(), &result);
