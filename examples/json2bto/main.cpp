@@ -224,11 +224,10 @@ static void parseList(MT3_tag listTag, JSON array, MT3_node* object)
 	for(SPsize i = 0; i < array.size(); i++)
 	{
 	    JSON node = array[i];
-        MT3_tag tag = getTag(node);
-
-        if((tag & MT3_TAG_LIST) == 0)
+        MT3_tag tag = MT3_TAG_LIST;
+        if(!node.is_array())
             tag = listTag;
-
+            
         switch(tag)
         {
             case MT3_TAG_BYTE: mt3_AppendByte(object, node.get<SPbyte>()); break;
