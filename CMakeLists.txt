@@ -74,7 +74,14 @@ sp_set_option(BUILD_SHARED_LIBS OFF BOOL "Build shared libraries")
 sp_set_option(MT3_BUILD_EXAMPLES ON BOOL "Build the MT3 example programs")
 sp_set_option(MT3_BUILD_TESTS ON BOOL "Build tests")
 
-include_directories(${CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES} ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/tests ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+include_directories(
+	${CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES} 
+	${CMAKE_SOURCE_DIR}/include 
+	${CMAKE_SOURCE_DIR}/src 
+	${CMAKE_SOURCE_DIR}/tests 
+	${gtest_SOURCE_DIR}/include
+ 	${gtest_SOURCE_DIR})
+
 add_library(mt3 src/mt3.c src/buffer.c src/treeops.c src/serialization.c)
 
 if(MT3_BUILD_TESTS)	
