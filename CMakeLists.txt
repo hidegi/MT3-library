@@ -68,7 +68,8 @@ sp_set_option(MT3_HAVE_BST_MAJOR_INCLINED ON BOOL "Have binary search major incl
 
 configure_file(
 	"${CMAKE_SOURCE_DIR}/include/platform.h.in"
-	"${CMAKE_SOURCE_DIR}/include/platform.h" ESCAPE_QUOTES)
+	"${CMAKE_SOURCE_DIR}/include/platform.h" ESCAPE_QUOTES
+ )
 
 sp_set_option(BUILD_SHARED_LIBS OFF BOOL "Build shared libraries")
 sp_set_option(MT3_BUILD_EXAMPLES ON BOOL "Build the MT3 example programs")
