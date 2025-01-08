@@ -9,39 +9,15 @@
 
 using JSON = nlohmann::json;
 
-static const char* tagToStr(MT3_tag tag)
-{
-	switch(tag)
-	{
-	    case MT3_TAG_NULL: break;
-		case MT3_TAG_ROOT: return "tree";
-		case MT3_TAG_BYTE: return "byte";
-		case MT3_TAG_SHORT: return "short";
-		case MT3_TAG_INT: return "int";
-		case MT3_TAG_LONG: return "long";
-		case MT3_TAG_FLOAT: return "float";
-		case MT3_TAG_DOUBLE: return "double";
-		case MT3_TAG_STRING: return "string";
-		case MT3_TAG_LIST: return "multi-list";
-		case MT3_TAG_ROOT_LIST: return "tree-list";
-		case MT3_TAG_BYTE_LIST: return "byte-list";
-		case MT3_TAG_SHORT_LIST: return "short-list";
-		case MT3_TAG_INT_LIST: return "int-list";
-		case MT3_TAG_LONG_LIST: return "long-list";
-		case MT3_TAG_FLOAT_LIST: return "float-list";
-		case MT3_TAG_DOUBLE_LIST: return "double-list";
-		case MT3_TAG_STRING_LIST: return "string-list";
-	}
-	return "NULL";
-}
-
 static void convert(const char* inputPath, const char* outputPath);
 static MT3_node readFromJson(const char* path);
 
 static MT3_tag getTag(JSON node);
 static MT3_tag getNumberTag(JSON node);
 static MT3_tag getIntegerTag(SPlong node);
+static MT3_tag getIntegerTag(SPlong min, SPlong max);
 static MT3_tag getDecimalTag(SPdouble node);
+static MT3_tag getDecimalTag(SPdouble min, SPdouble max);
 static MT3_tag getListTag(JSON node);
 static MT3_tag getUnderlyingListTag(JSON node);
 
@@ -86,10 +62,11 @@ int main(int argc, char** argv)
         SP_INFO("Usage: ./json2bto [json file] [output file]");
         return EXIT_SUCCESS;
     }
+
     if (optind < argc)
     {
         /* Make sure a file was given */
-	convert(argv[optind], argv[optind + 1]);
+	    convert(argv[optind], argv[optind + 1]);
     }
     else
     {
@@ -108,8 +85,8 @@ void convert(const char* input, const char* output)
 	}
 
 	SPbuffer buffer = mt3_EncodeTree(node);
-    	std::ofstream file(output, std::ios::binary | std::ios::trunc);
-    	file.write(reinterpret_cast<const char*>(buffer.data), buffer.length);
+    std::ofstream file(output, std::ios::binary | std::ios::trunc);
+    file.write(reinterpret_cast<const char*>(buffer.data), buffer.length);
     
 	SP_INFO("Written to \"%s\" (%lld B)", output, buffer.length);
 	spBufferFree(&buffer);
@@ -130,9 +107,9 @@ MT3_node readFromJson(const char* path)
 	{
 	    doc = JSON::parse(f);
 	}
-	catch(...)
+	catch(const nlohmann::json::exception& e)
 	{
-		SP_WARNING("Syntax error in JSON file \"%s\"", path);
+		SP_WARNING("Failed to parse json-file \"%s\": %s", path, e.what());
 		return NULL;
 	}
 	
@@ -142,6 +119,7 @@ MT3_node readFromJson(const char* path)
 	    SP_WARNING("Binary Tree Objects cannot be parsed from an array (aborting)");
 	    return NULL;
 	}
+
 	for(auto& element : doc.items())
 	{
 	    parse(element.key().c_str(), element.value(), &result);
@@ -227,7 +205,7 @@ static void parseList(MT3_tag listTag, JSON array, MT3_node* object)
         MT3_tag tag = MT3_TAG_LIST;
         if(!node.is_array())
             tag = listTag;
-            
+
         switch(tag)
         {
             case MT3_TAG_BYTE: mt3_AppendByte(object, node.get<SPbyte>()); break;
