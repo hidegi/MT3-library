@@ -584,35 +584,35 @@ TEST(mt3_validation_test_4, checksTree)
 
 TEST(mt3_equality_test_1, determinesEquality)
 {
-    	MT3_node treeA = NULL, treeB = NULL;
+    MT3_node treeA = NULL, treeB = NULL;
 
-    	mt3_InsertByte(&treeA, "byte1", 1);
-    	mt3_InsertByte(&treeA, "byte2", 2);
-    	mt3_InsertByte(&treeA, "byte3", 3);
-    	mt3_InsertByte(&treeA, "byte4", 4);
-    	mt3_InsertByte(&treeA, "byte5", 5);
-    	mt3_InsertByte(&treeA, "byte6", 6);
+    mt3_InsertByte(&treeA, "byte1", 1);
+    mt3_InsertByte(&treeA, "byte2", 2);
+    mt3_InsertByte(&treeA, "byte3", 3);
+    mt3_InsertByte(&treeA, "byte4", 4);
+    mt3_InsertByte(&treeA, "byte5", 5);
+    mt3_InsertByte(&treeA, "byte6", 6);
 
-    	mt3_InsertByte(&treeB, "byte1", 1);
-    	mt3_InsertByte(&treeB, "byte2", 2);
-    	mt3_InsertByte(&treeB, "byte3", 3);
-    	mt3_InsertByte(&treeB, "byte4", 4);
-    	mt3_InsertByte(&treeB, "byte5", 5);
-    	mt3_InsertByte(&treeB, "byte6", 6);
+    mt3_InsertByte(&treeB, "byte1", 1);
+    mt3_InsertByte(&treeB, "byte2", 2);
+    mt3_InsertByte(&treeB, "byte3", 3);
+    mt3_InsertByte(&treeB, "byte4", 4);
+    mt3_InsertByte(&treeB, "byte5", 5);
+    mt3_InsertByte(&treeB, "byte6", 6);
 
-    	EXPECT_TRUE(mt3_IsEqual(treeA, treeB));
-    	mt3_Delete(&treeA);
-    	mt3_Delete(&treeB);
+    EXPECT_TRUE(mt3_IsEqual(treeA, treeB));
+    mt3_Delete(&treeA);
+    mt3_Delete(&treeB);
 }
 
 TEST(mt3_equality_test_2, determinesEquality)
 {
-    	MT3_node tree1 = createMock();
-    	MT3_node tree2 = createMock();
-    	ASSERT_TRUE(tree1 && tree2);
-    	EXPECT_TRUE(mt3_IsEqual(tree1, tree2));
-    	mt3_Delete(&tree1);
-    	mt3_Delete(&tree2);
+    MT3_node tree1 = createMock();
+    MT3_node tree2 = createMock();
+    ASSERT_TRUE(tree1 && tree2);
+    EXPECT_TRUE(mt3_IsEqual(tree1, tree2));
+    mt3_Delete(&tree1);
+    mt3_Delete(&tree2);
 }
 
 TEST_F(MT3fixture, test_byte_insertion)
@@ -1021,15 +1021,15 @@ TEST_F(MT3fixture, test_list_element_removal)
 {
 	MT3_node list = mt3_AllocList();
 	mt3_AppendByte(&list, 1);
-    	mt3_AppendByte(&list, 2);
-    	mt3_AppendByte(&list, 3);
-    	mt3_AppendByte(&list, 4);
-    	mt3_AppendByte(&list, 5);
-    	mt3_AppendByte(&list, 6);
-    	mt3_AppendByte(&list, 7);
-    	mt3_AppendInt(&list, 1667);
-    	mt3_AppendString(&list, "hello");
-    	mt3_RemoveAt(&list, 0);
+    mt3_AppendByte(&list, 2);
+    mt3_AppendByte(&list, 3);
+    mt3_AppendByte(&list, 4);
+    mt3_AppendByte(&list, 5);
+    mt3_AppendByte(&list, 6);
+    mt3_AppendByte(&list, 7);
+    mt3_AppendInt(&list, 1667);
+    mt3_AppendString(&list, "hello");
+    mt3_RemoveAt(&list, 0);
     	
 	for(MT3_node cursor = list; cursor != NULL; cursor = cursor->major)
 	{

@@ -20,6 +20,9 @@ static MT3_tag getDecimalTag(SPdouble node);
 static MT3_tag getDecimalTag(SPdouble min, SPdouble max);
 static MT3_tag getListTag(JSON node);
 static MT3_tag getUnderlyingListTag(JSON node);
+static MT3_tag getGreater(MT3_tag a, MT3_tag b);
+static bool isNumberType(MT3_tag tag);
+static const char* tagToStr(MT3_tag tag);
 
 static void parse(const char* key, JSON node, MT3_node* object);
 static void parseList(MT3_tag tag, JSON node, MT3_node* object);
@@ -146,7 +149,6 @@ static void parse(const char* key, JSON node, MT3_node* object)
             case MT3_TAG_FLOAT: mt3_InsertFloat(object, key, node.get<SPfloat>()); break;
             case MT3_TAG_DOUBLE: mt3_InsertDouble(object, key, node.get<SPdouble>()); break;
             case MT3_TAG_STRING: mt3_InsertString(object, key, node.get<std::string>().c_str()); break;
-
             case MT3_TAG_ROOT:
             {
                 if(!node.empty())
@@ -177,10 +179,17 @@ static void parse(const char* key, JSON node, MT3_node* object)
                     MT3_node list = mt3_AllocList();
 
                     MT3_tag listTag = getUnderlyingListTag(node);
-                    parseList(listTag, node, &list);
+					if(listTag != MT3_TAG_NULL)
+					{
+						parseList(listTag, node, &list);
 
-                    mt3_Insert(object, key, list);
-                    mt3_Delete(&list);
+						mt3_Insert(object, key, list);
+						mt3_Delete(&list);
+					}
+					else
+					{
+						SP_WARNING("Parsing skipped for invalid array-type in \"%s\"", key);
+					}
                 }
                 else
                 {
@@ -200,14 +209,27 @@ static MT3_tag getUnderlyingListTag(JSON node)
 {
     if(node.is_array())
     {
-        MT3_tag listTag = MT3_TAG_NULL;
-        for(SPsize i = 0; i < node.size(); i++)
-        {
-            MT3_tag underlyingTag = getUnderlyingListTag(node[i]);
-            if(underlyingTag > listTag)
-                listTag = underlyingTag;
-        }
-        return listTag;
+        MT3_tag result = MT3_TAG_NULL;
+		if(node.size() == 1)
+		{
+			result = getTag(node[0]);
+		}
+		else
+		{
+			for(SPsize i = 0; i < node.size() - 1; i++)
+			{
+				MT3_tag a = getUnderlyingListTag(node[i]);
+				MT3_tag b = getUnderlyingListTag(node[i + 1]);
+				result = getGreater(a, b);
+				
+				if(result == MT3_TAG_NULL)
+				{
+					SP_WARNING("Inhomogenous array-type for \"%s\" and \"%s\"", tagToStr(a), tagToStr(b));
+					break;
+				}
+			}
+		}
+        return result;
     }
     else
     {
@@ -306,6 +328,7 @@ static MT3_tag getTag(JSON node)
 	
 	return MT3_TAG_NULL;
 }
+
 static MT3_tag getIntegerTag(SPlong value)
 {
     if(value >= CHAR_MIN && value <= CHAR_MAX)
@@ -429,4 +452,59 @@ static MT3_tag getListTag(JSON node)
 	}
 
 	return MT3_TAG_NULL;
+}
+
+static MT3_tag getGreater(MT3_tag a, MT3_tag b)
+{
+	if(!isNumberType(a) != !isNumberType(b))
+	{
+		return MT3_TAG_NULL;
+	}
+	
+	if(isNumberType(a))
+		return std::max(a, b);
+	else
+	{
+		return (a == b) ? a : MT3_TAG_NULL;
+	}
+}
+
+static bool isNumberType(MT3_tag tag)
+{
+	switch(tag & ~MT3_TAG_LIST)
+	{
+		case MT3_TAG_BYTE:
+		case MT3_TAG_SHORT:
+		case MT3_TAG_INT:
+		case MT3_TAG_LONG:
+		case MT3_TAG_FLOAT:
+		case MT3_TAG_DOUBLE: return true;
+	}
+	
+	return false;
+}
+
+static const char* tagToStr(MT3_tag tag)
+{
+	switch(tag)
+	{
+		case MT3_TAG_ROOT: return "tree";
+		case MT3_TAG_BYTE: return "byte";
+		case MT3_TAG_SHORT: return "short";
+		case MT3_TAG_INT: return "int";
+		case MT3_TAG_LONG: return "long";
+		case MT3_TAG_FLOAT: return "float";
+		case MT3_TAG_DOUBLE: return "double";
+		case MT3_TAG_STRING: return "string";
+		case MT3_TAG_LIST: return "multi-list";
+		case MT3_TAG_ROOT_LIST: return "tree-list";
+		case MT3_TAG_BYTE_LIST: return "byte-list";
+		case MT3_TAG_SHORT_LIST: return "short-list";
+		case MT3_TAG_INT_LIST: return "int-list";
+		case MT3_TAG_LONG_LIST: return "long-list";
+		case MT3_TAG_FLOAT_LIST: return "float-list";
+		case MT3_TAG_DOUBLE_LIST: return "double-list";
+		case MT3_TAG_STRING_LIST: return "string-list";
+	}
+	return "NULL";
 }
