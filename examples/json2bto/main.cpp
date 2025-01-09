@@ -182,7 +182,7 @@ static void parse(const char* key, JSON node, MT3_node* object)
 			}
 			else
 			{
-                //mt3_CreateList(object, key);
+                mt3_CreateList(object, key);
 			}
 		}
 	}
