@@ -134,57 +134,65 @@ static void parse(const char* key, JSON node, MT3_node* object)
 	SP_ASSERT(object, "Cannot parse tree from NULL for %s", key);
 	MT3_tag tag = getTag(node);
 	SP_ASSERT(tag != MT3_TAG_NULL, "Cannot parse tree from MT3_TAG_NULL for %s", key);
-	switch(tag)
+	try
 	{
-		case MT3_TAG_NULL: break;
-		case MT3_TAG_BYTE: mt3_InsertByte(object, key, node.get<SPbyte>()); break;
-		case MT3_TAG_SHORT: mt3_InsertShort(object, key, node.get<SPshort>()); break;
-		case MT3_TAG_INT: mt3_InsertInt(object, key, node.get<SPint>()); break;
-		case MT3_TAG_LONG: mt3_InsertLong(object, key, node.get<SPlong>()); break;
-		case MT3_TAG_FLOAT: mt3_InsertFloat(object, key, node.get<SPfloat>()); break;
-		case MT3_TAG_DOUBLE: mt3_InsertDouble(object, key, node.get<SPdouble>()); break;
-		case MT3_TAG_STRING: mt3_InsertString(object, key, node.get<std::string>().c_str()); break;
-		
-		case MT3_TAG_ROOT:
-		{
-		    if(!node.empty())
-		    {
-                MT3_node subtree = mt3_AllocTree();
-                for(auto& element : node.items())
-                {
-                    parse(element.key().c_str(), element.value(), &subtree);
-                }
+        switch(tag)
+        {
+            case MT3_TAG_NULL: break;
+            case MT3_TAG_BYTE: mt3_InsertByte(object, key, node.get<SPbyte>()); break;
+            case MT3_TAG_SHORT: mt3_InsertShort(object, key, node.get<SPshort>()); break;
+            case MT3_TAG_INT: mt3_InsertInt(object, key, node.get<SPint>()); break;
+            case MT3_TAG_LONG: mt3_InsertLong(object, key, node.get<SPlong>()); break;
+            case MT3_TAG_FLOAT: mt3_InsertFloat(object, key, node.get<SPfloat>()); break;
+            case MT3_TAG_DOUBLE: mt3_InsertDouble(object, key, node.get<SPdouble>()); break;
+            case MT3_TAG_STRING: mt3_InsertString(object, key, node.get<std::string>().c_str()); break;
 
-                mt3_Insert(object, key, subtree);
-                mt3_Delete(&subtree);
-			}
-            else
+            case MT3_TAG_ROOT:
             {
-                mt3_CreateTree(object, key);
+                if(!node.empty())
+                {
+                    MT3_node subtree = mt3_AllocTree();
+                    for(auto& element : node.items())
+                    {
+                        parse(element.key().c_str(), element.value(), &subtree);
+                    }
+
+                    mt3_Insert(object, key, subtree);
+                    mt3_Delete(&subtree);
+                }
+                else
+                {
+                    mt3_CreateTree(object, key);
+                }
+                break;
             }
-			break;
-		}
-		
-		default:
-		{
-		    SP_ASSERT(tag & MT3_TAG_LIST, "Expected MT3_TAG_LIST");
-			SP_ASSERT(node.is_array(), "Expected node to be array");
 
-			if(node.size() != 0)
-			{
-			    MT3_node list = mt3_AllocList();
+            default:
+            {
+                SP_ASSERT(tag & MT3_TAG_LIST, "Expected MT3_TAG_LIST");
+                SP_ASSERT(node.is_array(), "Expected node to be array");
 
-			    MT3_tag listTag = getUnderlyingListTag(node);
-			    parseList(listTag, node, &list);
+                if(node.size() != 0)
+                {
+                    MT3_node list = mt3_AllocList();
 
-			    mt3_Insert(object, key, list);
-			    mt3_Delete(&list);
-			}
-			else
-			{
-                mt3_CreateList(object, key);
-			}
-		}
+                    MT3_tag listTag = getUnderlyingListTag(node);
+                    parseList(listTag, node, &list);
+
+                    mt3_Insert(object, key, list);
+                    mt3_Delete(&list);
+                }
+                else
+                {
+                    mt3_CreateList(object, key);
+                }
+            }
+        }
+	}
+	catch(const nlohmann::json::exception& e)
+	{
+	    SP_WARNING("Exception occurred for property %s: %s", key, e.what());
+	    return;
 	}
 }
 
@@ -218,52 +226,69 @@ static void parseList(MT3_tag listTag, JSON array, MT3_node* object)
         MT3_tag tag = MT3_TAG_LIST;
         if(!node.is_array())
             tag = listTag;
-
-        switch(tag)
+        try
         {
-            case MT3_TAG_BYTE: mt3_AppendByte(object, node.get<SPbyte>()); break;
-            case MT3_TAG_SHORT: mt3_AppendShort(object, node.get<SPshort>()); break;
-            case MT3_TAG_INT: mt3_AppendInt(object, node.get<SPint>()); break;
-            case MT3_TAG_LONG: mt3_AppendLong(object, node.get<SPlong>()); break;
-            case MT3_TAG_FLOAT: mt3_AppendFloat(object, node.get<SPfloat>()); break;
-            case MT3_TAG_DOUBLE: mt3_AppendDouble(object, node.get<SPfloat>()); break;
-            case MT3_TAG_STRING: mt3_AppendString(object, node.get<std::string>().c_str()); break;
-            case MT3_TAG_ROOT:
+            switch(tag)
             {
-                if(!node.empty())
+                case MT3_TAG_BYTE: mt3_AppendByte(object, node.get<SPbyte>()); break;
+                case MT3_TAG_SHORT: mt3_AppendShort(object, node.get<SPshort>()); break;
+                case MT3_TAG_INT: mt3_AppendInt(object, node.get<SPint>()); break;
+                case MT3_TAG_LONG: mt3_AppendLong(object, node.get<SPlong>()); break;
+                case MT3_TAG_FLOAT: mt3_AppendFloat(object, node.get<SPfloat>()); break;
+                case MT3_TAG_DOUBLE: mt3_AppendDouble(object, node.get<SPfloat>()); break;
+                case MT3_TAG_STRING: mt3_AppendString(object, node.get<std::string>().c_str()); break;
+                case MT3_TAG_ROOT:
                 {
-                    MT3_node subtree = mt3_AllocTree();
-                    for(auto& element : node.items())
+                    if(!node.empty())
                     {
-                        parse(element.key().c_str(), element.value(), &subtree);
+                        MT3_node subtree = mt3_AllocTree();
+                        for(auto& element : node.items())
+                        {
+                            parse(element.key().c_str(), element.value(), &subtree);
+                        }
+
+                        mt3_Append(object, subtree);
+                        mt3_Delete(&subtree);
                     }
-
-                    mt3_Append(object, subtree);
-                    mt3_Delete(&subtree);
+                    break;
                 }
-                break;
-            }
 
-            default:
-            {
-                SP_ASSERT(tag & MT3_TAG_LIST, "Expected MT3_TAG_LIST");
-                SP_ASSERT(node.is_array(), "Expected node to be array");
-                if(node.size() > 0)
+                default:
                 {
-                    MT3_node list = mt3_AllocList();
-                    parseList(listTag, node, &list);
+                    SP_ASSERT(tag & MT3_TAG_LIST, "Expected MT3_TAG_LIST");
+                    SP_ASSERT(node.is_array(), "Expected node to be array");
+                    if(node.size() > 0)
+                    {
+                        MT3_node list = mt3_AllocList();
+                        parseList(listTag, node, &list);
 
-                    mt3_Append(object, list);
-                    mt3_Delete(&list);
+                        mt3_Append(object, list);
+                        mt3_Delete(&list);
+                    }
+                    break;
                 }
-                break;
             }
+        }
+        catch(const nlohmann::json::exception& e)
+        {
+            SP_WARNING("Exception occurred for array element: %s", e.what());
+            return;
         }
 	}
 }
 
 static MT3_tag getTag(JSON node)
 {
+	if(node.is_object())
+	{
+		return MT3_TAG_ROOT;
+	}
+
+	if(node.is_array())
+	{
+		return getListTag(node);
+	}
+
 	if(node.is_boolean())
 	{
 		return MT3_TAG_BYTE;
@@ -277,16 +302,6 @@ static MT3_tag getTag(JSON node)
 	if(node.is_string())
 	{
 		return MT3_TAG_STRING;
-	}
-	
-	if(node.is_object())
-	{
-		return MT3_TAG_ROOT;
-	}
-	
-	if(node.is_array())
-	{
-		return getListTag(node);
 	}
 	
 	return MT3_TAG_NULL;
