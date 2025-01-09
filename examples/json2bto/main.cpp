@@ -131,10 +131,9 @@ MT3_node readFromJson(const char* path)
 
 static void parse(const char* key, JSON node, MT3_node* object)
 {
-	SP_ASSERT(object, "Cannot parse tree from NULL");
+	SP_ASSERT(object, "Cannot parse tree from NULL for %s", key);
 	MT3_tag tag = getTag(node);
-	
-	SP_ASSERT(tag != MT3_TAG_NULL, "Cannot parse tree from MT3_TAG_NULL");
+	SP_ASSERT(tag != MT3_TAG_NULL, "Cannot parse tree from MT3_TAG_NULL for %s", key);
 	switch(tag)
 	{
 		case MT3_TAG_NULL: break;
@@ -148,15 +147,21 @@ static void parse(const char* key, JSON node, MT3_node* object)
 		
 		case MT3_TAG_ROOT:
 		{
-			MT3_node subtree = mt3_AllocTree();
-			for(auto& element : node.items())
-			{
-				parse(element.key().c_str(), element.value(), &subtree);
-			}
-			
-			mt3_Insert(object, key, subtree);
-			mt3_Delete(&subtree);
+		    if(!node.empty())
+		    {
+                MT3_node subtree = mt3_AllocTree();
+                for(auto& element : node.items())
+                {
+                    parse(element.key().c_str(), element.value(), &subtree);
+                }
 
+                mt3_Insert(object, key, subtree);
+                mt3_Delete(&subtree);
+			}
+            else
+            {
+                mt3_CreateTree(object, key);
+            }
 			break;
 		}
 		
@@ -164,13 +169,21 @@ static void parse(const char* key, JSON node, MT3_node* object)
 		{
 		    SP_ASSERT(tag & MT3_TAG_LIST, "Expected MT3_TAG_LIST");
 			SP_ASSERT(node.is_array(), "Expected node to be array");
-			MT3_node list = mt3_AllocList();
 
-            MT3_tag listTag = getUnderlyingListTag(node);
-			parseList(listTag, node, &list);
-			
-			mt3_Insert(object, key, list);
-			mt3_Delete(&list);
+			if(node.size() != 0)
+			{
+			    MT3_node list = mt3_AllocList();
+
+			    MT3_tag listTag = getUnderlyingListTag(node);
+			    parseList(listTag, node, &list);
+
+			    mt3_Insert(object, key, list);
+			    mt3_Delete(&list);
+			}
+			else
+			{
+                //mt3_CreateList(object, key);
+			}
 		}
 	}
 }
@@ -217,15 +230,17 @@ static void parseList(MT3_tag listTag, JSON array, MT3_node* object)
             case MT3_TAG_STRING: mt3_AppendString(object, node.get<std::string>().c_str()); break;
             case MT3_TAG_ROOT:
             {
-                MT3_node subtree = mt3_AllocTree();
-
-                for(auto& element : node.items())
+                if(!node.empty())
                 {
-                    parse(element.key().c_str(), element.value(), &subtree);
-                }
+                    MT3_node subtree = mt3_AllocTree();
+                    for(auto& element : node.items())
+                    {
+                        parse(element.key().c_str(), element.value(), &subtree);
+                    }
 
-                mt3_Append(object, subtree);
-                mt3_Delete(&subtree);
+                    mt3_Append(object, subtree);
+                    mt3_Delete(&subtree);
+                }
                 break;
             }
 
@@ -233,12 +248,14 @@ static void parseList(MT3_tag listTag, JSON array, MT3_node* object)
             {
                 SP_ASSERT(tag & MT3_TAG_LIST, "Expected MT3_TAG_LIST");
                 SP_ASSERT(node.is_array(), "Expected node to be array");
-                MT3_node list = mt3_AllocList();
+                if(node.size() > 0)
+                {
+                    MT3_node list = mt3_AllocList();
+                    parseList(listTag, node, &list);
 
-                parseList(listTag, node, &list);
-
-                mt3_Append(object, list);
-                mt3_Delete(&list);
+                    mt3_Append(object, list);
+                    mt3_Delete(&list);
+                }
                 break;
             }
         }
@@ -385,17 +402,15 @@ static MT3_tag getListTag(JSON node)
 				return (MT3_tag)(MT3_TAG_LIST | MT3_TAG_BYTE);
 			
 			if(front.is_number())
-			{
 				return (MT3_tag)(MT3_TAG_LIST | getArrayNumberTag(node));
-            }
+
 			if(front.is_string())
 				return (MT3_tag)(MT3_TAG_LIST | MT3_TAG_STRING);
 			
 			if(front.is_object())
 				return (MT3_tag)(MT3_TAG_LIST | MT3_TAG_ROOT);
-
-            return MT3_TAG_LIST;
 		}
+		return MT3_TAG_LIST;
 	}
 
 	return MT3_TAG_NULL;

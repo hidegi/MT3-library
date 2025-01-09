@@ -62,24 +62,23 @@ static void print(const char* path)
 		SP_WARNING("Failed to open file \"%s\"", path);
 		return;
 	}
-	
+
 	file.seekg(0, std::ios::end);
 	size_t length = file.tellg();
 	file.seekg(0, std::ios::beg);
-	
+
 	SPbuffer buffer;
 	buffer.length = length;
 	buffer.data = (SPubyte*) calloc(length, sizeof(SPubyte));
-	
+
 	file.read(reinterpret_cast<char*>(buffer.data), length);
 	MT3_node node = mt3_DecodeTree(buffer);
-	
 	if(!node)
 	{
 		SP_WARNING("Failed to read \"%s\" (not bto-encoded)", path);
 		return;
 	}
-	
+
 	mt3_Print(node);
 	mt3_Delete(&node);
 	spBufferFree(&buffer);

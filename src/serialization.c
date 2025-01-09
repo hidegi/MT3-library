@@ -236,7 +236,6 @@ static void _mt3_encode(const MT3_node node, SPbuffer* buffer, int level)
 			case MT3_TAG_STRING:
 			{
 				SP_ASSERT(node->payload.tag_string, "Node %s has invalid data to write", node->name);
-
 				_mt3_write_bytes(buffer, (const SPubyte*) &node->length, sizeof(SPsize), SP_TRUE, level);
 				_mt3_write_bytes(buffer, (const SPubyte*) node->payload.tag_string, node->length, SP_FALSE, level);
 				break;
@@ -338,12 +337,9 @@ static SPbool _mt3_decode(MT3_node node, const SPubyte** memory, SPsize* length)
 			case MT3_TAG_STRING:
 			{
 				MT3_READ_GENERIC(&node->length, sizeof(SPlong), _mt3_swapped_memcpy, return SP_FALSE);
-				if(node->length)
-				{
-					MT3_CHECKED_CALLOC(node->payload.tag_string, node->length + 1, sizeof(SPbyte), return SP_FALSE);
-					MT3_READ_GENERIC(node->payload.tag_string, node->length, _mt3_memcpy, return SP_FALSE);
-					node->payload.tag_string[node->length] = 0;
-				}
+				MT3_CHECKED_CALLOC(node->payload.tag_string, node->length + 1, sizeof(SPbyte), return SP_FALSE);
+				MT3_READ_GENERIC(node->payload.tag_string, node->length, _mt3_memcpy, return SP_FALSE);
+				node->payload.tag_string[node->length] = 0;
 				break;
 			}
 			case MT3_TAG_ROOT:

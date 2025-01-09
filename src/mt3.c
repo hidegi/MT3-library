@@ -250,7 +250,7 @@ static void _mt3_update_impl(MT3_node node)
 		{
 			if(node->payload.tag_object)
 				node->tag = _mt3_get_object_tag(node->payload.tag_object);
-				
+
 			node->length = _mt3_length_of_list(node->payload.tag_object);
 			_mt3_update_list(node->payload.tag_object);
 		}
@@ -951,7 +951,7 @@ const SPchar* mt3_ToString(const MT3_node node)
 			errno = MT3_STATUS_BAD_VALUE;
 			return (const SPchar*) buffer.data;
 		}
-		
+
 		_mt3_update(node);
 		if(mt3_IsTree(node))
 		{
