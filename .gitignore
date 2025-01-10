@@ -9,5 +9,6 @@ build/
 obj/
 bin/
 libs/
+CmakeFiles/
 tests/Testing
 CMakeCache.txt
