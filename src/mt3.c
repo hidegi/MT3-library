@@ -372,13 +372,12 @@ static MT3_node _mt3_copy_tree(const MT3_node n)
         tree->tag = n->tag;
         tree->length = n->length;
 
-
-	if(!_mt3_copy_payload_from_node(n, tree))
-	{
-		errno = MT3_STATUS_NO_MEMORY;
-		free(tree);
-		return NULL;
-	}
+		if(!_mt3_copy_payload_from_node(n, tree))
+		{
+			errno = MT3_STATUS_NO_MEMORY;
+			free(tree);
+			return NULL;
+		}
 		
         tree->major = _mt3_copy_tree(n->major);
         tree->minor = _mt3_copy_tree(n->minor);

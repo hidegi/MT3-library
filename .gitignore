@@ -10,3 +10,4 @@ obj/
 bin/
 libs/
 tests/Testing
+CMakeCache.txt

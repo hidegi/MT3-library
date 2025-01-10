@@ -350,7 +350,7 @@ static SPbool _mt3_decode(MT3_node node, const SPubyte** memory, SPsize* length)
 			
 			default:
 			{
-                		_mt3_decode_list(node, memory, length);
+                _mt3_decode_list(node, memory, length);
 				break;
 			}
 		}

@@ -396,16 +396,16 @@ class MT3fixture : public testing::Test
 static MT3_node createMock()
 {
 	MT3_node subtree = NULL;
-    	mt3_InsertString(&subtree, "str1", "motex");
-    	mt3_InsertString(&subtree, "str2", "gaming");
-    	mt3_InsertString(&subtree, "str3", "is");
-    	mt3_InsertString(&subtree, "str4", "ugly");
+    mt3_InsertString(&subtree, "str1", "motex");
+    mt3_InsertString(&subtree, "str2", "gaming");
+    mt3_InsertString(&subtree, "str3", "is");
+    mt3_InsertString(&subtree, "str4", "ugly");
 
-    	MT3_node list = NULL;
-    	mt3_Append(&list, subtree);
-    	mt3_Append(&list, subtree);
-    	mt3_Append(&list, subtree);
-    	mt3_Append(&list, subtree);
+    MT3_node list = NULL;
+    mt3_Append(&list, subtree);
+    mt3_Append(&list, subtree);
+    mt3_Append(&list, subtree);
+    mt3_Append(&list, subtree);
 
 	MT3_node tree = NULL;
 
