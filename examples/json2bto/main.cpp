@@ -134,9 +134,19 @@ MT3_node readFromJson(const char* path)
 
 static void parse(const char* key, JSON node, MT3_node* object)
 {
-	SP_ASSERT(object, "Cannot parse tree from NULL for %s", key);
+	if(!object)
+	{
+		SP_WARNING("Cannot parse tree from NULL for %s", key);
+		return;
+	}
+	
 	MT3_tag tag = getTag(node);
-	SP_ASSERT(tag != MT3_TAG_NULL, "Cannot parse tree from MT3_TAG_NULL for %s", key);
+	if(tag == MT3_TAG_NULL)
+	{
+		SP_WARNING("Cannot parse tree from MT3_TAG_NULL for %s", key);
+		return;
+	}
+	
 	try
 	{
         switch(tag)
@@ -171,9 +181,18 @@ static void parse(const char* key, JSON node, MT3_node* object)
 
             default:
             {
-                SP_ASSERT(tag & MT3_TAG_LIST, "Expected MT3_TAG_LIST");
-                SP_ASSERT(node.is_array(), "Expected node to be array");
-
+                if((tag & MT3_TAG_LIST) == 0)
+				{
+					SP_WARNING("Expected MT3_TAG_LIST");
+					return;
+				}
+				
+                if(!node.is_array())
+				{
+					SP_WARNING("Expected node to be array");
+					return;
+				}
+				
                 if(node.size() != 0)
                 {
                     MT3_node list = mt3_AllocList();
@@ -239,15 +258,24 @@ static MT3_tag getUnderlyingListTag(JSON node)
 
 static void parseList(MT3_tag listTag, JSON array, MT3_node* object)
 {
-	SP_ASSERT(object, "Cannot parse list from NULL");
-	SP_ASSERT(listTag != MT3_TAG_NULL, "Cannot parse list from MT3_TAG_NULL");
+	if(!object)
+	{
+		SP_WARNING("Cannot parse list from NULL");
+		return;
+	}
+	
+	if(listTag == MT3_TAG_NULL)
+	{
+		SP_WARNING("Cannot parse list from MT3_TAG_NULL");
+		return;
+	}
 
 	for(SPsize i = 0; i < array.size(); i++)
 	{
 	    JSON node = array[i];
         MT3_tag tag = MT3_TAG_LIST;
         if(!node.is_array())
-            tag = listTag;
+            tag = (MT3_tag) (listTag & ~MT3_TAG_LIST);
         try
         {
             switch(tag)
@@ -277,8 +305,18 @@ static void parseList(MT3_tag listTag, JSON array, MT3_node* object)
 
                 default:
                 {
-                    SP_ASSERT(tag & MT3_TAG_LIST, "Expected MT3_TAG_LIST");
-                    SP_ASSERT(node.is_array(), "Expected node to be array");
+                    if((tag & MT3_TAG_LIST) == 0)
+					{
+						SP_WARNING("Expected MT3_TAG_LIST");
+						return;
+					}
+					
+                    if(!node.is_array())
+					{
+						SP_WARNING("Expected node to be array for tag is %s, but type is %s", tagToStr(tag), node.type_name());
+						return;
+					}
+
                     if(node.size() > 0)
                     {
                         MT3_node list = mt3_AllocList();
