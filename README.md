@@ -9,18 +9,39 @@ binary and vice versa (similar to Mojang's NBT-format).
 MT3 introduces an open format, the so called Binary Tree Object (BTO), of which's properties\
 are explained overleaf.
 
-## BTO Specification
-All numeric values are always of a signed type.\
+## BTO-Specification
+The internal layout of a BTO-file uses an RB-tree (Red-Black-Tree) for fast search, insert and delete operations.\
+For further information about RB-trees, read following article: https://en.wikipedia.org/wiki/Red–black_tree
+
+Each node in a BTO-file consists of some sort of data (the payload), as well as
+the length of the name-string, the name-string itself and a tag.
+
+## Data Types
+The BTO-format has knowledge of 15 different types of data that can be written to a 
+BTO-file: numeric data types, strings, lists and trees. 
+
+All numeric values are always of a signed type.
 The BTO-format has knowledge of following data types:
-| Data type | Tag | Range | Size in Bytes |
-| :---: | :---: | :---: | :---: |
-| byte | 2 | -128 to +127 | 1 |
-| short | 3 | -32,768 to +32,767 | 2|
-| int | 4 | -2,147,483,648 to +2,147,483,647| 4 |
-| long | 5 | -9,223,372,036,854,775,808 to +9,223,372,036,854,775,807 | 8 |
-| float | 6 | -1.2E-38 to +3.4E+38 | 4 | 
-| double | 7 | -2.3E-308 to +1.7E+308 | 8 |
-| string | 8 | N/A | n |
+| Data type | Tag | Range | Size in Bytes | Description |
+| :---: | :---: | :---: | :---: | :---: |
+| byte | TAG_BYTE | -128 to +127 | 1 | An signed byte |
+| short | TAG_SHORT | -32,768 to +32,767 | 2 | A signed short |
+| int | TAG_INT | -2,147,483,648 to +2,147,483,647| 4 | A signed int |
+| long | TAG_LONG | -9,223,372,036,854,775,808 to +9,223,372,036,854,775,807 | 8 | A signed long |
+| float | TAG_FLOAT | -1.2E-38 to +3.4E+38 | 4 | Floating-point type with single precision |
+| double | TAG_DOUBLE | -2.3E-308 to +1.7E+308 | 8 | Floating-point type with double precision |
+| string | TAG_STRING | N/A | varies | A UTF-8 encoded string | 
+| tree | TAG_TREE | N/A | varies | A structured object that may contain any data type listed above (including further trees and further lists)|
+| multi-list | TAG_LIST | N/A | varies | Homogenous multi-list of list-objects |
+| tree-list | TAG_TREE_LIST | N/A | varies | List of tree-objects |
+| byte-list | TAG_BYTE_LIST | N/A | varies | List of byte |
+| short-list | TAG_SHORT_LIST | N/A | varies | List of short |
+| int-list | TAG_INT_LIST | N/A | varies | List of int |
+| long-list | TAG_LONG_LIST | N/A | varies | List of long |
+| float-list | TAG_FLOAT_LIST | N/A | varies | List of bytes |
+| double-list | TAG_LONG_LIST | N/A | varies | List of bytes |
+| string-list | TAG_FLOAT_LIST | N/A | varies | List of bytes |
+
 
 The tag tells exactly what type of data a node in a BTO stores.
 
