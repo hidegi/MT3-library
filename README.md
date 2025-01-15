@@ -14,12 +14,12 @@ The BTO-format is intended to be a successor of Mojang's NBT-format. In a nutshe
 Minecraft uses NBT-files to store arbitrary data for its game intrinsics.
 
 However, since it is unclear, whether or not NBT is currently patented by its owners, BTO is 
-published as an open format and innovates free use without infringement.
+published as an open format and innovates the free use without infringement.
 Read this Wiki-page for further information about NBT: https://minecraft.fandom.com/de/wiki/NBT
 
 ## BTO-Specification
 The internal layout of a BTO-file uses an RB-tree (Red-Black-Tree) for fast search, insert and delete operations.\
-For further information about RB-trees, read following article: https://en.wikipedia.org/wiki/Red–black_tree
+For further information about RB-trees, read the following article: https://en.wikipedia.org/wiki/Red–black_tree
 
 Each node in a BTO-file consists of some sort of data (the payload), as well as
 the length of the name-string, the name-string itself (should not exceed 255 characters), 
