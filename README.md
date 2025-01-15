@@ -48,9 +48,9 @@ Here an overview about the individual data types:
 | Float | TAG_FLOAT | -1.2E-38 to +3.4E+38 | 4 | Floating-point type with single precision |
 | Double | TAG_DOUBLE | -2.3E-308 to +1.7E+308 | 8 | Floating-point type with double precision |
 | String | TAG_STRING | N/A | varies | A UTF-8 encoded string | 
-| Tree | TAG_TREE | N/A | varies | Structured object that may contain any data type explained in this section |
+| Tree | TAG_ROOT | N/A | varies | Structured object that may contain any data type explained in this section |
 | Multi-list | TAG_LIST | N/A | varies | Homogenous multi-list of list-objects |
-| Tree-list | TAG_TREE_LIST | N/A | varies | List of tree-objects |
+| Tree-list | TAG_ROOT_LIST | N/A | varies | List of tree-objects |
 | Byte-list | TAG_BYTE_LIST | N/A | varies | List of byte |
 | Short-list | TAG_SHORT_LIST | N/A | varies | List of short |
 | Int-list | TAG_INT_LIST | N/A | varies | List of int |
