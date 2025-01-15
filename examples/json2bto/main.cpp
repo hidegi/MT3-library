@@ -7,6 +7,12 @@
 #include <limits.h>
 #include <float.h>
 
+#if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+#pragma GCC diagnostic ignored "-Wformat"
+#endif
+
 using JSON = nlohmann::json;
 
 static void convert(const char* inputPath, const char* outputPath);
@@ -546,3 +552,6 @@ static const char* tagToStr(MT3_tag tag)
 	}
 	return "NULL";
 }
+#if defined(SP_COMPILER_CLANG) || defined(SP_COMPILER_GNUC)
+#pragma GCC diagnostic pop
+#endif
