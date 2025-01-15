@@ -11,11 +11,11 @@ are explained overleaf.
 
 ## Motivation
 The BTO-format is intended to be a successor of Mojang's NBT-format.\
-In a nutshell explained: Minecraft uses NBT-files to store arbitrary data for its game intrinsics.
+In a nutshell: Minecraft uses NBT-files to store arbitrary data for its game intrinsics.
 
 However, since it is unclear, whether or not NBT is currently patented by its owners, BTO is 
 published as an open format and innovates the free use without infringement.
-Read this Wiki-page for further information about NBT: https://minecraft.fandom.com/de/wiki/NBT
+Read this Wiki-Page for further information about NBT: https://minecraft.fandom.com/de/wiki/NBT
 
 ## BTO-Specification
 The internal layout of a BTO-file uses an RB-tree (Red-Black-Tree) for fast search, insert and delete operations.\
@@ -32,10 +32,11 @@ Consequently, when reading a tree, the colour-bit will be extracted and cleared 
 The root-structure of a BTO-file is always a tree and can never be a list,\
 unlike JSON, where the root-structure can either be an array or a structured-object.
 
-The compression strategy used is the Fast-ZLIB-Compression.
+To reduce disk storage of a file, BTO files use zlib's fast compression strategy.
+Read more about zlib here: https://www.zlib.net
 
 ## Data Types
-The BTO-format has knowledge of 17 different types of data that can be written to disk:\
+The BTO-format has knowledge of 17 different types of data that can be stored in a tree:\
 numeric values, strings, trees and lists.
 
 Here an overview about the individual data types:
@@ -59,9 +60,9 @@ Here an overview about the individual data types:
 | Double-list | TAG_LONG_LIST | N/A | varies | List of doubles |
 | String-list | TAG_FLOAT_LIST | N/A | varies | List of strings |
 
-Further, any lists stored in a BTO-file are implemented as a double-linked-list.\
+Please note that any lists stored in a BTO-file are implemented as a doubly-linked-list.\
 Therefore, it disables the use of random access of specific elements at runtime.\
-Because of this, the runtime performance exhibits the same properties as a double-linked-list.
+Because of this, the runtime performance exhibits the properties of a doubly-linked-list.
 
 | Operation | Average Case | Worst Case |
 | :---: | :---: | :---: |
@@ -83,6 +84,44 @@ The balancing-algorithm implemented by the MT3 API ensures the following propert
 | Search | O(log2(n)) | O(log2(n)) |
 | Insert | O(log2(n)) | O(log2(n)) |
 | Delete | O(log2(n)) | O(log2(n)) |
+
+## How to use
+This section demonstrates a short example of how to create and use tree-objects by the MT3-API.
+```
+#include <mt3.h>
+
+int main(int argc, char** argv)
+{
+  MT3_node root = NULL;
+  mt3_InsertByte(&root, "byte", 1); // at first use, allocates variable "root"
+  mt3_InsertShort(&root, "short", 12);
+  mt3_InsertInt(&root, "int", 1234);
+  mt3_InsertLong(&root, "long", 12345678);
+  mt3_InsertFloat(&root, "float", 3.14159265f);
+  mt3_InsertDouble(&root, "double", 13847.8374);
+  mt3_InsertString(&root, "string", "Hello World");
+
+  MT3_node subtree = NULL;
+  mt3_InsertString(&subtree, "str1", "I"); // at first use, allocates variable "subtree"
+  mt3_InsertString(&subtree, "str2", "am");
+  mt3_InsertString(&subtree, "str3", "a");
+  mt3_InsertString(&subtree, "str4", "subtree");
+  mt3_Insert(&root, "subtree", subtree);
+  mt3_Delete(&subtree); // deletes the subtree
+
+  MT3_node intList = NULL;
+  for(size_t i = 0; i < 10; i++)
+    mt3_AppendInt(&intList, i + 1); // this will implicitly create an int-list
+
+  mt3_Insert(&root, "intList", intList);
+  mt3_Delete(&intList); // deletes the list
+
+  mt3_Print(root);
+  mt3_Delete(&root); // deletes the root-object
+
+  return 0;
+}
+```
 
 ## How to build
 To build this project, you will need to install the CMake CLI-tool,\
