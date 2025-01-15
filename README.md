@@ -10,8 +10,8 @@ MT3 introduces an open format, the so called Binary Tree Object (BTO), of which'
 are explained overleaf.
 
 ## Motivation
-The BTO-format is intended to be a successor of Mojang's NBT-format. In a nutshell explained:\
-Minecraft uses NBT-files to store arbitrary data for its game intrinsics.
+The BTO-format is intended to be a successor of Mojang's NBT-format.\
+In a nutshell explained: Minecraft uses NBT-files to store arbitrary data for its game intrinsics.
 
 However, since it is unclear, whether or not NBT is currently patented by its owners, BTO is 
 published as an open format and innovates the free use without infringement.
@@ -51,13 +51,13 @@ Here an overview about the individual data types:
 | Tree | TAG_ROOT | N/A | varies | Structured object that may contain any data type explained in this section |
 | Multi-list | TAG_LIST | N/A | varies | Homogenous multi-list of list-objects |
 | Tree-list | TAG_ROOT_LIST | N/A | varies | List of tree-objects |
-| Byte-list | TAG_BYTE_LIST | N/A | varies | List of byte |
-| Short-list | TAG_SHORT_LIST | N/A | varies | List of short |
-| Int-list | TAG_INT_LIST | N/A | varies | List of int |
-| Long-list | TAG_LONG_LIST | N/A | varies | List of long |
-| Float-list | TAG_FLOAT_LIST | N/A | varies | List of bytes |
-| Double-list | TAG_LONG_LIST | N/A | varies | List of bytes |
-| String-list | TAG_FLOAT_LIST | N/A | varies | List of bytes |
+| Byte-list | TAG_BYTE_LIST | N/A | varies | List of bytes |
+| Short-list | TAG_SHORT_LIST | N/A | varies | List of shorts |
+| Int-list | TAG_INT_LIST | N/A | varies | List of ints |
+| Long-list | TAG_LONG_LIST | N/A | varies | List of longs |
+| Float-list | TAG_FLOAT_LIST | N/A | varies | List of floats |
+| Double-list | TAG_LONG_LIST | N/A | varies | List of doubles |
+| String-list | TAG_FLOAT_LIST | N/A | varies | List of strings |
 
 Further, any lists stored in a BTO-file are implemented as a double-linked-list.\
 Therefore, it disables the use of random access of specific elements at runtime.\
