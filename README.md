@@ -87,7 +87,7 @@ The balancing-algorithm implemented by the MT3 API ensures the following propert
 
 ## How to use
 This section demonstrates a short example of how to create and use tree-objects by the MT3-API.
-```
+```C
 #include <mt3.h>
 
 int main(int argc, char** argv)
