@@ -78,7 +78,7 @@ The nodes in a tree are lexicographically ordered by their name. Since an RB-tre
 deletions will automatically rearrange the internal order of the tree. This allows for fast operations with
 an average performance of log2(n).
 
-The balancing-algorithm implemented by the MT3 API ensures the following properties for an RB-tree:
+The balancing-algorithm implemented by the MT3-API ensures the following properties for an RB-tree:
 | Operation | Average Case | Worst Case |
 | :---: | :---: | :---: |
 | Search | O(log2(n)) | O(log2(n)) |
