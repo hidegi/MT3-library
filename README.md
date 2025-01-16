@@ -129,8 +129,7 @@ on your local machine. This page provides a guide about how to install CMake: ht
 To install GNU-Make, please consult following page: https://www.gnu.org/software/make/
 
 Once you have CMake and GNU-Make present, use the Command-Prompt or Shell to switch to\
-the directory, where this repository is located on your local machine.\
-(You will need to use ```cd```).
+the directory, where this repository is located on your local machine (you will need to use ```cd```).
 
 On the MT3-library folder, run following command:\
 ```$ cmake -Bbuild -G"Unix Makefiles"```\
