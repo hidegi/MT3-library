@@ -64,7 +64,7 @@ Please note that any lists stored in a BTO-file are implemented as a doubly-link
 Therefore, it disables the use of random access for specific elements at runtime.\
 Because of this, the runtime performance exhibits the properties of a doubly-linked-list.
 
-| Operation | Average Case | Worst Case |
+| Operation | Best Case | Worst Case |
 | :---: | :---: | :---: |
 | Search | O(1) | O(n) |
 | Insert | O(1) | O(n) |
