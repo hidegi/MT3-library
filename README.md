@@ -39,7 +39,7 @@ Read more about zlib here: https://www.zlib.net
 The BTO-format has knowledge of 17 different types of data that can be stored in a tree:\
 numeric values, strings, trees and lists.
 
-Here an overview about the individual data types:
+Here is an overview about the individual data types:
 | Data Type | Tag | Range | Size in Bytes | Description |
 | :---: | :---: | :---: | :---: | :---: |
 | Byte | TAG_BYTE | -128 to +127 | 1 | Signed byte |
