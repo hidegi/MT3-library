@@ -125,7 +125,7 @@ int main(int argc, char** argv)
 
 ## How to build
 To build this project, you will need to install the CMake CLI-or GUI-tool, as well as have GNU-Make available\
-on your local machine. This page provides a guide about how to install CMake: https://cmake.org/.\
+on your local machine. This page provides a guide about how to install CMake: https://cmake.org. \
 To install GNU-Make, please consult following page: https://www.gnu.org/software/make/
 
 Once you have CMake and GNU-Make present, use the Command-Prompt or Shell to switch to\
