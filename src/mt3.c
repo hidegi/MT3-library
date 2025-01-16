@@ -516,13 +516,13 @@ SPbool _mt3_is_tree_equal(const MT3_node a, const MT3_node b)
     if(!_mt3_is_equal(a, b))
         return SP_FALSE;
 	
-	if(a && b)
+    if(a && b)
+    {
+	SP_ASSERT(a->name && b->name, "Expected nodes to compare to have names");
+	if(_mt3_strcmp(a->name, b->name) != 0)
 	{
-		SP_ASSERT(a->name && b->name, "Expected nodes to compare to have names");
-		if(_mt3_strcmp(a->name, b->name) != 0)
-		{
-		    return SP_FALSE;
-		}
+	    return SP_FALSE;
+	}
     }
     
     return (a && b) ? (_mt3_is_tree_equal(a->major, b->major) && _mt3_is_tree_equal(a->minor, b->minor)) : SP_TRUE;
