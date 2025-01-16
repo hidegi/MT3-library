@@ -111,7 +111,7 @@ To build this project, you will need to install the CMake CLI-or GUI-tool, have 
 This page provides a guide on how to install CMake: https://cmake.org. \
 To install GNU-Make, please consult following page: https://www.gnu.org/software/make/
 
-Once you have CMake and GNU-Make present, use the Command-Prompt or Shell to switch to the directory, where this repository is located on your local machine (you will need to use ```cd```).
+Once CMake, GNU-Make and a working C/C++ are available, use the Command-Prompt or Shell to switch to the directory, where this repository is located on your local machine (you will need to use ```cd```).
 
 On the MT3-library folder, run following command:\
 ```$ cmake -Bbuild -G"Unix Makefiles"```
