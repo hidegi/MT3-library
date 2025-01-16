@@ -155,73 +155,71 @@ static void parse(const char* key, JSON node, MT3_node* object)
 	
 	try
 	{
-        switch(tag)
-        {
-            case MT3_TAG_NULL: break;
-            case MT3_TAG_BYTE: mt3_InsertByte(object, key, node.get<SPbyte>()); break;
-            case MT3_TAG_SHORT: mt3_InsertShort(object, key, node.get<SPshort>()); break;
-            case MT3_TAG_INT: mt3_InsertInt(object, key, node.get<SPint>()); break;
-            case MT3_TAG_LONG: mt3_InsertLong(object, key, node.get<SPlong>()); break;
-            case MT3_TAG_FLOAT: mt3_InsertFloat(object, key, node.get<SPfloat>()); break;
-            case MT3_TAG_DOUBLE: mt3_InsertDouble(object, key, node.get<SPdouble>()); break;
-            case MT3_TAG_STRING: mt3_InsertString(object, key, node.get<std::string>().c_str()); break;
-            case MT3_TAG_ROOT:
-            {
-                if(!node.empty())
-                {
-                    MT3_node subtree = mt3_AllocTree();
-                    for(auto& element : node.items())
-                    {
-                        parse(element.key().c_str(), element.value(), &subtree);
-                    }
-
-                    mt3_Insert(object, key, subtree);
-                    mt3_Delete(&subtree);
-                }
-                else
-                {
-                    mt3_CreateTree(object, key);
-                }
-                break;
-            }
-
-            default:
-            {
-                if((tag & MT3_TAG_LIST) == 0)
-				{
-					SP_WARNING("Expected MT3_TAG_LIST");
-					return;
-				}
-				
-                if(!node.is_array())
-				{
-					SP_WARNING("Expected node to be array");
-					return;
-				}
-				
-                if(node.size() != 0)
-                {
-                    MT3_node list = mt3_AllocList();
-
-                    MT3_tag listTag = getUnderlyingListTag(node);
-					if(listTag != MT3_TAG_NULL)
-					{
-						parseList(listTag, node, &list);
-
-						mt3_Insert(object, key, list);
-						mt3_Delete(&list);
-					}
-					else
-					{
-						SP_WARNING("Parsing skipped for invalid array-type in \"%s\"", key);
-					}
-                }
-                else
-                {
-                    mt3_CreateList(object, key);
-                }
-            }
-        }
+	    switch(tag)
+	    {
+	        case MT3_TAG_NULL: break;
+	        case MT3_TAG_BYTE: mt3_InsertByte(object, key, node.get<SPbyte>()); break;
+	        case MT3_TAG_SHORT: mt3_InsertShort(object, key, node.get<SPshort>()); break;
+	        case MT3_TAG_INT: mt3_InsertInt(object, key, node.get<SPint>()); break;
+	        case MT3_TAG_LONG: mt3_InsertLong(object, key, node.get<SPlong>()); break;
+	        case MT3_TAG_FLOAT: mt3_InsertFloat(object, key, node.get<SPfloat>()); break;
+	        case MT3_TAG_DOUBLE: mt3_InsertDouble(object, key, node.get<SPdouble>()); break;
+	        case MT3_TAG_STRING: mt3_InsertString(object, key, node.get<std::string>().c_str()); break;
+	        case MT3_TAG_ROOT:
+	        {
+	            if(!node.empty())
+	            {
+	                MT3_node subtree = mt3_AllocTree();
+	                for(auto& element : node.items())
+	                {
+	                    parse(element.key().c_str(), element.value(), &subtree);
+	                }
+	
+	                mt3_Insert(object, key, subtree);
+	                mt3_Delete(&subtree);
+	            }
+	            else
+	            {
+			mt3_CreateTree(object, key);
+	            }
+	            break;
+	        }
+	
+	        default:
+	        {
+	            if((tag & MT3_TAG_LIST) == 0)
+		    {
+			SP_WARNING("Expected MT3_TAG_LIST");
+			return;
+		    }
+					
+	            if(!node.is_array())
+		    {
+			SP_WARNING("Expected node to be array");
+			return;
+		    }
+					
+	            if(node.size() != 0)
+		    {
+	                MT3_node list = mt3_AllocList();
+	                MT3_tag listTag = getUnderlyingListTag(node);
+			if(listTag != MT3_TAG_NULL)
+			{
+			    parseList(listTag, node, &list);
+			    mt3_Insert(object, key, list);
+			    mt3_Delete(&list);
+			}
+			else
+			{
+			    SP_WARNING("Parsing skipped for invalid array-type in \"%s\"", key);
+			}
+	            }
+	            else
+	            {
+	                mt3_CreateList(object, key);
+	            }
+	        }
+	    }
 	}
 	catch(const nlohmann::json::exception& e)
 	{
@@ -235,25 +233,25 @@ static MT3_tag getUnderlyingListTag(JSON node)
     if(node.is_array())
     {
         MT3_tag result = MT3_TAG_NULL;
-		if(node.size() == 1)
-		{
-			result = getTag(node[0]);
-		}
-		else
-		{
-			for(SPsize i = 0; i < node.size() - 1; i++)
-			{
-				MT3_tag a = getUnderlyingListTag(node[i]);
-				MT3_tag b = getUnderlyingListTag(node[i + 1]);
-				result = getGreater(a, b);
+	if(node.size() == 1)
+	{
+	    result = getTag(node[0]);
+	}
+	else
+	{
+	    for(SPsize i = 0; i < node.size() - 1; i++)
+	    {
+		MT3_tag a = getUnderlyingListTag(node[i]);
+		MT3_tag b = getUnderlyingListTag(node[i + 1]);
+		result = getGreater(a, b);
 				
-				if(result == MT3_TAG_NULL)
-				{
-					SP_WARNING("Inhomogenous array-type for \"%s\" and \"%s\"", tagToStr(a), tagToStr(b));
-					break;
-				}
-			}
+		if(result == MT3_TAG_NULL)
+		{
+		    SP_WARNING("Inhomogenous array-type for \"%s\" and \"%s\"", tagToStr(a), tagToStr(b));
+		    break;
 		}
+	    }
+	}
         return result;
     }
     else
@@ -312,16 +310,16 @@ static void parseList(MT3_tag listTag, JSON array, MT3_node* object)
                 default:
                 {
                     if((tag & MT3_TAG_LIST) == 0)
-					{
-						SP_WARNING("Expected MT3_TAG_LIST");
-						return;
-					}
+		    {
+			SP_WARNING("Expected MT3_TAG_LIST");
+			return;
+		    }
 					
                     if(!node.is_array())
-					{
-						SP_WARNING("Expected node to be array for tag is %s, but type is %s", tagToStr(tag), node.type_name());
-						return;
-					}
+		    {
+			SP_WARNING("Expected node to be array for tag is %s, but type is %s", tagToStr(tag), node.type_name());
+			return;
+		    }
 
                     if(node.size() > 0)
                     {
@@ -446,7 +444,7 @@ static MT3_tag getNumberTag(JSON node)
         return getDecimalTag(node.get<SPfloat>());
     }
 
-	return MT3_TAG_NULL;
+    return MT3_TAG_NULL;
 }
 
 static MT3_tag getArrayNumberTag(JSON array)
@@ -467,9 +465,9 @@ static MT3_tag getArrayNumberTag(JSON array)
             getMinMax<SPdouble>(array, min, max);
             return getDecimalTag(min, max);
         }
-	}
+    }
 
-	return MT3_TAG_NULL;
+    return MT3_TAG_NULL;
 }
 
 static MT3_tag getListTag(JSON node)
