@@ -124,19 +124,27 @@ int main(int argc, char** argv)
 ```
 
 ## How to build
-To build this project, you will need to install the CMake CLI-tool,\
-since this is a CMake-project, which you can find under https://cmake.org/.
+To build this project, you will need to install the CMake CLI-or GUI-tool, as well as have GNU-Make available\
+on your local machine. This page provides a guide about how to install CMake: https://cmake.org/.\
+To install GNU-Make, please consult following page: https://www.gnu.org/software/make/
 
-Once you have CMake installed, use the Command-Prompt or Shell to switch to\
+Once you have CMake and GNU-Make present, use the Command-Prompt or Shell to switch to\
 the directory, where this repository is located on your local machine.\
 (You will need to use ```cd```).
 
 On the MT3-library folder, run following command:\
 ```$ cmake -Bbuild -G"Unix Makefiles"```
+This will let CMake configure your project in order to create a Makefile in your build-folder.
+
+Once the configuration step has finished, switch to your build folder and run following command:
+```$ make```
 
 You can of course use any CMake-Generator of choice, as well as have any other name for your build-directory.\
-When the project has been built, you should be able to run the tests, located under\
-```MT3-library/[your-build-directory]/tests```
+When the project has been built, you should be able to run the tests. Run following commands to run all tests:
+```
+$ cd MT3-library/[your-build-directory]/tests
+$ ctest --output-on-failure
+```
 
 Additionally, this project provides two example programs: 
 - A converter from JSON to BTO.
