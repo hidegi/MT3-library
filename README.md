@@ -86,7 +86,7 @@ The balancing-algorithm implemented by the MT3 API ensures the following propert
 | Delete | O(log2(n)) | O(log2(n)) |
 
 ## How to use
-This section demonstrates a short example of how to create and use tree-objects by the MT3-API.
+This section demonstrates a short example of how to create and use tree-objects with the MT3-API.
 ```C
 #include <mt3.h>
 
