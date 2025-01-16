@@ -396,16 +396,16 @@ class MT3fixture : public testing::Test
 static MT3_node createMock()
 {
 	MT3_node subtree = NULL;
-    mt3_InsertString(&subtree, "str1", "motex");
-    mt3_InsertString(&subtree, "str2", "gaming");
-    mt3_InsertString(&subtree, "str3", "is");
-    mt3_InsertString(&subtree, "str4", "ugly");
+    	mt3_InsertString(&subtree, "str1", "motex");
+    	mt3_InsertString(&subtree, "str2", "gaming");
+    	mt3_InsertString(&subtree, "str3", "is");
+    	mt3_InsertString(&subtree, "str4", "ugly");
 
-    MT3_node list = NULL;
-    mt3_Append(&list, subtree);
-    mt3_Append(&list, subtree);
-    mt3_Append(&list, subtree);
-    mt3_Append(&list, subtree);
+    	MT3_node list = NULL;
+    	mt3_Append(&list, subtree);
+    	mt3_Append(&list, subtree);
+    	mt3_Append(&list, subtree);
+    	mt3_Append(&list, subtree);
 
 	MT3_node tree = NULL;
 
@@ -447,7 +447,7 @@ static MT3_node createMock()
 	SPlong long_array[] = {1, 2, 3, 4, 5, -6, -7, -8, -9};
 	SPfloat float_array[] = {1.3f, 2.4f, 5.4f, 252.f, 19.f, 43.f, 74.f};
 	SPdouble double_array[] = {1.3, 2.4, 5.4, 252.0, 19.0, 43.0, 74.0};
-    const SPchar* string_array[] = {"hda1666", "sp1667", "fjiaw", "betel"};
+    	const SPchar* string_array[] = {"hda1666", "sp1667", "fjiaw", "betel"};
 
 	MT3_node byte_list = NULL;
 	mt3_AppendByteList(&byte_list, sizeof(byte_array) / sizeof(SPbyte), byte_array);
@@ -1021,15 +1021,15 @@ TEST_F(MT3fixture, test_list_element_removal)
 {
 	MT3_node list = mt3_AllocList();
 	mt3_AppendByte(&list, 1);
-    mt3_AppendByte(&list, 2);
-    mt3_AppendByte(&list, 3);
-    mt3_AppendByte(&list, 4);
-    mt3_AppendByte(&list, 5);
-    mt3_AppendByte(&list, 6);
-    mt3_AppendByte(&list, 7);
-    mt3_AppendInt(&list, 1667);
-    mt3_AppendString(&list, "hello");
-    mt3_RemoveAt(&list, 0);
+    	mt3_AppendByte(&list, 2);
+    	mt3_AppendByte(&list, 3);
+    	mt3_AppendByte(&list, 4);
+    	mt3_AppendByte(&list, 5);
+    	mt3_AppendByte(&list, 6);
+    	mt3_AppendByte(&list, 7);
+    	mt3_AppendInt(&list, 1667);
+    	mt3_AppendString(&list, "hello");
+    	mt3_RemoveAt(&list, 0);
     	
 	for(MT3_node cursor = list; cursor != NULL; cursor = cursor->major)
 	{
