@@ -61,7 +61,7 @@ Here is an overview about the individual data types:
 | String-list | TAG_FLOAT_LIST | N/A | varies | List of strings |
 
 Please note that any lists stored in a BTO-file are implemented as a doubly-linked-list.\
-Therefore, it disables the use of random access of specific elements at runtime.\
+Therefore, it disables the use of random access for specific elements at runtime.\
 Because of this, the runtime performance exhibits the properties of a doubly-linked-list.
 
 | Operation | Average Case | Worst Case |
