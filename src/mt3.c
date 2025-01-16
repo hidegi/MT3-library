@@ -1189,8 +1189,6 @@ const SPchar* mt3_GetString(const MT3_node tree, const SPchar* name)
 
 MT3_node mt3_Get(const MT3_node tree, const SPchar* name)
 {
-	//MT3_node n = _mt3_search(tree, name);
-	//return (n && (n->tag == MT3_TAG_ROOT || ((n->tag & MT3_TAG_LIST) != 0))) ? &n->payload.tag_object : NULL;
 	return _mt3_search(tree, name);
 }
 
