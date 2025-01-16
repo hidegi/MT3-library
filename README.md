@@ -136,7 +136,7 @@ On the MT3-library folder, run following command:\
 
 You can of course use any CMake-Generator of choice, as well as have any other name for your build-directory.\
 When the project has been built, you should be able to run the tests, located under\
-```MT3-library/[your-build-directory]/tests```\
+```MT3-library/[your-build-directory]/tests```
 
 Additionally, this project provides two example programs: 
 - A converter from JSON to BTO.
