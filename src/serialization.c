@@ -350,7 +350,7 @@ static SPbool _mt3_decode(MT3_node node, const SPubyte** memory, SPsize* length)
 			
 			default:
 			{
-                _mt3_decode_list(node, memory, length);
+                		_mt3_decode_list(node, memory, length);
 				break;
 			}
 		}
@@ -388,7 +388,7 @@ MT3_node _mt3_decode_tree(const SPubyte** memory, SPsize* length)
 	tree->minor = _mt3_decode_tree(memory, length);
 
 	if(tree->major)
-	    tree->major->parent = tree;
+		tree->major->parent = tree;
 	if(tree->minor)
 		tree->minor->parent = tree;
 
