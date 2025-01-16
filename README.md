@@ -133,7 +133,7 @@ the directory, where this repository is located on your local machine.\
 (You will need to use ```cd```).
 
 On the MT3-library folder, run following command:\
-```$ cmake -Bbuild -G"Unix Makefiles"```
+```$ cmake -Bbuild -G"Unix Makefiles"```\
 This will let CMake configure your project in order to create a Makefile in your build-folder.
 
 Once the configuration step has finished, switch to your build folder and run following command:
