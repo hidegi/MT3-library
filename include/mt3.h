@@ -165,10 +165,10 @@ SP_API void mt3_Print(const MT3_node object);
 
 /*!
  *	@brief Compares the tag, colour, value and
- *  	weight between two nodes.
+ *  weight between two nodes.
  *
  *	@return True, if @param a is virtually
- *  	equal to @param b.
+ *  equal to @param b.
  *
  *	@ingroup comparison
  */
@@ -282,7 +282,12 @@ SP_API void mt3_InsertShort(MT3_node* tree, const SPchar* name, SPshort value);
 /*!
  *	@brief Inserts an int-node to the given tree.
  *	If @param tree points to NULL, a new tree will be created.
- *	
+ *
+ *	Issues @ref MT3_STATUS_BAD_VALUE, if @param tree is NULL.
+ *
+ *	Issues @ref MT3_STATUS_NOT_A_TREE, if the object pointed
+ *	to by @param tree is not NULL and not a tree.
+ *
  *	Issues @ref MT3_STATUS_BAD_NAME, if @param name is NULL,
  *	empty or already taken.
  *
@@ -1004,8 +1009,8 @@ SP_API void mt3_RemoveAt(MT3_node* list, SPindex pos);
 SP_API SPbuffer mt3_EncodeTree(const MT3_node tree);
 
 /*!
- *	@brief Dumps a tree to binary.
- *	
+ *	@brief Reads a tree-node from a buffer in memory.
+ *
  *	Issues @ref MT3_STATUS_NOT_A_TREE, if @param is not a tree.
  *
  *	Issues @ref MT3_STATUS_WRITE_ERROR at decompression failure.
