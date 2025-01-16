@@ -9,7 +9,7 @@ MT3 introduces an open format, the so called Binary Tree Object (BTO), of which'
 ## Motivation
 The BTO-format is intended to be a successor of Mojang's NBT-format. In a nutshell: Minecraft uses NBT-files to store arbitrary data for its game intrinsics.
 
-However, since it is unclear, whether or not NBT is currently patented by its owners, BTO is published as an open format and innovates the free use without infringement. Read this Wiki-Page for further information about NBT: https://minecraft.fandom.com/de/wiki/NBT
+However, since it is unclear, whether or not NBT is currently patented by its owners, BTO is published as an open format and innovates the free use without infringement. Read this Wiki-Page for further information about NBT: https://minecraft.fandom.com/wiki/NBT_format
 
 ## BTO-Specification
 The internal layout of a BTO-file uses an RB-tree (Red-Black-Tree) for fast search, insert and delete operations. For further information about RB-trees, read the following article: https://en.wikipedia.org/wiki/Red–black_tree
